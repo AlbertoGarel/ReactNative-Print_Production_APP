@@ -1,0 +1,134 @@
+import React from 'react';
+import {TouchableOpacity, SafeAreaView, View, Text, ScrollView, StyleSheet, StatusBar, Vibration} from "react-native";
+import {NavigationContainer, useNavigation} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import HomeScreen from "./screens/HomeScreen";
+import ProfileScreen from "./screens/ProfileScreen";
+import Onboarding from "./screens/Onboarding";
+import {COLORS} from './assets/defaults/settingStyles'
+import SettingsScreen from "./screens/SettingsScreen";
+import {Fontisto as Icon} from "@expo/vector-icons";
+import HomeStack from "./StacksScreens/HomeStack";
+import {AdMobBanner} from "expo-ads-admob";
+import Constants from 'expo-constants';
+import SvgComponent from "./components/SvgComponent";
+import {semicircle2} from "./assets/svg/svgContents";
+import listeners from "react-native-web/dist/exports/AppState";
+import SettingsProductionScreen from "./screens/productionScreens/SettingsProductionScreen";
+// paddingTop: Constants.statusBarHeight
+
+const Tab = createBottomTabNavigator();
+
+const Routes = ({navigation}) => {
+
+    const bannerError = () => {
+        console.log("An error");
+        return;
+    }
+    return (
+        <SafeAreaView style={{flex: 1, backgroundColor: 'transparent'}}>
+            <StatusBar
+                animated={true}
+                backgroundColor={'transparent'}
+                barStyle={'light-content'}
+                showHideTransition={'slide'}
+                hidden={false}
+                translucent={true}
+            />
+            <AdMobBanner
+                style={styles.bottomBanner}
+                bannerSize="fullBanner"
+                adUnitID="ca-app-pub-3940256099942544/6300978111"
+                // Test ID, Replace with your-admob-unit-id
+                // testDeviceID="EMULATOR"
+                didFailToReceiveAdWithError={bannerError}
+            />
+            <Tab.Navigator
+                initialRouteName="Feed"
+                tabBarOptions={{
+                    activeTintColor: "#FF8000",
+                    // activeBackgroundColor: "#feb72b",
+                    inactiveTintColor: "#C2C2C2",
+                    // inactiveBackgroundColor: "#527318"
+                }}>
+                <Tab.Screen
+                    name="HomeStack"
+                    component={HomeStack}
+                    options={{
+                        tabBarLabel: 'Home',
+                        tabBarIcon: ({color = 'red', size = 12}) => (
+                            <Icon name={'home'} size={size} color={color}/>
+                        ),
+                    }}/>
+                <Tab.Screen
+                    name="CreateStack"
+                    component={SettingsProductionScreen}
+                    listeners={{
+                        tabPress: () => {
+                             // e.preventDefault(); // Use this to navigate somewhere else
+                            Vibration.vibrate(100)
+                        },
+                    }}
+                    options={{
+                        tabBarLabel: '',
+                        tabBarIcon: ({color = 'red', size = 20}) => (
+                            <View style={{
+                                width: 80,
+                                height: 80,
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                color: 'white',
+                                backgroundColor: 'white',
+                                borderRadius: 100,
+                                marginBottom: 35,
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+                                elevation: 5,
+                            }}
+                                              // onPress={Vibration.vibrate(100)}
+                            >
+                                <Icon name={'plus-a'}
+                                      size={30}
+                                      color={color}
+                                      style={{
+                                          width: 70,
+                                          height: 70,
+                                          color: 'white',
+                                          backgroundColor: '#FF8000',
+                                          borderRadius: 100,
+                                          textAlign: 'center',
+                                          textAlignVertical: 'center'
+                                      }}
+                                />
+                            </View>
+                        ),
+                    }}/>
+                <Tab.Screen
+                    name="SettingsStack"
+                    component={SettingsScreen}
+                    // children={()=><Onboarding initialpage={0}/>}
+                    options={{
+                        tabBarLabel: 'Settings',
+                        tabBarIcon: ({color = 'red', size = 12}) => (
+                            <Icon name={'sun'} size={size} color={color}/>
+                        ),
+                    }}
+                />
+            </Tab.Navigator>
+        </SafeAreaView>
+    )
+}
+const styles = StyleSheet.create({
+    bottomBanner: {
+        // position: "absolute",
+        // bottom: 0,
+        elevation: 12
+    },
+})
+export default Routes;
