@@ -17,6 +17,7 @@
     "expo-ads-admob": "~8.4.0",
     "expo-constants": "^9.3.5",
     "expo-linear-gradient": "~8.4.0",
+    "expo-sqlite": "~8.5.0",
     "expo-status-bar": "~1.0.3",
     "react": "16.13.1",
     "react-dom": "16.13.1",
