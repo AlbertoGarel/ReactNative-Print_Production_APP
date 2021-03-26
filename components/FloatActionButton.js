@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: 20,
         right: 20,
-        shadowColor: '#000',
+        shadowColor: COLORS.black,
         shadowOffset: {width: 0, height: 2},
         shadowOpacity: 0.8,
         shadowRadius: 10,

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { Feather as Icon } from '@expo/vector-icons';
+import {COLORS} from "../../assets/defaults/settingStyles";
 
 const Page = ({ backgroundColor, iconName, title }) => {
     return (
@@ -12,9 +13,9 @@ const Page = ({ backgroundColor, iconName, title }) => {
                 backgroundColor
             }}
         >
-            <Icon name={iconName} size={172} color="white" />
+            <Icon name={iconName} size={172} color={COLORS.white} />
             <View style={{ marginTop: 16 }}>
-                <Text style={{ fontSize: 24, fontWeight: 'bold', color: 'white' }}>
+                <Text style={{ fontSize: 24, fontWeight: 'bold', color: COLORS.white }}>
                     {title}
                 </Text>
             </View>

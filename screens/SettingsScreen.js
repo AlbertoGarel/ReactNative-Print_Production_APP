@@ -24,15 +24,15 @@ const SettingsScreen = ({navigation}) => {
     };
 
     return (
-        <SafeAreaView style={{flex: 1, backgroundColor: COLORS.background_primary,}}>
+        <SafeAreaView style={{flex: 1, backgroundColor: COLORS.white,}}>
             <BgComponent
                 svgOptions={optionsSVG}
                 styleOptions={optionsStyleContSVG}
             />
             <HomeHeader
-                textprops={{color: '#FFFFFF', marginTop: 15}}
-                imageBg={'#FFFFFF'}
-                titleColor={'#FFFFFF'}
+                textprops={{color: COLORS.white, marginTop: 15}}
+                imageBg={COLORS.white}
+                titleColor={COLORS.white}
                 text={'SETTINGS:\n React Native tiene algunos documentos excelentes, así que después de leer esto, pensé que sería pan comido.'}
             />
             <View style={{

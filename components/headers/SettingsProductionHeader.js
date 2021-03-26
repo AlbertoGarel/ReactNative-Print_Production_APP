@@ -1,5 +1,6 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
+import {COLORS} from "../../assets/defaults/settingStyles";
 
 const SettingsProductionHeader = ({
                                       pagenumber,
@@ -23,17 +24,17 @@ const styles = StyleSheet.create({
         width: '100%',
         minHeight: 100,
         padding: 10,
-        backgroundColor: '#F85F2350'
+        backgroundColor: COLORS.background_primary
     },
     title: {
         fontWeight: '900',
         fontSize: 24,
         fontFamily: 'Anton',
-        color: 'grey'
+        color: COLORS.whitesmoke
     },
     explanation: {
         fontSize: 16,
-        color: 'dimgrey',
+        color: COLORS.whitesmoke,
         textAlign: 'left',
     }
 });

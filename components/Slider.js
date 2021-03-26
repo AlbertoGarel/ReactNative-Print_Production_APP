@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import Gallery from "react-native-image-gallery";
 import {View} from "react-native";
+import {COLORS} from "../assets/defaults/settingStyles";
 
 const Slider = ({
                     sliderContParentStyles,
@@ -29,7 +30,7 @@ const Slider = ({
     return (
         <View style={{...sliderContParentStyles}}>
             <Gallery
-                style={!sliderContStyles ? {flex: 1, backgroundColor: 'black'} : {...sliderContStyles}}
+                style={!sliderContStyles ? {flex: 1, backgroundColor: COLORS.black} : {...sliderContStyles}}
                 initialPage="1"
                 onSingleTapConfirmed={() => navigation.navigate('Profile', {name: 'Elena'})}
                 //initial image to show

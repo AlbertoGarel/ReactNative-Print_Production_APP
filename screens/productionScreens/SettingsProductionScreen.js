@@ -7,6 +7,7 @@ import {useNavigation} from '@react-navigation/native';
 import SettingsProductionHeader from "../../components/headers/SettingsProductionHeader";
 import BgComponent from "../../components/BackgroundComponent/BgComponent";
 import {logo} from "../../assets/svg/svgContents";
+import {COLORS} from "../../assets/defaults/settingStyles";
 
 const SettingsProductionScreen = () => {
     const navigation = useNavigation();
@@ -62,7 +63,7 @@ const SettingsProductionScreen = () => {
                             />
                         </View>
                         <Footer
-                            backgroundColor="#FA6D28"
+                            backgroundColor={COLORS.primary}
                             rightButtonLabel="Next"
                             rightButtonPress={() => {
                                 handlePageChange(1);
@@ -81,7 +82,7 @@ const SettingsProductionScreen = () => {
                             />
                         </View>
                         <Footer
-                            backgroundColor="#F85F23"
+                            backgroundColor={COLORS.primary}
                             rightButtonLabel="Next"
                             rightButtonPress={() => {
                                 handlePageChange(2);
@@ -104,7 +105,7 @@ const SettingsProductionScreen = () => {
                             />
                         </View>
                         <Footer
-                            backgroundColor="#F2441B"
+                            backgroundColor={COLORS.success}
                             leftButtonLabel="Back"
                             leftButtonPress={() => {
                                 handlePageChange(1);
@@ -124,7 +125,7 @@ const SettingsProductionScreen = () => {
 const styles = StyleSheet.create({
     contPrinc: {
         flex: 1,
-        backgroundColor: '#FFFFFF'
+        backgroundColor: COLORS.white
     }
 });
 

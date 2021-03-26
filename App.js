@@ -6,12 +6,19 @@ import {NavigationContainer} from '@react-navigation/native';
 import Routes from "./Routes";
 import SplashScreen from "./screens/SplashScreen";
 import * as SQLite from 'expo-sqlite';
+import {openDatabase} from './dbCRUD/actionsSQL'
 
-const db = SQLite.openDatabase("appbobbins.db");
+// const db = SQLite.openDatabase();
 
 function App() {
 
     const [loadScreen, setLoadScreen] = useState(true);
+
+    useEffect(() => {
+        openDatabase()
+            .then(response => Alert.alert('BBD is ok'))
+            .catch(error => Alert.alert('ERROR EN DB'))
+    }, []);
 
     useEffect(() => {
         setTimeout(() => {

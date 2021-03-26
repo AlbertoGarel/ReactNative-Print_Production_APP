@@ -10,9 +10,7 @@ const HomeCard = ({
                       iconName,
                       iconSize,
                       iconColor,
-                      idcolor,
                       cardtitle,
-                      content,
                       title,
                       navigation,
                       torender
@@ -36,8 +34,8 @@ const HomeCard = ({
             title={title}
             style={{
                 borderRadius: 20,
-                backgroundColor: '#FFF',
-                shadowColor: '#000',
+                backgroundColor: COLORS.white,
+                shadowColor: COLORS.black,
                 shadowOffset: {width: 0, height: 2},
                 shadowOpacity: 0.8,
                 shadowRadius: 10,
@@ -70,8 +68,8 @@ const styles = StyleSheet.create({
         padding: 10,
         borderRadius: 10,
         borderLeftWidth: 10,
-        backgroundColor: '#FFF',
-        shadowColor: '#000',
+        backgroundColor: COLORS.white,
+        shadowColor: COLORS.black,
         shadowOffset: {width: 0, height: 2},
         shadowOpacity: 0.8,
         shadowRadius: 10,

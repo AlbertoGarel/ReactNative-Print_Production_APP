@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import {View, Text, Dimensions, StyleSheet, ImageBackground} from 'react-native';
 import Carousel, {Pagination} from 'react-native-snap-carousel';
+import {COLORS} from "../assets/defaults/settingStyles";
 
 const Caroussel = ({items}) => {
     const margin = 20;
@@ -42,7 +43,7 @@ const Caroussel = ({items}) => {
                     height: 10,
                     borderRadius: 5,
                     marginHorizontal: 8,
-                    backgroundColor: 'rgba(255, 255, 255, 0.92)'
+                    backgroundColor: COLORS.sliderBackground
                 }}
                 inactiveDotStyle={{
                     // Define styles for inactive dots here
@@ -111,11 +112,11 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     contempty: {
-        color: '#FF5000',
+        color: COLORS.sliderComptenty,
         fontSize: 20
     },
     contemptysmall: {
-        color: '#FFFFFF',
+        color: COLORS.white,
         fontSize: 12
     },
     image: {

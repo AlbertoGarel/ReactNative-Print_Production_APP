@@ -1,5 +1,6 @@
 import React from 'react';
 import {View} from 'react-native';
+import {COLORS} from "../assets/defaults/settingStyles";
 
 const HRtag = ({
                    borderWidth,
@@ -10,7 +11,7 @@ const HRtag = ({
     return (
         <View style={{
             borderWidth: !borderWidth ? 0.5 : borderWidth,
-            borderColor: !borderColor ? 'black' : borderColor,
+            borderColor: !borderColor ? COLORS.hrtag : borderColor,
             margin: !margin ? 10 : margin,
         }}/>
     )

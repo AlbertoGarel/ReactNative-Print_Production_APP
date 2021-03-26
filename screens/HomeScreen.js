@@ -11,9 +11,7 @@ import {COLORS} from '../assets/defaults/settingStyles';
 import HomeCard from "../components/HomeCard";
 import BgComponent from "../components/BackgroundComponent/BgComponent";
 import {semicircle2} from "../assets/svg/svgContents";
-import SvgComponent from "../components/SvgComponent";
 import HomeHeader from "../components/headers/HomeHeader";
-import Slider from "../components/Slider";
 import Caroussel from "../components/Caroussel";
 
 
@@ -35,9 +33,10 @@ const HomeScreen = ({navigation}) => {
                 styleOptions={optionsStyleContSVG}
             />
             <HomeHeader
-                textprops={{color: '#FFFFFF', marginTop: 15}}
-                imageBg={'#FFFFFF'}
-                titleColor={'#FFFFFF'}
+                textprops={{color: COLORS.white, marginTop: 15}}
+                imageBg={COLORS.white}
+                titleColor={COLORS.white}
+                titleSecction={"#HOME"}
                 text={'React Native tiene algunos documentos excelentes, así que después de leer esto, pensé que sería pan comido.'}
             />
             <Caroussel
@@ -56,36 +55,31 @@ const HomeScreen = ({navigation}) => {
                     <HomeCard
                         iconName={"calculator"}
                         iconSize={iconSize}
-                        iconColor={"#FA6D28"}
-                        idcolor={COLORS.quinary}
-                        cardtitle={"Cálculos"}
-                        content={"Calcula el resto final de la bobina según su radio o kg necesarios según los ejemplares."}
+                        iconColor={COLORS.quinary}
+                        cardtitle={"Cálculo individual"}
                         title="Go to Onboard"
                         navigation={navigation}
-                        torender={['Profile', {name: 'Elena'}]}
+                        torender={["Cálculo Individual"]}
                     />
                 </View>
                 <View style={styles.subcont}>
                     <HomeCard
                         iconName={"database"}
                         iconSize={iconSize}
-                        iconColor={"#FA6D28"}
-                        idcolor={COLORS.quinary}
-                        cardtitle={"Cálculos"}
+                        iconColor={COLORS.quinary}
+                        cardtitle={"producción simple"}
                         content={"Calcula el resto final de la bobina según su radio o kg necesarios según los ejemplares."}
                         title="Go to Onboard"
                         navigation={navigation}
-                        torender={['Profile', {name: 'Elena'}]}
+                        torender={['Producción Simplificada']}
                     />
                 </View>
                 <View style={styles.subcont}>
                     <HomeCard
                         iconName={"bell"}
                         iconSize={iconSize}
-                        iconColor={"#FA6D28"}
-                        idcolor={COLORS.quinary}
-                        cardtitle={"Cálculos"}
-                        content={"Calcula el resto final de la bobina según su radio o kg necesarios según los ejemplares."}
+                        iconColor={COLORS.quinary}
+                        cardtitle={"Cálculo"}
                         title="Go to Onboard"
                         navigation={navigation}
                         torender={['Profile', {name: 'Elena'}]}
@@ -95,10 +89,8 @@ const HomeScreen = ({navigation}) => {
                     <HomeCard
                         iconName={"bar-chart"}
                         iconSize={iconSize}
-                        iconColor={"#FA6D28"}
-                        idcolor={COLORS.quinary}
+                        iconColor={COLORS.quinary}
                         cardtitle={"Cálculos"}
-                        content={"Calcula el resto final de la bobina según su radio o kg necesarios según los ejemplares."}
                         title="Go to Onboard"
                         navigation={navigation}
                         torender={['Profile', {name: 'Elena'}]}
@@ -124,7 +116,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'red',
     },
     touchable: {
-        backgroundColor: '#FFF',
+        backgroundColor: COLORS.white,
         marginTop: 5,
         marginBottom: 5,
         padding: 5
@@ -132,8 +124,8 @@ const styles = StyleSheet.create({
     actionButtonIcon: {
         fontSize: 20,
         height: 22,
-        color: 'white',
-        shadowColor: '#000',
+        color: COLORS.white,
+        shadowColor: COLORS.black,
         shadowOffset: {width: 0, height: 2},
         shadowOpacity: 0.8,
         shadowRadius: 10,
@@ -142,8 +134,6 @@ const styles = StyleSheet.create({
     subcont: {
         width: '50%',
         height: '50%',
-        // borderWidth: 2,
-        // borderColor: 'black',
         backgroundColor: 'transparent',
         padding: 10,
         display: 'flex',
@@ -151,23 +141,4 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     }
 });
-// const styles = StyleSheet.create({
-//     container: {
-//         flex: 1,
-//         flexDirection: 'column'
-//     },
-//     box: {
-//         // height: box_height
-//     },
-//     box1: {
-//         backgroundColor: '#2196F3'
-//     },
-//     box2: {
-//         backgroundColor: '#8BC34A'
-//     },
-//     box3: {
-//         backgroundColor: '#e3aa1a'
-//     }
-// });
-
 export default HomeScreen;

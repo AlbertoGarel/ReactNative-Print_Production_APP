@@ -16,34 +16,48 @@ import SvgComponent from "./components/SvgComponent";
 import {semicircle2} from "./assets/svg/svgContents";
 import listeners from "react-native-web/dist/exports/AppState";
 import SettingsProductionScreen from "./screens/productionScreens/SettingsProductionScreen";
+import {Platform} from 'react-native';
+import DataBaseScreen from "./screens/DataBaseScreen";
 // paddingTop: Constants.statusBarHeight
 
 const Tab = createBottomTabNavigator();
 
 const Routes = ({navigation}) => {
+    const paddingTop = Constants.statusBarHeight
+    const buttonCreateTabNabStyle = () => {
+
+    }
 
     const bannerError = () => {
         console.log("An error");
         return;
     }
     return (
-        <SafeAreaView style={{flex: 1, backgroundColor: 'transparent'}}>
+        <SafeAreaView style={{
+            flex: 1, backgroundColor: 'transparent',
+            paddingTop: Platform.Version < 30 ? paddingTop : 0
+        }}>
             <StatusBar
                 animated={true}
                 backgroundColor={'transparent'}
-                barStyle={'light-content'}
+                barStyle={Platform.Version < 30 ? 'dark-content' : 'light-content'}
                 showHideTransition={'slide'}
                 hidden={false}
                 translucent={true}
             />
-            <AdMobBanner
-                style={styles.bottomBanner}
-                bannerSize="fullBanner"
-                adUnitID="ca-app-pub-3940256099942544/6300978111"
-                // Test ID, Replace with your-admob-unit-id
-                // testDeviceID="EMULATOR"
-                didFailToReceiveAdWithError={bannerError}
-            />
+            <View style={{
+                width: '100%',
+                backgroundColor: COLORS.supportBackg1,
+            }}>
+                <AdMobBanner
+                    style={styles.bottomBanner}
+                    bannerSize="fullBanner"
+                    adUnitID="ca-app-pub-3940256099942544/6300978111"
+                    // Test ID, Replace with your-admob-unit-id
+                    // testDeviceID="EMULATOR"
+                    didFailToReceiveAdWithError={bannerError}
+                />
+            </View>
             <Tab.Navigator
                 initialRouteName="Feed"
                 tabBarOptions={{
@@ -60,13 +74,26 @@ const Routes = ({navigation}) => {
                         tabBarIcon: ({color = 'red', size = 12}) => (
                             <Icon name={'home'} size={size} color={color}/>
                         ),
-                    }}/>
+                    }}
+                />
+                <Tab.Screen
+                    name="DataBaseStack"
+                    component={DataBaseScreen}
+                    // children={()=><Onboarding initialpage={0}/>}
+                    options={{
+                        tabBarLabel: 'BBDD' +
+                            '',
+                        tabBarIcon: ({color = 'red', size = 12}) => (
+                            <Icon name={'database'} size={size} color={color}/>
+                        ),
+                    }}
+                />
                 <Tab.Screen
                     name="CreateStack"
                     component={SettingsProductionScreen}
                     listeners={{
                         tabPress: () => {
-                             // e.preventDefault(); // Use this to navigate somewhere else
+                            // e.preventDefault(); // Use this to navigate somewhere else
                             Vibration.vibrate(100)
                         },
                     }}
@@ -76,13 +103,13 @@ const Routes = ({navigation}) => {
                             <View style={{
                                 width: 80,
                                 height: 80,
+                                marginBottom: 35,
                                 display: 'flex',
                                 justifyContent: 'center',
                                 alignItems: 'center',
                                 color: 'white',
                                 backgroundColor: 'white',
                                 borderRadius: 100,
-                                marginBottom: 35,
                                 shadowOffset: {
                                     width: 0,
                                     height: 2,
@@ -91,7 +118,7 @@ const Routes = ({navigation}) => {
                                 shadowRadius: 3.84,
                                 elevation: 5,
                             }}
-                                              // onPress={Vibration.vibrate(100)}
+                                // onPress={Vibration.vibrate(100)}
                             >
                                 <Icon name={'plus-a'}
                                       size={30}
@@ -110,13 +137,23 @@ const Routes = ({navigation}) => {
                         ),
                     }}/>
                 <Tab.Screen
+                    name="SearchStack"
+                    component={HomeStack}
+                    options={{
+                        tabBarLabel: 'Search',
+                        tabBarIcon: ({color = 'red', size = 12}) => (
+                            <Icon name={'search'} size={size} color={color}/>
+                        ),
+                    }}
+                />
+                <Tab.Screen
                     name="SettingsStack"
                     component={SettingsScreen}
                     // children={()=><Onboarding initialpage={0}/>}
                     options={{
                         tabBarLabel: 'Settings',
                         tabBarIcon: ({color = 'red', size = 12}) => (
-                            <Icon name={'sun'} size={size} color={color}/>
+                            <Icon name={'player-settings'} size={size} color={color}/>
                         ),
                     }}
                 />
@@ -126,9 +163,8 @@ const Routes = ({navigation}) => {
 }
 const styles = StyleSheet.create({
     bottomBanner: {
-        // position: "absolute",
-        // bottom: 0,
-        elevation: 12
+        elevation: 12,
+        alignSelf: 'center'
     },
 })
 export default Routes;

@@ -1,11 +1,13 @@
 import React from 'react';
 import {Image, StyleSheet, Text, View} from 'react-native';
+import {COLORS} from "../../assets/defaults/settingStyles";
 
 const HomeHeader = ({
                         textprops,
                         imageBg,
                         titleColor,
-                        text
+                        text,
+                        titleSecction
                     }) => {
 
     return (
@@ -19,8 +21,21 @@ const HomeHeader = ({
                     source={require('../../assets/images/splash/Logo_AlbertoGarel.png')}
                 />
             </View>
+            {titleSecction ?
+                <Text style={{
+                    fontFamily: 'Anton',
+                    fontSize: 20,
+                    alignSelf: 'flex-start',
+                    textTransform: 'capitalize',
+                    color: COLORS.white,
+                }}>
+                    {titleSecction}
+                </Text>
+                :
+                null
+            }
             <Text
-                style={{...textprops}}
+                style={[{...textprops}, {marginTop: 0}]}
             >{text}</Text>
         </View>
     )
