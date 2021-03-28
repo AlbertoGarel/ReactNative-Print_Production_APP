@@ -31,6 +31,7 @@ const COLORS = {
     sliderBackground: "rgba(255, 255, 255, 0.92)",
     sliderComptenty: "#FF5000",
     hrtag: "#000",
+    buttonEdit: '#73AFDB',
     success: "#5e8531",
     failed: "#853134",
     warning: "#e78c12",

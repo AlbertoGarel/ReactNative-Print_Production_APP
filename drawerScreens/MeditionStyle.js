@@ -1,5 +1,5 @@
 import React from 'react';
-import {SafeAreaView, View, StyleSheet, Text, FlatList} from 'react-native';
+import {SafeAreaView, View, StyleSheet, Text, TouchableHighlight, Alert} from 'react-native';
 import * as SQLite from 'expo-sqlite';
 import HRtag from "../components/HRtag";
 import {COLORS} from "../assets/defaults/settingStyles";
@@ -23,6 +23,10 @@ const Meditionstyle = () => {
         // return () => is_mounted = false
     }, []);
 
+    const onPress = () => {
+        Alert.alert('pressed')
+    }
+
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: COLORS.white}}>
             <View style={styles.parent}>
@@ -31,6 +35,24 @@ const Meditionstyle = () => {
                     Establece la medición de la bobina incluyendo o no el mandríl o modifica sus valores.
                 </Text>
                 <HRtag/>
+                {/*button CREATE register*/}
+                <View style={{
+                    backgroundColor: COLORS.colorSupportfor,
+                    marginBottom: 10,
+                    padding: 10
+                }}>
+                    <TouchableHighlight onPress={onPress}>
+                        <View style={{
+                            alignItems: "center",
+                            backgroundColor: "#DDDDDD",
+                            padding: 10
+                        }}>
+                            <Text>Touch Here</Text>
+                        </View>
+                    </TouchableHighlight>
+                </View>
+
+                {/*----------*/}
                 {
                     items ?
                         items.map((item, index) => {
@@ -47,8 +69,8 @@ const Meditionstyle = () => {
         </SafeAreaView>
     )
 };
-const styles= StyleSheet.create({
-    parent:{
+const styles = StyleSheet.create({
+    parent: {
         padding: 10,
 
     },
@@ -59,7 +81,7 @@ const styles= StyleSheet.create({
         textTransform: 'capitalize',
         color: COLORS.primary
     },
-    parraf:{
+    parraf: {
         color: COLORS.white,
         padding: 10,
         backgroundColor: COLORS.primary + '95',
