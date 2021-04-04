@@ -24,7 +24,7 @@ const IndividualCalculation = () => {
     const [selectedKBA, setSelectedKBA] = useState();
     return (
         <SafeAreaView style={{flex: 1}}>
-            <ImageBackground source={require('../assets/images/abstract1.jpg')} style={styles.backg}>
+            <ImageBackground source={require('../assets/images/orangegradient.jpg')} style={styles.backg}>
                 <ScrollView>
                     <View style={styles.contPrinc}>
                         {/*CALCULO KG PRODUCCIÓN*/}

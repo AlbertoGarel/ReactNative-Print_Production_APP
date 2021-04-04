@@ -5,7 +5,7 @@ import Footer from '../components/onboardingComponents/FooterOnboarding';
 import Page from '../components/onboardingComponents/Page';
 import {useNavigation} from '@react-navigation/native';
 
-const Onboarding = () => {
+const Onboarding = ({initialpage}) => {
     const navigation = useNavigation();
 
     const pagerRef = useRef(null);
@@ -33,7 +33,7 @@ const Onboarding = () => {
                     hidden={true}
                 />
                 <ViewPager style={{flex: 1}}
-                           initialPage={0}
+                           initialPage={initialpage}
                            ref={pagerRef}
                            scrollEnabled={true}
                            orientation={"horizontal"}

@@ -1,5 +1,5 @@
 import React from 'react';
-import {TouchableOpacity, SafeAreaView, View, Text, ScrollView, StyleSheet, StatusBar, Vibration} from "react-native";
+import {TouchableOpacity, SafeAreaView, View, Text, ScrollView, StyleSheet, StatusBar, Vibration, Alert} from "react-native";
 import {NavigationContainer, useNavigation} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
@@ -19,6 +19,12 @@ import SettingsProductionScreen from "./screens/productionScreens/SettingsProduc
 import {Platform} from 'react-native';
 import DataBaseScreen from "./screens/DataBaseScreen";
 // paddingTop: Constants.statusBarHeight
+/**
+ *  Optimize memory usage and performance
+ * */
+import {enableScreens} from 'react-native-screens';
+
+enableScreens();
 
 const Tab = createBottomTabNavigator();
 
@@ -69,6 +75,7 @@ const Routes = ({navigation}) => {
                 <Tab.Screen
                     name="HomeStack"
                     component={HomeStack}
+                    // children={()=><HomeStack initialpage={2}/>}
                     options={{
                         tabBarLabel: 'Home',
                         tabBarIcon: ({color = 'red', size = 12}) => (

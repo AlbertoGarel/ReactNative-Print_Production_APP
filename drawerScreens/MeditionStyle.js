@@ -1,91 +1,64 @@
-import React from 'react';
-import {SafeAreaView, View, StyleSheet, Text, TouchableHighlight, Alert} from 'react-native';
+import React, {useState} from 'react';
+import {SafeAreaView, View, StyleSheet, Text, TouchableHighlight, Alert, ImageBackground} from 'react-native';
 import * as SQLite from 'expo-sqlite';
 import HRtag from "../components/HRtag";
 import {COLORS} from "../assets/defaults/settingStyles";
+import HeaderCommonDrawer from "./commonComponentsDrawer/HeaderCommonDrawer";
+import LargeButtonNew from "./commonComponentsDrawer/LargeButtonNew";
+import Tables from "./commonComponentsDrawer/Tables";
+import PaginationScreen from "./PaginationScreen";
+import {
+    medition_style_table_ALL
+} from '../dbCRUD/actionsSQL';
 
-const Meditionstyle = () => {
-    const db = SQLite.openDatabase('bobinas.db');
+const Meditionstyle = ({props}) => {
 
-    const [items, setItems] = React.useState(null);
+    const [modal, setModal] = useState(false)
 
-    React.useEffect(() => {
-        // let is_mounted = true;
-        // if (is_mounted) {
-        db.transaction(tx => {
-            tx.executeSql(
-                `select * from medition_style_table;`,
-                [],
-                (_, {rows: {_array}}) => setItems(_array)
-            );
-        });
-        // }
-        // return () => is_mounted = false
-    }, []);
-
-    const onPress = () => {
-        Alert.alert('pressed')
+    const _onPress = () => {
+        // Alert.alert('pressed')
+        if (!modal) {
+            setModal(true)
+        } else {
+            setModal(false)
+        }
     }
 
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: COLORS.white}}>
-            <View style={styles.parent}>
-                <Text style={styles.title}>Estilo de Medición</Text>
-                <Text style={styles.parraf}>
-                    Establece la medición de la bobina incluyendo o no el mandríl o modifica sus valores.
-                </Text>
-                <HRtag/>
-                {/*button CREATE register*/}
-                <View style={{
-                    backgroundColor: COLORS.colorSupportfor,
-                    marginBottom: 10,
-                    padding: 10
-                }}>
-                    <TouchableHighlight onPress={onPress}>
-                        <View style={{
-                            alignItems: "center",
-                            backgroundColor: "#DDDDDD",
-                            padding: 10
-                        }}>
-                            <Text>Touch Here</Text>
-                        </View>
-                    </TouchableHighlight>
+            <ImageBackground source={require('../assets/images/orangegradient.jpg')} style={styles.image}>
+                <View style={styles.parent}>
+                    <HeaderCommonDrawer
+                        headerTitle={props.headerTitle}
+                        headerParagraph={props.headerParagraph}
+                    />
+                    <LargeButtonNew
+                        textButton={props.textButton}
+                        _onPress={_onPress}
+                        disable={props.disable}
+                    />
+                    <Tables
+                        request={props.requestDB}
+                        _onPress={_onPress}
+                        modal={modal}
+                        disable={props.disable}
+                    />
                 </View>
-
-                {/*----------*/}
-                {
-                    items ?
-                        items.map((item, index) => {
-                            return (
-                                <Text key={index}>{
-                                    item.medition_type
-                                }</Text>
-                            )
-                        })
-                        :
-                        <Text>never</Text>
-                }
-            </View>
+            </ImageBackground>
         </SafeAreaView>
     )
 };
 const styles = StyleSheet.create({
     parent: {
-        padding: 10,
+        paddingTop: 0,
+        paddingLeft: 10,
+        paddingRight: 10,
+        paddingBottom: 10,
 
     },
-    title: {
-        fontFamily: 'Anton',
-        fontSize: 30,
-        alignSelf: 'flex-start',
-        textTransform: 'capitalize',
-        color: COLORS.primary
-    },
-    parraf: {
-        color: COLORS.white,
-        padding: 10,
-        backgroundColor: COLORS.primary + '95',
-        borderRadius: 5
+    image: {
+        flex: 1,
+        resizeMode: 'cover',
     },
 })
 export default Meditionstyle;

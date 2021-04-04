@@ -35,7 +35,8 @@ const COLORS = {
     success: "#5e8531",
     failed: "#853134",
     warning: "#e78c12",
-    info: "#6594c1"
+    info: "#6594c1",
+    dimgrey: '#696969'
 }
 const GRADIENT_COLORS = {
     primary: ["#FFF", "#BBDFF8"]

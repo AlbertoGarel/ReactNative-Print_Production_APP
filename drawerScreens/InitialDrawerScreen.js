@@ -1,13 +1,15 @@
 import React from 'react';
-import {SafeAreaView, View, StyleSheet, Text} from 'react-native';
+import {SafeAreaView, View, StyleSheet, Text, TouchableOpacity, Alert, TouchableHighlight} from 'react-native';
 import {Fontisto as Icon} from "@expo/vector-icons";
 import BgComponent from "../components/BackgroundComponent/BgComponent";
 import {elephant, semicircle2} from "../assets/svg/svgContents";
 import SvgComponent from "../components/SvgComponent";
 import {COLORS} from "../assets/defaults/settingStyles";
 import HomeHeader from "../components/headers/HomeHeader";
+import { DrawerActions } from '@react-navigation/native';
+import LargeButtonNew from "./commonComponentsDrawer/LargeButtonNew";
 
-const InitialDrawerScreen = () => {
+const InitialDrawerScreen = ({navigation}) => {
     //BACKGROUND PROP CONST
     const optionsSVG = {
         svgData: semicircle2, svgWidth: '120%', svgHeight: '110%'
@@ -20,7 +22,7 @@ const InitialDrawerScreen = () => {
         svgData: elephant, svgWidth: '90%', svgHeight: '90%'
     };
     const optionsStyleContSVGimage = {
-        width: '100%', height: "100%", top: 0, right: 0
+        width: '100%', height: "100%", top: 90, right: 0
     };
     const number = 100;
 
@@ -30,6 +32,10 @@ const InitialDrawerScreen = () => {
                 svgOptions={optionsSVG}
                 styleOptions={optionsStyleContSVG}
             />
+            <BgComponent
+                svgOptions={optionsSVGimage}
+                styleOptions={optionsStyleContSVGimage}
+            />
             <HomeHeader
                 textprops={{color: COLORS.white, marginTop: 15}}
                 imageBg={COLORS.white}
@@ -38,23 +44,14 @@ const InitialDrawerScreen = () => {
                 text={'Modifica los datos de las tablas para realizar operaciones y define autopasters, gramajes, valores varios y maś....'}
             />
             <View style={styles.parentCont}>
-                <View style={styles.contExplain}>
-                    <Icon name={'angle-dobule-left'} size={29} color={COLORS.primary}
+                <TouchableOpacity style={[styles.contExplain,{elevation: 12}]} onPress={()=>navigation.dispatch(DrawerActions.toggleDrawer())}>
+                    <Icon name={'angle-dobule-right'} size={29} color={COLORS.primary}
                           style={styles.ico}
                     />
                     <Text style={styles.explain}>
                         Arrastra para abrir el menú
                     </Text>
-                </View>
-                    {/*<SvgComponent*/}
-                    {/*    svgData={elephant}*/}
-                    {/*    svgWidth={'90%'}*/}
-                    {/*    svgHeight={'90%'}*/}
-                    {/*/>*/}
-                <BgComponent
-                    svgOptions={optionsSVGimage}
-                    styleOptions={optionsStyleContSVGimage}
-                />
+                </TouchableOpacity>
             </View>
         </SafeAreaView>
     )
