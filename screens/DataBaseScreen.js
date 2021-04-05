@@ -105,10 +105,11 @@ const DataBaseScreen = () => {
 
     const option_edit = {
         drawerIcon: () => <Icon name={'edit-3'} size={15} color={COLORS.primary}/>,
-    }
+    };
+
     const option_vis = {
         drawerIcon: () => <Icon name={'eye'} size={15} color={COLORS.primary}/>,
-    }
+    };
 
     return (
         <SafeAreaView style={{flex: 1}}>
@@ -146,6 +147,6 @@ const DataBaseScreen = () => {
             </View>
         </SafeAreaView>
     )
-}
+};
 
 export default DataBaseScreen;

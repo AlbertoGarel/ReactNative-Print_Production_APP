@@ -33,7 +33,6 @@ const Routes = ({navigation}) => {
     const buttonCreateTabNabStyle = () => {
 
     }
-
     const bannerError = () => {
         console.log("An error");
         return;
@@ -70,7 +69,7 @@ const Routes = ({navigation}) => {
                     activeTintColor: "#FF8000",
                     // activeBackgroundColor: "#feb72b",
                     inactiveTintColor: "#C2C2C2",
-                    // inactiveBackgroundColor: "#527318"
+                    // inactiveBackgroundColor: "#527318",
                 }}>
                 <Tab.Screen
                     name="HomeStack"

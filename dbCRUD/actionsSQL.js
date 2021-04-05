@@ -30,13 +30,22 @@ export async function openDatabase(pathToDatabaseFile: fileDB2): SQLite.WebSQLDa
 }
 
 /**
- *  MEDITION_STYLE_TABLE ALL
+ *  MEDITION_STYLE
  */
 export const medition_style_table_ALL =
     "SELECT medition_id AS 'id', " +
     "medition_type AS 'Tipo De Medición', " +
     "medition_value AS 'Valor', " +
     "gramaje_value AS 'Gramaje' " +
+    "FROM medition_style_table, gramaje_table " +
+    "WHERE gramaje_fk = gramaje_id " +
+    "ORDER BY medition_id ASC"
+;
+export const picker_medition_style =
+    "SELECT medition_id, " +
+    "medition_type, " +
+    "medition_value, " +
+    "gramaje_value " +
     "FROM medition_style_table, gramaje_table " +
     "WHERE gramaje_fk = gramaje_id " +
     "ORDER BY medition_id ASC"

@@ -12,13 +12,14 @@ const CustomTextInput = ({
                              text,
                              type,
                              maxLength,
-                             noEditable
+                             noEditable,
+    styled
                          }) => {
 
     return (
         // <View style={styles.container}>
 
-        <View style={styles.SectionStyle}>
+        <View style={[styles.SectionStyle, styled ? styled : null]}>
             {/*<Image source={{*/}
             {/*    uri: 'https://thumbs.dreamstime.com/z/icono-plano-de-la-cinta-m%C3%A9trica-79612608.jpg'*/}
             {/*}}*/}

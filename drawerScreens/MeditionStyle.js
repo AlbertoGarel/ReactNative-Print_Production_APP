@@ -22,7 +22,7 @@ const Meditionstyle = ({props}) => {
         } else {
             setModal(false)
         }
-    }
+    };
 
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: COLORS.white}}>
@@ -48,6 +48,7 @@ const Meditionstyle = ({props}) => {
         </SafeAreaView>
     )
 };
+
 const styles = StyleSheet.create({
     parent: {
         paddingTop: 0,
@@ -60,5 +61,6 @@ const styles = StyleSheet.create({
         flex: 1,
         resizeMode: 'cover',
     },
-})
+});
+
 export default Meditionstyle;
