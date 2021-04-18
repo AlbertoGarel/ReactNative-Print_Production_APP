@@ -12,6 +12,7 @@
     "@react-native-async-storage/async-storage": "^1.14.1",
     "@react-native-community/masked-view": "0.1.10",
     "@react-native-community/viewpager": "4.2.0",
+    "@react-native-picker/picker": "^1.14.0",
     "@react-navigation/bottom-tabs": "^5.11.8",
     "@react-navigation/native": "^5.9.3",
     "@react-navigation/stack": "^5.14.2",
@@ -23,10 +24,12 @@
     "expo-linear-gradient": "~8.4.0",
     "expo-sqlite": "~8.5.0",
     "expo-status-bar": "~1.0.3",
+    "formik": "^2.2.6",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "react-native": "https://github.com/expo/react-native/archive/sdk-40.0.1.tar.gz",
     "react-native-action-button": "^2.8.5",
+    "react-native-easy-toast": "^2.0.0",
     "react-native-gesture-handler": "~1.8.0",
     "react-native-image-gallery": "^2.1.5",
     "react-native-reanimated": "~1.13.0",
@@ -37,7 +40,8 @@
     "react-native-switch-selector": "^2.1.4",
     "react-native-table-component": "^1.2.1",
     "react-native-web": "~0.13.12",
-    "react-navigation-stack": "^2.10.4"
+    "react-navigation-stack": "^2.10.4",
+    "yup": "^0.32.9"
   },
   "devDependencies": {
     "@babel/core": "~7.9.0",

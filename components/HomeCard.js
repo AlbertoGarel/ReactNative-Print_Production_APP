@@ -44,8 +44,12 @@ const HomeCard = ({
                 flexDirection: 'column',
                 justifyContent: 'center',
                 alignItems: 'center',
-                minWidth: 140,
-                minHeight: 140
+                flex: 1,
+                width: '90%',
+                height: '90%'
+                // minWidth: 140,
+                // minHeight: 140
+
             }}
             onPress={() => actionHandler(torender)}
         >
@@ -104,7 +108,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'transparent',
     },
     title: {
-        fontSize: 18,
+        fontSize: 17,
         textAlign: 'center'
     },
     content: {

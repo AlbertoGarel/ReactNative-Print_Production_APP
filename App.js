@@ -1,12 +1,14 @@
 import 'react-native-gesture-handler';
 import {StatusBar} from 'expo-status-bar';
 import React, {useState, useEffect} from 'react';
-import {StyleSheet, Text, View, Alert} from 'react-native';
+import {StyleSheet, Text, View, Alert, ImageBackground} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import Routes from "./Routes";
 import SplashScreen from "./screens/SplashScreen";
 import * as SQLite from 'expo-sqlite';
-import {openDatabase} from './dbCRUD/actionsSQL'
+import {openDatabase} from './dbCRUD/actionsSQL';
+import Toast from "react-native-easy-toast";
+import ToastMesages from "./components/ToastMessages";
 
 // const db = SQLite.openDatabase();
 
@@ -16,8 +18,9 @@ function App() {
 
     useEffect(() => {
         openDatabase()
-            .then(response => Alert.alert('BBD is ok'))
-            .catch(error => Alert.alert('ERROR EN DB'))
+            // .then(response => Alert.alert('BBD is ok'))
+            .then(response => showToast('Loading...'))
+            .catch(error => showToast('ERROR EN DB'))
     }, []);
 
     useEffect(() => {
@@ -25,6 +28,11 @@ function App() {
             setLoadScreen(false)
         }, 4000);
     });
+
+    let toastRef;
+    const showToast = (message) => {
+        toastRef.show(message);
+    }
 
     return (
         <NavigationContainer>
@@ -34,6 +42,16 @@ function App() {
                     :
                     <Routes/>
             }
+            <ToastMesages
+                _ref={(toast) => toastRef = toast}
+                _style={{backgroundColor: '#FFFFFF'}}
+                _position='bottom'
+                _positionValue={200}
+                _fadeInDuration={150}
+                _fadeOutDuration={4000}
+                _opacity={1}
+                _textStyle={{color: '#000000', fontFamily: 'Anton'}}
+            />
         </NavigationContainer>
     );
 }

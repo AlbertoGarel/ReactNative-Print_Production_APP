@@ -1,33 +1,84 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
     SafeAreaView,
     View,
     Text,
     StyleSheet,
     TouchableOpacity,
-    Alert,
-    ScrollView,
     Picker,
-    ImageBackground
+    ImageBackground,
 } from 'react-native';
 import CustomTextInput from "../components/form/CustomTextInput";
-import {radio, peso, deleteAll} from '../assets/svg/svgContents';
+import {radio, peso, tirada2SVG, edicionesSVG, productoSVG} from '../assets/svg/svgContents';
 import SvgComponent from "../components/SvgComponent";
-import {COLORS, GRADIENT_COLORS} from "../assets/defaults/settingStyles";
+import {COLORS} from "../assets/defaults/settingStyles";
 import MultipleSwitchSelector from "../components/MultipleSwitchSelector";
-import SwitchSelector from "react-native-switch-selector";
 import * as SQLite from "expo-sqlite";
-import {picker_medition_style} from '../dbCRUD/actionsSQL';
+import {picker_medition_style, coeficienteSearchValue, picker_pagination, picker_producto} from '../dbCRUD/actionsSQL';
+import {Formik} from 'formik';
+import * as Yup from 'yup';
+import ResetButtonForm from "../components/form/ResetButtonForm";
+import ToastMesages from "../components/ToastMessages";
+
 
 const IndividualCalculation = () => {
     const db = SQLite.openDatabase('bobinas.db');
+    const elementPrevProdctionformikRef = useRef();
+    const tiradaRef = useRef();
+    const EdicionesRef = useRef();
+    const meditionStyleRef = useRef();
+    const elementCalcBobinaFormikRef = useRef();
+    const inputWeightRef = useRef();
+    const inputRadioRef = useRef();
+    const elementCalTotalproductionFormikRef = useRef();
+    const paginationRef = useRef();
+    const ProductoRef = useRef();
+    const inputTbrutaRef = useRef();
+
+    let renderedfunction = '';
 
     const result = 0;
     const brutoResult = 0;
     const productResult = 500;
-    const [measuramentDataDB, getmMeasurementDataDB] = useState([]);
-    const [selectedMeasurementMetod, setMeasurementMetod] = useState([]);
-    const [selectedKBA, setSelectedKBA] = useState();
+    const [measuramentDataDB, getMeasurementDataDB] = useState([]);
+
+    // VALUES OF elementPrevProdction()
+    const [selectedTirada, getselectedTirada] = useState('');
+    const [selectedEditions, getselectedEditions] = useState('');
+    const [selectedMeasurementMetodID, setMeasurementMetodID] = useState('');
+    const [selectedValueMeasurementMetod, getValueMeasurementMetod] = useState();
+
+    //VALUES of elementCalcBobina()
+    const [selectedInputWeigth, getSelectedInputWeigth] = useState('');
+    const [selectedInputRadio, getSelectedInputRadio] = useState('');
+    const [resultElementCalcBobina, setResultElementCalcBobina] = useState(0);
+
+    //elementCalcBobina()
+    const coeficienteSearch = (val) => {
+        const round = Math.round(val)
+        db.transaction(tx => {
+            tx.executeSql(
+                coeficienteSearchValue,
+                [round],
+                (_, {rows: {_array}}) => {
+                    if (_array.length > 0) {
+                        getSelectedInputRadio(_array[0].coeficiente_value);
+                    } else {
+                        console.log('(elementCalcBobina)Error al conectar base de datos en IndividualCalculation Component');
+                    }
+                }
+            );
+        });
+    };
+    //elementCalTotalproduction()
+    const [paginacionDataDB, getPaginationDataDB] = useState([]);
+    const [selectedPaginationID, getSelectedPaginationID] = useState('');
+    const [selectedValuePaginacion, getSelectedPagination] = useState('');
+    const [productoDataDB, getProductoDataDB] = useState([]);
+    const [selectedProductoID, getSelectedProductoID] = useState('');
+    const [selectedValueProduct, getSelectedvalueProduct] = useState('');
+    const [selectedTiradaBruta, getSelectedTiradaBruta] = useState('');
+    const [resultElementCalTotalproduction, setResultElementCalTotalproduction] = useState(0);
 
     const switchValues = [
         {label: 'Prevision de kilogramos', value: 1},
@@ -43,278 +94,679 @@ const IndividualCalculation = () => {
     useEffect(() => {
         let isActive = true;
 
+        //elementPrevProdction()
         db.transaction(tx => {
             tx.executeSql(
                 picker_medition_style,
                 [],
                 (_, {rows: {_array}}) => {
                     if (_array.length > 0) {
-                        getmMeasurementDataDB(_array);
-                        console.log(_array)
+                        getMeasurementDataDB(_array);
                     } else {
-                        console.log('Erro al conectar base de datos en IndividualCalculation Component')
+                        console.log('Error al conectar base de datos en IndividualCalculation Component');
                     }
                 }
             );
         });
+        //elementCalTotalproduction() pagination_table
+        db.transaction(tx => {
+            tx.executeSql(
+                picker_pagination,
+                [],
+                (_, {rows: {_array}}) => {
+                    if (_array.length > 0) {
+                        getPaginationDataDB(_array);
+                    } else {
+                        console.log('Error al conectar base de datos en IndividualCalculation Component');
+                    }
+                }
+            );
+        });
+        //elementCalTotalproduction() producto_table
+        db.transaction(tx => {
+            tx.executeSql(
+                picker_producto,
+                [],
+                (_, {rows: {_array}}) => {
+                    if (_array.length > 0) {
+                        getProductoDataDB(_array);
+                        console.log('producto', _array)
+                    } else {
+                        console.log('(Producto_table) Error al conectar base de datos en IndividualCalculation Component');
+                    }
+                }
+            );
+        });
+
 
         return () => {
             isActive = false;
         };
     }, []);
 
-    const elementPrevProdction = () => {
-        return (
-            <>
-                <View style={styles.contTitle}>
-                    <Text style={styles.titles}>TOTAL KG PRODUCCIÓN</Text>
-                </View>
-                <CustomTextInput
-                    svgData={peso}
-                    svgWidth={50}
-                    svgHeight={50}
-                    placeholder={'Número de ejemplares...'}
-                    text={'Tirada prevista'}
-                    type={'numeric'}
-                    maxLength={4}
-                />
-                <CustomTextInput
-                    svgData={peso}
-                    svgWidth={50}
-                    svgHeight={50}
-                    placeholder={'Número de ediciones...'}
-                    text={'Ediciones'}
-                    type={'numeric'}
-                    maxLength={4}
-                    styled={{marginBottom: 0}}
-                />
-                <Text style={{fontSize: 12, color: 'red', marginLeft: 20, margin: 0}}>* +500 ejemplares por
-                    tirada</Text>
-                <View style={{padding: 10}}>
-                    <View style={{
-                        backgroundColor: COLORS.white,
-                        width: '100%',
-                        height: 60,
-                        padding: 5,
-                        borderRadius: 5,
-                        flexDirection: 'row',
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                    }}>
-                        <View style={styles.IconStyle}>
-                            <SvgComponent
-                                svgData={radio}
-                                svgWidth={50}
-                                svgHeight={50}
-                            />
-                        </View>
-                        <View style={{flex: 1, paddingLeft: 10}}>
-                            <Picker
-                                mode={'dropdown'}
-                                selectedValue={selectedMeasurementMetod}
-                                onValueChange={(itemValue, itemIndex) =>
-                                    setMeasurementMetod(itemValue)
-                                }
-                            >
-                                {
-                                    measuramentDataDB.length > 0 ?
-                                        measuramentDataDB.map(item =>{
-                                          return <Picker.Item
-                                              label={'medición ' + item.medition_type + ' / ' + item.gramaje_value + 'g.'}
-                                                  value={item.medition_value}/>
-                                        })
-                                    :
-                                        <Picker.Item label="No existen datos" value={null}/>
-                                }
-                            </Picker>
-                        </View>
-                    </View>
-                </View>
-                <TouchableOpacity
-                    style={[styles.touchable, {alignSelf: 'center', margin: 5}]}
-                    onPress={() => Alert.alert('pressed...')}
-                    title="CALCULAR"
-                    color="#841584"
-                    accessibilityLabel="calcular resultado de bobina"
-                >
-                    <Text style={{color: COLORS.white, fontFamily: 'Anton', fontSize: 20}}>CALCULAR</Text>
-                </TouchableOpacity>
-                <View style={styles.results}>
-                    <View
-                        style={{
-                            width: 150,
-                            height: 50,
-                            backgroundColor: COLORS.white,
-                            borderRadius: 5,
-                            padding: 10,
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            flexDirection: 'row'
-                        }}
-                    >
-                        <Text style={{fontSize: 20, color: COLORS.primary}}>
-                            Entera:
-                        </Text>
-                        <Text style={{fontSize: 20}}>
-                            {productResult > 0 ? productResult + ' Kg' : 0 + ' Kg'}
-                        </Text>
-                    </View>
-                    <View
-                        style={{
-                            width: 150,
-                            height: 50,
-                            backgroundColor: COLORS.white,
-                            borderRadius: 5,
-                            padding: 10,
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            flexDirection: 'row'
-                        }}
-                    >
-                        <Text style={{fontSize: 20, color: COLORS.primary}}>
-                            Media:
-                        </Text>
-                        <Text style={{fontSize: 20}}>
-                            {productResult > 0 ? (productResult / 2) + ' Kg' : 0 + ' Kg'}
-                        </Text>
-                    </View>
-                </View></>
-        );
+    //RESET BUTTON
+    const resetState_elementPrevProdction = () => {
+        switch (switchValue) {
+            case 1://elementPrevProdction()
+                //reset states
+                getselectedTirada('');
+                getselectedEditions('');
+                getValueMeasurementMetod(0);
+                //reset to initial values
+                elementPrevProdctionformikRef.current?.resetForm();
+                //clear ref inputs
+                tiradaRef.current.clear();
+                EdicionesRef.current.clear();
+                setMeasurementMetodID(0)//empty for error display
+                // getValueMeasurementMetod(0)
+                meditionStyleRef.current.value = 0;
+                // console.log(meditionStyleRef.current.value)
+                break;
+            case 2:
+                getSelectedInputWeigth('');
+                getSelectedInputRadio('');
+                setResultElementCalcBobina(0);
+                elementCalcBobinaFormikRef.current?.resetForm();
+                inputWeightRef.current.clear();
+                inputRadioRef.current.clear();
+                break;
+            case 3:
+                getSelectedPaginationID(0);
+                getSelectedProductoID(0);
+                getSelectedTiradaBruta('');
+                setResultElementCalTotalproduction(0);
+                elementCalTotalproductionFormikRef.current?.resetForm();
+                inputTbrutaRef.current.clear();
+                break;
+            default:
+                return null;
+        }
     };
 
-    const elementCalcBobina = (result) => {
+    //SCHEMAS
+    const SchemaElementPrevProduction = Yup.object().shape({
+        tirada: Yup.number()
+            .min(0, 'Too Short!')
+            .max(100000, 'Too Long!')
+            .required('Required'),
+        editions: Yup.number()
+            .min(1, 'Too Short!')
+            .max(90, 'Too Long!')
+            .required('Required'),
+        meditionType: Yup.number()
+            .min(0, 'Select a value')
+            .required('Required'),
+    });
+
+    const SchemaElementCalcBobina = Yup.object().shape({
+        inputWeigth: Yup.number()
+            .min(1, 'too Short!')
+            .max(10000, 'Too Long!')
+            .required('required'),
+        inputRadio: Yup.number()
+            .min(1, 'too Short!')
+            .max(1000, 'Too Long!')
+            .required('required'),
+    });
+    const SchemaElementCalTotalproduction = Yup.object().shape({
+        inputTirBruta: Yup.number()
+            .min(1, 'Too Short!')
+            .max(100000, 'Too Long!')
+            .required('-- Requerido --'),
+        pickerPagination: Yup.number()
+            .min(0, 'Select a value')
+            .required('-- requerido --'),
+        pickerProducto: Yup.number()
+            .min(0, 'Select a value')
+            .required('-- requerido --'),
+    })
+
+    let toastRef;
+    const showToast = (message) => {
+        toastRef.show(message);
+    }
+
+    const elementPrevProdction = () => {
+        renderedfunction = 'elementPrevProdction';
         return (
             <>
                 <View style={styles.contTitle}>
-                    <Text style={styles.titles}>BOBINA</Text>
+                    <Text style={styles.titles}>PREVISION KG PRODUCCIÓN</Text>
                 </View>
-                <CustomTextInput
-                    svgData={peso}
-                    svgWidth={50}
-                    svgHeight={50}
-                    placeholder={'Peso en kg...'}
-                    text={'Peso de la bobina completa:'}
-                    type={'numeric'}
-                    maxLength={4}
-                />
-                <CustomTextInput
-                    svgData={radio}
-                    svgWidth={50}
-                    svgHeight={50}
-                    placeholder={'Radio en cm...'}
-                    text={'Radio actual de la bobina:'}
-                    type={'numeric'}
-                    maxLength={4}
-                />
-                <View style={styles.results}>
-                    <TouchableOpacity
-                        style={styles.touchable}
-                        onPress={() => Alert.alert('pressed...')}
-                        title="CALCULAR"
-                        color="#841584"
-                        accessibilityLabel="calcular resultado de bobina"
-                    >
-                        <Text style={{color: COLORS.white, fontFamily: 'Anton', fontSize: 20}}>CALCULAR</Text>
-                    </TouchableOpacity>
-                    <View
-                        style={{
-                            width: 150,
-                            height: 50,
-                            backgroundColor: COLORS.white,
-                            borderRadius: 5,
-                            justifyContent: 'center',
-                            alignItems: 'center'
-                        }}
-                    >
-                        <Text style={{fontSize: 20}}>
-                            {result.length > 0 ? result : 0}
-                        </Text>
-                    </View>
-                </View>
+                <Formik
+                    innerRef={elementPrevProdctionformikRef}
+                    initialValues={{
+                        tirada: selectedTirada,
+                        editions: selectedEditions,
+                        meditionType: 0,
+                    }}
+                    validationSchema={SchemaElementPrevProduction}
+                    onSubmit={values => {
+                        getselectedTirada(parseInt(values.tirada));
+                        getselectedEditions(parseInt(values.editions));
+                        const measurementval = measuramentDataDB.filter(item => item.medition_id === values.meditionType);
+                        getValueMeasurementMetod(measurementval);
+                    }}
+                >
+                    {({
+                          handleChange,
+                          handleBlur,
+                          handleSubmit,
+                          values,
+                          errors,
+                          touched,
+                          isValid,
+                          setFieldValue,
+                          setFieldTouched
+                      }) => (
+                        <>
+                            <View style={{padding: 10}}>
+                                {(errors.meditionType && touched.meditionType) &&
+                                < Text style={{fontSize: 10, color: 'red'}}>{errors.meditionType}</Text>
+                                }
+                                <View style={{
+                                    backgroundColor: COLORS.white,
+                                    width: '100%',
+                                    height: 60,
+                                    padding: 5,
+                                    borderRadius: 5,
+                                    flexDirection: 'row',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    borderWidth: .5,
+                                    borderColor: COLORS.black,
+                                }}>
+                                    <View style={styles.IconStyle}>
+                                        <SvgComponent
+                                            svgData={radio}
+                                            svgWidth={45}
+                                            svgHeight={45}
+                                        />
+                                    </View>
+                                    <View style={{flex: 1, paddingLeft: 10}}>
+                                        <Picker
+                                            ref={meditionStyleRef}
+                                            style={{
+                                                borderWidth: .5,
+                                                borderColor: COLORS.black,
+                                            }}
+                                            name={'meditionType'}
+                                            itemStyle={{fontFamily: 'Anton'}}
+                                            mode={'dropdown'}
+                                            value={values.meditionType}
+                                            selectedValue={values.meditionType = selectedMeasurementMetodID}
+                                            onValueChange={(itemValue) => {
+                                                if (itemValue > 0) {
+                                                    console.log(itemValue)
+                                                    handleChange('meditionType')
+                                                    values.meditionType = selectedMeasurementMetodID
+                                                    setMeasurementMetodID(itemValue)
+                                                    setFieldTouched('meditionType', true)
+                                                    setFieldValue('meditionType', itemValue)
+                                                } else {
+                                                    showToast("Debes escoger una opción válida...")
+                                                }
+                                            }}
+                                        >
+                                            <Picker.Item label="Elige un tipo de medición" value={0}
+                                                         selected
+                                                         fontFamily={'Anton'}
+                                                         color={'red'}
+                                            />
+                                            {
+                                                measuramentDataDB.length > 0 ?
+                                                    measuramentDataDB.map((item, index) => {
+                                                        return <Picker.Item key={index}
+                                                                            label={'medición ' + item.medition_type + ' / ' + item.gramaje_value + 'g.'}
+                                                                            value={item.medition_id}/>
+                                                    })
+                                                    :
+                                                    <Picker.Item label="No existen datos" value={null}/>
+                                            }
+                                        </Picker>
+                                    </View>
+                                </View>
+                            </View>
+                            {(errors.tirada && touched.tirada) &&
+                            < Text style={{fontSize: 10, color: 'red', marginLeft: 10}}>{errors.tirada}</Text>
+                            }
+                            <CustomTextInput
+                                _ref={tiradaRef}
+                                svgData={tirada2SVG}
+                                svgWidth={50}
+                                svgHeight={50}
+                                placeholder={'Número de ejemplares...'}
+                                text={'Tirada prevista'}
+                                type={'numeric'}
+                                _name={'tirada'}
+                                _onChangeText={handleChange('tirada')}
+                                _onBlur={handleBlur('tirada')}
+                                value={values.tirada}
+                            />
+                            {(errors.editions && touched.editions) &&
+                            <Text style={{fontSize: 10, color: 'red', marginLeft: 10}}>{errors.editions}</Text>
+                            }
+                            <CustomTextInput
+                                _ref={EdicionesRef}
+                                svgData={edicionesSVG}
+                                svgWidth={50}
+                                svgHeight={50}
+                                placeholder={'Número de ediciones...'}
+                                text={'Ediciones'}
+                                type={'numeric'}
+                                styled={{marginBottom: 0}}
+                                _name={'editions'}
+                                _onChangeText={handleChange('editions')}
+                                _onBlur={handleBlur('editions')}
+                                value={values.editions}
+                            />
+                            <Text style={{fontSize: 12, color: 'red', marginLeft: 20, margin: 0}}>* +500 ejemplares por
+                                tirada</Text>
+                            <TouchableOpacity
+                                style={[styles.touchable, {alignSelf: 'center', margin: 5, opacity: !isValid ? .1 : 1}]}
+                                color="#841584"
+                                accessibilityLabel="calcular resultado de bobina"
+                                onPress={handleSubmit}
+                                title="Submit"
+                                disabled={!isValid}
+                            >
+                                <Text style={{color: COLORS.white, fontFamily: 'Anton', fontSize: 20}}>CALCULAR</Text>
+                            </TouchableOpacity>
+                            <View style={styles.results}>
+                                <View
+                                    style={{
+                                        width: 150,
+                                        height: 50,
+                                        backgroundColor: COLORS.white,
+                                        borderRadius: 5,
+                                        padding: 10,
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        flexDirection: 'row'
+                                    }}
+                                >
+                                    <Text style={{fontSize: 16, color: COLORS.primary}}>
+                                        Entera:
+                                    </Text>
+                                    <Text style={{fontSize: 16}}>
+                                        {selectedTirada &&
+                                        selectedEditions &&
+                                        selectedValueMeasurementMetod ?
+                                            Math.round((selectedTirada + (500 * selectedEditions)) * selectedValueMeasurementMetod[0].full_value)
+                                            :
+                                            0} Kg
+                                    </Text>
+                                </View>
+                                <View
+                                    style={{
+                                        width: 150,
+                                        height: 50,
+                                        backgroundColor: COLORS.white,
+                                        borderRadius: 5,
+                                        padding: 10,
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        flexDirection: 'row'
+                                    }}
+                                >
+                                    <Text style={{fontSize: 16, color: COLORS.primary}}>
+                                        Media:
+                                    </Text>
+                                    <Text style={{fontSize: 16}}>
+                                        {selectedTirada &&
+                                        selectedEditions &&
+                                        selectedValueMeasurementMetod ?
+                                            Math.round((selectedTirada + (500 * selectedEditions)) * selectedValueMeasurementMetod[0].media_value)
+                                            :
+                                            0} Kg
+                                    </Text>
+                                </View>
+                            </View>
+                        </>
+                    )}
+                </Formik>
             </>
         );
     };
 
-    const elementCalTotalproduction = (brutoResult) => {
+    const elementCalcBobina = () => {
         return (
             <>
                 <View style={styles.contTitle}>
-                    <Text style={styles.titles}>total producción</Text>
+                    <Text style={styles.titles}>RESTO DE BOBINA</Text>
                 </View>
-                <CustomTextInput
-                    svgData={peso}
-                    svgWidth={50}
-                    svgHeight={50}
-                    placeholder={'Ejemplares bruto...'}
-                    text={'Tirada bruta:'}
-                    type={'numeric'}
-                    maxLength={4}
-                />
-                <CustomTextInput
-                    svgData={peso}
-                    svgWidth={50}
-                    svgHeight={50}
-                    placeholder={'Paginación...'}
-                    text={'Paginación:'}
-                    type={'numeric'}
-                    maxLength={4}
-                />
-                <View style={{padding: 10}}>
-                    <View style={{
-                        backgroundColor: COLORS.white,
-                        width: '100%',
-                        height: 60,
-                        padding: 5,
-                        borderRadius: 5,
-                        flexDirection: 'row',
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                    }}>
-                        <View style={styles.IconStyle}>
-                            <SvgComponent
-                                svgData={radio}
-                                svgWidth={50}
-                                svgHeight={50}
-                            />
-                        </View>
-                        <View style={{flex: 1, paddingLeft: 10}}>
-                            <Picker
-                                selectedValue={selectedKBA}
-                                onValueChange={(itemValue, itemIndex) =>
-                                    setSelectedKBA(itemValue)
+                <Formik
+                    innerRef={elementCalcBobinaFormikRef}
+                    initialValues={{
+                        inputWeigth: '',
+                        inputRadio: ''
+                    }}
+                    validationSchema={SchemaElementCalcBobina}
+                    onSubmit={values => {
+                        getSelectedInputWeigth(parseInt(values.inputWeigth));
+                        coeficienteSearch(parseInt(values.inputRadio));
+                        setResultElementCalcBobina(parseInt(values.inputWeigth) * parseInt(values.inputRadio))
+                    }}
+                >
+                    {({
+                          handleChange,
+                          handleBlur,
+                          handleSubmit,
+                          values,
+                          errors,
+                          touched,
+                          isValid
+                      }) => (
+                        <>
+                            <View style={{paddingTop: 10}}>
+                                {(errors.inputWeigth && touched.inputWeigth) &&
+                                < Text style={{fontSize: 10, color: 'red', marginLeft: 10}}>{errors.inputWeigth}</Text>
                                 }
-                            >
-                                <Picker.Item label="Provincias" value="0.00225"/>
-                                <Picker.Item label="As" value="0.00242"/>
-                            </Picker>
-                        </View>
-                    </View>
+                                <CustomTextInput
+                                    _ref={inputWeightRef}
+                                    svgData={peso}
+                                    svgWidth={45}
+                                    svgHeight={45}
+                                    placeholder={'Peso en kg...'}
+                                    text={'Peso de la bobina completa:'}
+                                    type={'numeric'}
+                                    _name={'inputWeigth'}
+                                    _onChangeText={handleChange('inputWeigth')}
+                                    _onBlur={handleBlur('inputWeigth')}
+                                    value={values.inputWeigth}
+                                />
+                            </View>
+                            <View>
+                                {(errors.inputRadio && touched.inputRadio) &&
+                                < Text style={{fontSize: 10, color: 'red', marginLeft: 10}}>{errors.inputRadio}</Text>
+                                }
+                                <CustomTextInput
+                                    _ref={inputRadioRef}
+                                    svgData={radio}
+                                    svgWidth={45}
+                                    svgHeight={45}
+                                    placeholder={'Radio en cm...'}
+                                    text={'Radio actual de la bobina:'}
+                                    type={'numeric'}
+                                    _name={'inputRadio'}
+                                    _onChangeText={handleChange('inputRadio')}
+                                    _onBlur={handleBlur('inputRadio')}
+                                    value={values.inputRadio}
+                                />
+                            </View>
+                            <View style={styles.results}>
+                                <TouchableOpacity
+                                    style={[styles.touchable, {
+                                        alignSelf: 'center',
+                                        margin: 5,
+                                        opacity: !isValid ? .1 : 1
+                                    }]}
+                                    // onPress={() => coeficienteSearch(values.inputRadio)}
+                                    // onPress={() => Alert.alert(values.inputRadio)}
+                                    // title="CALCULAR"
+                                    color="#841584"
+                                    accessibilityLabel="calcular resultado de bobina"
+                                    onPress={handleSubmit}
+                                    title="Submit"
+                                    disabled={!isValid}
+                                >
+                                    <Text
+                                        style={{color: COLORS.white, fontFamily: 'Anton', fontSize: 20}}>CALCULAR</Text>
+                                </TouchableOpacity>
+                                <View
+                                    style={{
+                                        width: 150,
+                                        height: 50,
+                                        backgroundColor: COLORS.white,
+                                        borderRadius: 5,
+                                        justifyContent: 'center',
+                                        alignItems: 'center'
+                                    }}
+                                >
+                                    <Text style={{fontSize: 16}}>
+                                        {
+                                            !isNaN(resultElementCalcBobina) ?
+                                                Math.round(selectedInputRadio * selectedInputWeigth) + ' Kg'
+                                                :
+                                                'Error'
+                                        }
+                                    </Text>
+                                </View>
+                            </View>
+                        </>
+                    )}
+                </Formik>
+            </>
+        );
+    };
+
+    const elementCalTotalproduction = () => {
+        return (
+            <>
+                <View style={styles.contTitle}>
+                    <Text style={styles.titles}>total de producción</Text>
                 </View>
-                <View style={styles.results}>
-                    <TouchableOpacity
-                        style={styles.touchable}
-                        onPress={() => Alert.alert('pressed...')}
-                        title="CALCULAR"
-                        color="#841584"
-                        accessibilityLabel="calcular resultado de bobina"
-                    >
-                        <Text style={{color: COLORS.white, fontFamily: 'Anton', fontSize: 20}}>CALCULAR</Text>
-                    </TouchableOpacity>
-                    <View
-                        style={{
-                            width: 150,
-                            height: 50,
-                            backgroundColor: COLORS.white,
-                            borderRadius: 5,
-                            justifyContent: 'center',
-                            alignItems: 'center'
-                        }}
-                    >
-                        <Text style={{fontSize: 20}}>
-                            {brutoResult.length > 0 ? brutoResult : 0}
-                        </Text>
-                    </View>
-                </View>
+                <Formik
+                    innerRef={elementCalTotalproductionFormikRef}
+                    initialValues={{
+                        pickerPagination: 1,
+                        pickerProducto: 1,
+                        inputTirBruta: '',
+                    }}
+                    validationSchema={SchemaElementCalTotalproduction}
+                    onSubmit={values => {
+                        const valuePag = paginacionDataDB.filter(item => item.paginacion_id === values.pickerPagination);
+                        getSelectedPagination(parseInt(valuePag[0].paginacion_value));
+                        const valueProd = productoDataDB.filter(item => item.producto_id === values.pickerProducto);
+                        getSelectedvalueProduct(parseInt(valueProd[0].kba_value));
+                        getSelectedTiradaBruta(parseInt(values.inputTirBruta))
+                        console.log('pag ', valuePag[0].paginacion_value + '/ prod ' + valueProd[0].kba_value + ' / Tbruta ' + values.inputTirBruta)
+                        setResultElementCalTotalproduction(valuePag[0].paginacion_value * values.inputTirBruta * valueProd[0].kba_value)
+                    }}
+                >
+                    {({
+                          handleChange,
+                          handleBlur,
+                          handleSubmit,
+                          values,
+                          errors,
+                          touched,
+                          isValid,
+                          setFieldTouched,
+                          setFieldValue
+                      }) => (
+                        <>
+                            <View style={{paddingTop: 10, paddingLeft: 10, paddingRight: 10}}>
+                                {(errors.pickerPagination && touched.pickerPagination) &&
+                                < Text style={{
+                                    fontSize: 10,
+                                    color: 'red'
+                                }}>{errors.pickerPagination}</Text>
+                                }
+                                <View style={{
+                                    backgroundColor: COLORS.white,
+                                    width: '100%',
+                                    height: 60,
+                                    padding: 5,
+                                    borderRadius: 5,
+                                    flexDirection: 'row',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    borderWidth: .5,
+                                    borderColor: COLORS.black,
+                                }}>
+                                    <View style={styles.IconStyle}>
+                                        <SvgComponent
+                                            svgData={peso}
+                                            svgWidth={45}
+                                            svgHeight={45}
+                                        />
+                                    </View>
+                                    <View style={{flex: 1, paddingLeft: 10}}>
+                                        <Picker
+                                            ref={paginationRef}
+                                            style={{
+                                                borderWidth: .5,
+                                                borderColor: COLORS.black,
+                                            }}
+                                            name={'pickerPagination'}
+                                            itemStyle={{fontFamily: 'Anton'}}
+                                            mode={'dropdown'}
+                                            selectedValue={values.pickerPagination = selectedPaginationID}
+                                            onValueChange={(itemValue) => {
+                                                if (itemValue > 0) {
+                                                    console.log(itemValue)
+                                                    handleChange('pickerPagination')
+                                                    values.pickerPagination = selectedPaginationID
+                                                    getSelectedPaginationID(itemValue)
+                                                    setFieldTouched('pickerPagination', true)
+                                                    setFieldValue('pickerPagination', itemValue)
+                                                } else {
+                                                    showToast("Debes escoger una opción válida...")
+                                                }
+                                            }}
+
+                                        >
+                                            <Picker.Item label="Elige valor de paginación..." value={0}
+                                                         style={{fontFamily: 'Anton'}}
+                                                         selected
+                                            />
+                                            {paginacionDataDB.length > 0 ?
+                                                paginacionDataDB.map((item, index) => {
+                                                    return <Picker.Item key={index}
+                                                                        label={' ' + item.paginacion_value}
+                                                                        value={item.paginacion_id}/>
+                                                })
+                                                :
+                                                <Picker.Item label="No existen datos" value={null}/>
+                                            }
+                                        </Picker>
+                                    </View>
+                                </View>
+                            </View>
+                            <View style={{padding: 10}}>
+                                {(errors.pickerProducto && touched.pickerProducto) &&
+                                < Text
+                                    style={{fontSize: 10, color: 'red'}}>{errors.pickerProducto}</Text>
+                                }
+                                <View style={{
+                                    backgroundColor: COLORS.white,
+                                    width: '100%',
+                                    height: 60,
+                                    padding: 5,
+                                    borderRadius: 5,
+                                    flexDirection: 'row',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    borderWidth: .5,
+                                    borderColor: COLORS.black,
+                                }}>
+                                    <View style={styles.IconStyle}>
+                                        <SvgComponent
+                                            svgData={productoSVG}
+                                            svgWidth={45}
+                                            svgHeight={45}
+                                        />
+                                    </View>
+                                    <View style={{flex: 1, paddingLeft: 10}}>
+                                        <Picker
+                                            ref={ProductoRef}
+                                            style={{
+                                                borderWidth: .5,
+                                                borderColor: COLORS.black,
+                                            }}
+                                            name={'pickerProducto'}
+                                            itemStyle={{fontFamily: 'Anton'}}
+                                            mode={'dropdown'}
+                                            selectedValue={values.pickerProducto = selectedProductoID}
+                                            // selectedValue={selectedMeasurementMetod}
+                                            onValueChange={(itemValue) => {
+                                                if (itemValue > 0) {
+                                                    console.log(itemValue)
+                                                    handleChange('pickerProducto')
+                                                    values.pickerProducto = selectedProductoID
+                                                    getSelectedProductoID(itemValue)
+                                                    setFieldTouched('pickerProducto', true)
+                                                    setFieldValue('pickerProducto', itemValue)
+                                                } else {
+                                                    showToast("Debes escoger una opción válida...")
+                                                }
+                                            }}
+                                        >
+                                            <Picker.Item label="Elige un producto..." value={0}
+                                                         style={{fontFamily: 'Anton'}}
+                                                         selected
+                                            />
+                                            {productoDataDB.length > 0 ?
+                                                productoDataDB.map((item, index) => {
+                                                    return <Picker.Item key={index}
+                                                                        label={' ' + item.producto_name}
+                                                                        value={item.producto_id}/>
+                                                })
+                                                :
+                                                <Picker.Item label="No existen datos" value={null}/>
+                                            }
+                                        </Picker>
+                                    </View>
+                                </View>
+                            </View>
+                            <View>
+                                {(errors.inputTirBruta && touched.inputTirBruta) &&
+                                < Text
+                                    style={{fontSize: 10, color: 'red', marginLeft: 10}}>{errors.inputTirBruta}</Text>
+                                }
+                                <CustomTextInput
+                                    _ref={inputTbrutaRef}
+                                    svgData={tirada2SVG}
+                                    svgWidth={50}
+                                    svgHeight={50}
+                                    placeholder={'Ejemplares bruto...'}
+                                    text={'Tirada bruta:'}
+                                    type={'numeric'}
+                                    _name={'inputTirBruta'}
+                                    _onChangeText={handleChange('inputTirBruta')}
+                                    _onBlur={handleBlur('inputTirBruta')}
+                                    value={values.inputTirBruta}
+                                />
+                            </View>
+                            <View style={styles.results}>
+                                <TouchableOpacity
+                                    style={[styles.touchable, {
+                                        alignSelf: 'center',
+                                        margin: 5,
+                                        opacity: !isValid ? .1 : 1
+                                    }]}
+                                    color="#841584"
+                                    accessibilityLabel="calcular resultado de bobina"
+                                    onPress={handleSubmit}
+                                    title="Submit"
+                                    disabled={!isValid}
+                                >
+                                    <Text
+                                        style={{color: COLORS.white, fontFamily: 'Anton', fontSize: 20}}>CALCULAR</Text>
+                                </TouchableOpacity>
+                                <View
+                                    style={{
+                                        width: 150,
+                                        height: 50,
+                                        backgroundColor: COLORS.white,
+                                        borderRadius: 5,
+                                        justifyContent: 'center',
+                                        alignItems: 'center'
+                                    }}
+                                >
+                                    <Text style={{fontSize: 20}}>
+                                        {!isNaN(resultElementCalTotalproduction) ?
+                                            Math.round(resultElementCalTotalproduction) + ' Kg'
+                                            :
+                                            'Error'
+                                        }
+                                    </Text>
+                                </View>
+                            </View>
+                        </>
+                    )}
+                </Formik>
             </>
         );
     };
@@ -337,63 +789,30 @@ const IndividualCalculation = () => {
                     }
                     {
                         switchValue === 2 ?
-                            elementCalcBobina(result)
+                            elementCalcBobina()
                             :
                             null
                     }
                     {
                         switchValue === 3 ?
-                            elementCalTotalproduction(brutoResult)
+                            elementCalTotalproduction()
                             :
                             null
                     }
-                    <TouchableOpacity style={{
-                        borderRadius: 10,
-                        width: '50%',
-                        height: 70,
-                        backgroundColor: COLORS.whitesmoke,
-                        borderWidth: 2,
-                        borderColor: COLORS.whitesmoke,
-                        flexDirection: 'row',
-                        alignSelf: 'flex-end',
-                        marginRight: 20,
-                        marginTop: 50,
-                        shadowColor: COLORS.black,
-                        shadowOffset: {width: 0, height: 2},
-                        shadowOpacity: 0.8,
-                        shadowRadius: 10,
-                        elevation: 12,
-                    }}>
-                        <View style={{
-                            flex: 1,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            backgroundColor: COLORS.white,
-                            borderTopLeftRadius: 8,
-                            borderBottomLeftRadius: 8
-                        }}>
-                            <SvgComponent
-                                svgData={deleteAll}
-                                svgWidth={30}
-                                svgHeight={30}
-                            />
-                        </View>
-                        <View style={{
-                            flex: 3,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            backgroundColor: COLORS.whitesmoke,
-                            borderTopRightRadius: 10,
-                            borderBottomRightRadius: 10,
-                        }}>
-                            <Text style={{
-                                color: COLORS.secondary,
-                                fontSize: 13,
-                                textTransform: 'uppercase'
-                            }}>Limpiar entradas</Text>
-                        </View>
-                    </TouchableOpacity>
+                    <ResetButtonForm
+                        resetState_elementPrevProdction={resetState_elementPrevProdction}
+                    />
                 </View>
+                <ToastMesages
+                    _ref={(toast) => toastRef = toast}
+                    _style={{backgroundColor: '#FF0000'}}
+                    _position='bottom'
+                    _positionValue={400}
+                    _fadeInDuration={150}
+                    _fadeOutDuration={3000}
+                    _opacity={0.8}
+                    _textStyle={{color: '#FFFFFF', fontFamily: 'Anton'}}
+                />
             </ImageBackground>
         </SafeAreaView>
     )

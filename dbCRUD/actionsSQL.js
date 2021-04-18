@@ -35,7 +35,8 @@ export async function openDatabase(pathToDatabaseFile: fileDB2): SQLite.WebSQLDa
 export const medition_style_table_ALL =
     "SELECT medition_id AS 'id', " +
     "medition_type AS 'Tipo De Medición', " +
-    "medition_value AS 'Valor', " +
+    "full_value AS 'Valor entera', " +
+    "media_value AS 'Valor media', " +
     "gramaje_value AS 'Gramaje' " +
     "FROM medition_style_table, gramaje_table " +
     "WHERE gramaje_fk = gramaje_id " +
@@ -44,7 +45,8 @@ export const medition_style_table_ALL =
 export const picker_medition_style =
     "SELECT medition_id, " +
     "medition_type, " +
-    "medition_value, " +
+    "full_value, " +
+    "media_value, " +
     "gramaje_value " +
     "FROM medition_style_table, gramaje_table " +
     "WHERE gramaje_fk = gramaje_id " +
@@ -59,8 +61,13 @@ export const coeficiente_table_ALL =
     "FROM coeficiente_table " +
     "ORDER BY coeficiente_id ASC"
 ;
+export const coeficienteSearchValue =
+    "SELECT coeficiente_value " +
+    "FROM coeficiente_table " +
+    "WHERE coeficiente_id = ?"
+;
 /**
- *  COEFICIENTE_TABLE ALL
+ *  PAGINACION_TABLE ALL
  */
 export const pagination_table_ALL =
     "SELECT paginacion_id AS 'id', " +
@@ -68,6 +75,7 @@ export const pagination_table_ALL =
     "FROM paginacion_table " +
     "ORDER BY paginacion_id ASC"
 ;
+export const picker_pagination = "SELECT * FROM paginacion_table"
 /**
  *  GRAMAJE_TABLE ALL
  */
@@ -99,68 +107,73 @@ export const papel_comun_table_ALL =
  *  KBA_TABLE ALL
  */
 export const kba_table_ALL =
-    "SELECT kba_id AS 'id', " +
-    "kba_name AS 'Nombre', " +
-    "kba_value AS 'Valor', " +
-    "gramaje_fk AS 'Gramaje' " +
-    "FROM kba_table, gramaje_table " +
-    "WHERE gramaje_fk = gramaje_id " +
-    "ORDER BY kba_id ASC"
+    "SELECT kba_table.kba_id As 'id'," +
+    "kba_table.kba_name AS 'Nombre'," +
+    "kba_table.kba_value AS 'Valor'," +
+    "gramaje_table.gramaje_value As 'Gramaje' " +
+    "FROM kba_table " +
+    "LEFT JOIN gramaje_table " +
+    "ON gramaje_table.gramaje_id = kba_table.gramaje_fk " +
+    "ORDER BY kba_table.gramaje_fk ASC"
 ;
 /**
  *  AUTOPASTER_TABLE ALL
  */
 export const autopaster_table_ALL =
-    "SELECT autopaster_id AS 'id', " +
-    "name_autopaster AS 'Nombre', " +
-    "autopaster_prefered AS 'Preferencia de uso', " +
-    "linea_fk AS 'Nombre de Línea', " +
-    "media AS 'Tipo de Bobina' " +
-    "FROM autopaster_table, linea_produccion_table " +
-    "WHERE linea_fk = linea_id " +
-    "ORDER BY linea_fk ASC"
+    "SELECT autopaster_table.autopaster_id As 'id'," +
+    "autopaster_table.name_autopaster AS 'Nombre'," +
+    "autopaster_table.autopaster_prefered AS 'Preferencia de Uso'," +
+    "linea_produccion_table.linea_name AS 'Nombre de Línea'," +
+    "Case autopaster_table.media When 0 Then 'Entera' Else 'Media' End AS 'Tipo de Bobina' " +
+    "FROM autopaster_table " +
+    "LEFT JOIN linea_produccion_table " +
+    "ON linea_produccion_table.linea_id = autopaster_table.linea_fk " +
+    "ORDER BY autopaster_table.linea_fk ASC"
 ;
 /**
  *  PRODUCTO_TABLE ALL
  */
 export const producto_table_ALL =
-    "SELECT producto_id AS 'id', " +
-    "producto_name AS 'Nombre de Producto', " +
-    "cociente_total_fk AS 'Cociente', " +
-    "papel_comun_fk AS 'Propietario' " +
+    "SELECT producto_table.producto_id AS 'id'," +
+    "producto_table.producto_name AS 'Nombre'," +
+    "kba_table.kba_value AS 'Valor'," +
+    "papel_comun_table.papel_comun_name AS 'propietario bobina' " +
     "FROM producto_table " +
-    "INNER JOIN kba_table ON kba_table.kba_id = producto_table.cociente_total_fk " +
-    "INNER JOIN papel_comun_table ON papel_comun_table.papel_comun_id = producto_table.papel_comun_fk " +
-    "ORDER BY papel_comun_fk ASC"
+    "LEFT JOIN kba_table ON kba_table.kba_id = producto_table.cociente_total_fk " +
+    "LEFT JOIN papel_comun_table ON papel_comun_table.papel_comun_id = producto_table.papel_comun_fk;"
 ;
+export const picker_producto =
+    "SELECT producto_table.producto_id," +
+    "producto_table.producto_name," +
+    "kba_table.kba_value," +
+    "papel_comun_table.papel_comun_name " +
+    "FROM producto_table " +
+    "LEFT JOIN kba_table ON kba_table.kba_id = producto_table.cociente_total_fk " +
+    "LEFT JOIN papel_comun_table ON papel_comun_table.papel_comun_id = producto_table.papel_comun_fk;"
 /**
  *  BOBINA_TABLE ALL
  */
 export const bobina_table_ALL =
-    "SELECT codigo_bobina AS 'Código Bobina', " +
-    "peso_ini AS 'Peso Inicial', " +
-    "peso_actual AS 'Peso Actual', " +
-    "radio_actual AS 'Radio Actual', " +
-    "papel_comun_fk AS 'Propietario', " +
-    "gramaje_fk AS 'Gramaje', " +
-    "autopaster_fk AS 'Autopaster' " +
+    "SELECT bobina_table.codigo_bobina AS 'código bobina'," +
+    "autopaster_table.name_autopaster AS 'Autopaster'," +
+    "linea_produccion_table.linea_name AS 'línea'," +
+    "producto_table.producto_name 'Propietario'," +
+    "gramaje_table.gramaje_value AS 'Gramaje'," +
+    "bobina_table.peso_ini AS 'Pesoinicial'," +
+    "bobina_table.peso_actual AS 'peso Actual'," +
+    "bobina_table.radio_actual AS 'Radio' " +
     "FROM bobina_table " +
-    "INNER JOIN papel_comun_table ON papel_comun_table.papel_comun_id = bobina_table.papel_comun_fk " +
-    "INNER JOIN gramaje_table ON gramaje_table.gramaje_id = bobina_table.gramaje_fk " +
-    "INNER JOIN autopaster_table ON autopaster_table.autopaster_id = bobina_table.autopaster_fk " +
-    "ORDER BY papel_comun_fk ASC"
+    "LEFT JOIN autopaster_table " +
+    "ON autopaster_table.autopaster_id = bobina_table.autopaster_fk " +
+    "LEFT JOIN linea_produccion_table " +
+    "ON linea_produccion_table.linea_id = autopaster_table.linea_fk " +
+    "LEFT JOIN producto_table " +
+    "ON producto_table.producto_id = linea_produccion_table.linea_id " +
+    "LEFT JOIN gramaje_table " +
+    "ON gramaje_table.gramaje_id = bobina_table.gramaje_fk;"
 ;
 /**
  *  PRODUCCION_TABLE ALL
  */
-export const produccion_table_ALL =
-    "SELECT produccion_id AS 'id', " +
-    "product_id AS 'Producto', " +
-    "codigo_bobina_fk AS 'Código Bobina', " +
-    "ejemplares_tirada AS 'Tirada prevista', " +
-    "fecha_produccion AS 'Fecha' " +
-    "FROM produccion_table " +
-    "INNER JOIN producto_table ON producto_table.producto_id = produccion_table.produccion_id " +
-    "INNER JOIN bobina_table ON bobina_table.codigo_bobina = produccion_table.codigo_bobina_fk " +
-    "ORDER BY product_id ASC"
+export const produccion_table_ALL = "SELECT * FROM produccion_table "
 ;

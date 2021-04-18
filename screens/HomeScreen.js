@@ -17,7 +17,7 @@ import Caroussel from "../components/Caroussel";
 
 const HomeScreen = ({navigation}) => {
     //ICON SIZE
-    const iconSize = 60;
+    const iconSize = 40;
     //BACKGROUND PROP CONST
     const optionsSVG = {
         svgData: semicircle2, svgWidth: '120%', svgHeight: '110%'
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
         padding: 10,
         display: 'flex',
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
     }
 });
 export default HomeScreen;

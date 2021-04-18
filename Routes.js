@@ -23,6 +23,7 @@ import DataBaseScreen from "./screens/DataBaseScreen";
  *  Optimize memory usage and performance
  * */
 import {enableScreens} from 'react-native-screens';
+import SearchScreen from "./screens/SearchScreen";
 
 enableScreens();
 
@@ -40,7 +41,7 @@ const Routes = ({navigation}) => {
     return (
         <SafeAreaView style={{
             flex: 1, backgroundColor: 'transparent',
-            paddingTop: Platform.Version < 30 ? paddingTop : 0
+            // paddingTop: Platform.Version < 30 ? paddingTop : 0
         }}>
             <StatusBar
                 animated={true}
@@ -144,7 +145,7 @@ const Routes = ({navigation}) => {
                     }}/>
                 <Tab.Screen
                     name="SearchStack"
-                    component={HomeStack}
+                    component={SearchScreen}
                     options={{
                         tabBarLabel: 'Search',
                         tabBarIcon: ({color = 'red', size = 12}) => (

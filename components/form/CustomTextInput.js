@@ -13,7 +13,11 @@ const CustomTextInput = ({
                              type,
                              maxLength,
                              noEditable,
-    styled
+                             styled,
+                             _ref,
+                             _name,
+                             _onChangeText,
+                             _onBlur
                          }) => {
 
     return (
@@ -34,11 +38,15 @@ const CustomTextInput = ({
             </View>
             <Text style={{fontFamily: 'Anton'}}>{text}</Text>
             <TextInput
+                ref={_ref}
+                key={_name}
                 style={{flex: 1, paddingLeft: 20}}
                 placeholder={placeholder}
                 keyboardType={type}
-                maxLength={maxLength}
                 editable={noEditable ? false : true}
+                name={_name}
+                onChangeText={_onChangeText}
+                onBlur={_onBlur}
                 // underlineColorAndroid="transparent"
             />
         </View>
@@ -63,7 +71,9 @@ const styles = StyleSheet.create({
         borderColor: COLORS.black,
         height: 60,
         borderRadius: 5,
-        margin: 10
+        marginLeft: 10,
+        marginBottom: 10,
+        marginRight: 10
     },
 
     IconStyle: {
