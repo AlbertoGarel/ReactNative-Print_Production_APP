@@ -172,6 +172,55 @@ export const bobina_table_ALL =
     "LEFT JOIN gramaje_table " +
     "ON gramaje_table.gramaje_id = bobina_table.gramaje_fk;"
 ;
+export const search_bobina =
+    "SELECT bobina_table.codigo_bobina AS 'código bobina'," +
+    "autopaster_table.name_autopaster AS 'Autopaster'," +
+    "linea_produccion_table.linea_name AS 'línea'," +
+    "producto_table.producto_name 'Propietario'," +
+    "gramaje_table.gramaje_value AS 'Gramaje'," +
+    "bobina_table.peso_ini AS 'Peso inicial'," +
+    "bobina_table.peso_actual AS 'Peso actual'," +
+    "bobina_table.radio_actual AS 'Radio actual' " +
+    "FROM bobina_table " +
+    "LEFT JOIN autopaster_table " +
+    "ON autopaster_table.autopaster_id = bobina_table.autopaster_fk " +
+    "LEFT JOIN linea_produccion_table " +
+    "ON linea_produccion_table.linea_id = autopaster_table.linea_fk " +
+    "LEFT JOIN producto_table " +
+    "ON producto_table.producto_id = linea_produccion_table.linea_id " +
+    "LEFT JOIN gramaje_table " +
+    "ON gramaje_table.gramaje_id = bobina_table.gramaje_fk " +
+    "WHERE " +
+    "bobina_table.codigo_bobina LIKE ? OR " +
+    "autopaster_table.name_autopaster LIKE ? OR " +
+    "linea_produccion_table.linea_name LIKE ? OR " +
+    "producto_table.producto_name LIKE ? OR " +
+    "gramaje_table.gramaje_value LIKE ? OR " +
+    "bobina_table.peso_ini LIKE ? OR " +
+    "bobina_table.peso_actual LIKE ? OR " +
+    "bobina_table.radio_actual LIKE ?;"
+
+;
+export const search_bobina_fullWeight =
+    "SELECT bobina_table.codigo_bobina AS 'código bobina'," +
+    "autopaster_table.name_autopaster AS 'Autopaster'," +
+    "linea_produccion_table.linea_name AS 'línea'," +
+    "producto_table.producto_name 'Propietario'," +
+    "gramaje_table.gramaje_value AS 'Gramaje'," +
+    "bobina_table.peso_ini AS 'Peso inicial'," +
+    "bobina_table.peso_actual AS 'Peso actual'," +
+    "bobina_table.radio_actual AS 'Radio actual' " +
+    "FROM bobina_table " +
+    "LEFT JOIN autopaster_table " +
+    "ON autopaster_table.autopaster_id = bobina_table.autopaster_fk " +
+    "LEFT JOIN linea_produccion_table " +
+    "ON linea_produccion_table.linea_id = autopaster_table.linea_fk " +
+    "LEFT JOIN producto_table " +
+    "ON producto_table.producto_id = linea_produccion_table.linea_id " +
+    "LEFT JOIN gramaje_table " +
+    "ON gramaje_table.gramaje_id = bobina_table.gramaje_fk " +
+    "WHERE bobina_table.peso_actual IS NULL " +
+    "OR bobina_table.radio_actual IS NULL"
 /**
  *  PRODUCCION_TABLE ALL
  */

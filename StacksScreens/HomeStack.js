@@ -15,23 +15,23 @@ const HomeStack = ({navigation, route}) => {
 
     const Stack = createStackNavigator();
 
-    useEffect(() => {
-        const tabHiddenRoutes = [
-            "Producción Simplificada",
-            "Boarding",
-            "Profile",
-            "Cálculo Individual"
-        ];
-        if (tabHiddenRoutes.includes(getFocusedRouteNameFromRoute(route))) {
-            navigation.setOptions({
-                tabBarVisible: false,
-            });
-        } else {
-            navigation.setOptions({
-                tabBarVisible: true,
-            });
-        }
-    });
+    // useEffect(() => {
+    //     const tabHiddenRoutes = [
+    //         "Producción Simplificada",
+    //         "Boarding",
+    //         "Profile",
+    //         "Cálculo Individual"
+    //     ];
+    //     if (tabHiddenRoutes.includes(getFocusedRouteNameFromRoute(route))) {
+    //         navigation.setOptions({
+    //             tabBarVisible: false,
+    //         });
+    //     } else {
+    //         navigation.setOptions({
+    //             tabBarVisible: true,
+    //         });
+    //     }
+    // }, [navigation, route]);
 
     return (
         <Stack.Navigator>

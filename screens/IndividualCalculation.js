@@ -7,6 +7,7 @@ import {
     TouchableOpacity,
     Picker,
     ImageBackground,
+    Keyboard
 } from 'react-native';
 import CustomTextInput from "../components/form/CustomTextInput";
 import {radio, peso, tirada2SVG, edicionesSVG, productoSVG} from '../assets/svg/svgContents';
@@ -34,6 +35,28 @@ const IndividualCalculation = () => {
     const paginationRef = useRef();
     const ProductoRef = useRef();
     const inputTbrutaRef = useRef();
+
+    const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+
+    useEffect(() => {
+        const keyboardDidShowListener = Keyboard.addListener(
+            'keyboardDidShow',
+            () => {
+                setKeyboardVisible(true); // or some other action
+            }
+        );
+        const keyboardDidHideListener = Keyboard.addListener(
+            'keyboardDidHide',
+            () => {
+                setKeyboardVisible(false); // or some other action
+            }
+        );
+
+        return () => {
+            keyboardDidHideListener.remove();
+            keyboardDidShowListener.remove();
+        };
+    }, []);
 
     let renderedfunction = '';
 
@@ -799,9 +822,11 @@ const IndividualCalculation = () => {
                             :
                             null
                     }
+                    {!isKeyboardVisible &&
                     <ResetButtonForm
                         resetState_elementPrevProdction={resetState_elementPrevProdction}
                     />
+                    }
                 </View>
                 <ToastMesages
                     _ref={(toast) => toastRef = toast}

@@ -34,6 +34,7 @@ const Routes = ({navigation}) => {
     const buttonCreateTabNabStyle = () => {
 
     }
+
     const bannerError = () => {
         console.log("An error");
         return;
@@ -131,7 +132,7 @@ const Routes = ({navigation}) => {
                                       size={30}
                                       color={color}
                                       style={{
-                                          width: 70,
+                                          width:70,
                                           height: 70,
                                           color: 'white',
                                           backgroundColor: '#FF8000',

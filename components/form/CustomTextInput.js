@@ -24,11 +24,6 @@ const CustomTextInput = ({
         // <View style={styles.container}>
 
         <View style={[styles.SectionStyle, styled ? styled : null]}>
-            {/*<Image source={{*/}
-            {/*    uri: 'https://thumbs.dreamstime.com/z/icono-plano-de-la-cinta-m%C3%A9trica-79612608.jpg'*/}
-            {/*}}*/}
-            {/*       style={styles.ImageStyle}*/}
-            {/*/>*/}
             <View style={styles.IconStyle}>
                 <SvgComponent
                     svgData={svgData}
