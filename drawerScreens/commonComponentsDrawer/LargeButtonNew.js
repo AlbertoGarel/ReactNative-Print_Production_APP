@@ -14,7 +14,7 @@ const LargeButtonNew = ({
         <>
             {
                 !disable ?
-                    <TouchableHighlight onPress={() => _onPress()}>
+                    <TouchableHighlight onPress={() => _onPress('CREAR')}>
                         <View style={styles.button}>
                             <Icon name={'plus-circle'} size={30} color={COLORS.whitesmoke}/>
                             <Text style={styles.text}>{textButton}</Text>

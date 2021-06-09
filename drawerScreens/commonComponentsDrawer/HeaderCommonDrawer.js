@@ -11,9 +11,13 @@ const HeaderCommonDrawer = ({
     return (
         <>
             <Text style={styles.title}>{headerTitle}</Text>
-            <Text style={styles.paragraph}>
-                {headerParagraph}
-            </Text>
+            {!headerParagraph ?
+                null
+                :
+                <Text style={styles.paragraph}>
+                    {headerParagraph}
+                </Text>
+            }
             <HRtag
                 borderColor={COLORS.white}
             />
@@ -28,7 +32,7 @@ const styles = StyleSheet.create({
         textTransform: 'capitalize',
         color: COLORS.white,
         textShadowColor: COLORS.black,
-        textShadowOffset: { width: 0.5, height: 0.5 },
+        textShadowOffset: {width: 0.5, height: 0.5},
         textShadowRadius: 1
     },
     paragraph: {
@@ -37,5 +41,14 @@ const styles = StyleSheet.create({
         // backgroundColor: COLORS.white,
         borderRadius: 5
     },
+    paragraph2: {
+        color: COLORS.black,
+        padding: 10,
+        // backgroundColor: COLORS.white,
+        borderRadius: 5,
+        textShadowColor: COLORS.primary,
+        textShadowOffset: {width: 0.5, height: 0.5},
+        textShadowRadius: 1
+    }
 });
 export default HeaderCommonDrawer;

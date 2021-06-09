@@ -5,7 +5,7 @@
 //     const [sidebarState, setSidebarState] = useState({
 //         routes: [
 //             {
-//                 name: "Meditionstyle",
+//                 name: "TableViewwCommonScreen",
 //                 icon: "ios-home"
 //             },
 //             {

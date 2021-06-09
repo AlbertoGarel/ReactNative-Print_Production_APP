@@ -1,22 +1,20 @@
 import React, {useState} from 'react';
-import {SafeAreaView, View, StyleSheet, Text, TouchableHighlight, Alert, ImageBackground} from 'react-native';
-import * as SQLite from 'expo-sqlite';
-import HRtag from "../components/HRtag";
+import {SafeAreaView, View, StyleSheet, ImageBackground, Modal} from 'react-native';
 import {COLORS} from "../assets/defaults/settingStyles";
 import HeaderCommonDrawer from "./commonComponentsDrawer/HeaderCommonDrawer";
 import LargeButtonNew from "./commonComponentsDrawer/LargeButtonNew";
+import ModalCRUD from "./commonComponentsDrawer/ModalCRUD";
 import Tables from "./commonComponentsDrawer/Tables";
-import PaginationScreen from "./PaginationScreen";
-import {
-    medition_style_table_ALL
-} from '../dbCRUD/actionsSQL';
+import {LinearGradient} from "expo-linear-gradient";
 
-const Meditionstyle = ({props}) => {
+const TableViewwCommonScreen = ({props}) => {
 
-    const [modal, setModal] = useState(false)
+    const [modal, setModal] = useState(false);
+    const [typeForm, setTypeForm] = useState('');
 
-    const _onPress = () => {
-        // Alert.alert('pressed')
+    const _onPress = (param, id = 0) => {
+        setTypeForm(param);
+        props.getTypeFormForHeader(param, id)
         if (!modal) {
             setModal(true)
         } else {
@@ -42,8 +40,17 @@ const Meditionstyle = ({props}) => {
                         _onPress={_onPress}
                         modal={modal}
                         disable={props.disable}
+                        typeform={props.typeform}
+                        // deleteByID={deleteByID}
                     />
                 </View>
+                <ModalCRUD
+                    modal={modal}
+                    _onPress={_onPress}
+                    header={<HeaderCommonDrawer headerTitle={props.headerTitle}/>}
+                    form={props.form}
+                    typeForm={typeForm}
+                />
             </ImageBackground>
         </SafeAreaView>
     )
@@ -63,4 +70,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default Meditionstyle;
+export default TableViewwCommonScreen;

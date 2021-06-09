@@ -2,7 +2,7 @@ import 'react-native-gesture-handler';
 import {StatusBar} from 'expo-status-bar';
 import React, {useState, useEffect} from 'react';
 import {StyleSheet, Text, View, Alert, ImageBackground} from 'react-native';
-import {NavigationContainer} from '@react-navigation/native';
+import {NavigationContainer, useIsFocused} from '@react-navigation/native';
 import Routes from "./Routes";
 import SplashScreen from "./screens/SplashScreen";
 import * as SQLite from 'expo-sqlite';

@@ -4,10 +4,10 @@ import {COLORS} from "../../assets/defaults/settingStyles";
 import SvgComponent from "../SvgComponent";
 import {deleteAll} from "../../assets/svg/svgContents";
 
-const ResetButtonForm = ({resetState_elementPrevProdction}) => {
+const ResetButtonForm = ({resetState_elementPrevProdction, _style}) => {
 
     return (
-        <TouchableOpacity style={styles.touchable}
+        <TouchableOpacity style={[styles.touchable, _style ? {..._style} : null]}
                           onPress={resetState_elementPrevProdction}
         >
             <View style={styles.contSVG}>
@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
         shadowRadius: 10,
         elevation: 12,
     },
-    contSVG:{
+    contSVG: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 8,
         borderBottomLeftRadius: 8
     },
-    contText:{
+    contText: {
         flex: 3,
         justifyContent: 'center',
         alignItems: 'center',
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 10,
         borderBottomRightRadius: 10,
     },
-    textButton:{
+    textButton: {
         color: COLORS.secondary,
         fontSize: 13,
         textTransform: 'uppercase'

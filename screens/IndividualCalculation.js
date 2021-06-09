@@ -10,16 +10,18 @@ import {
     Keyboard
 } from 'react-native';
 import CustomTextInput from "../components/form/CustomTextInput";
-import {radio, peso, tirada2SVG, edicionesSVG, productoSVG} from '../assets/svg/svgContents';
+import {paginationSVG, meditionSVG, radio, peso, tirada2SVG, edicionesSVG, productoSVG} from '../assets/svg/svgContents';
 import SvgComponent from "../components/SvgComponent";
 import {COLORS} from "../assets/defaults/settingStyles";
 import MultipleSwitchSelector from "../components/MultipleSwitchSelector";
 import * as SQLite from "expo-sqlite";
 import {picker_medition_style, coeficienteSearchValue, picker_pagination, picker_producto} from '../dbCRUD/actionsSQL';
 import {Formik} from 'formik';
-import * as Yup from 'yup';
 import ResetButtonForm from "../components/form/ResetButtonForm";
 import ToastMesages from "../components/ToastMessages";
+import {FormYupSchemas} from '../components/form/YupSchemas';
+import * as Yup from "yup";
+import CustomPicker from "../components/form/CustomPicker";
 
 
 const IndividualCalculation = () => {
@@ -68,8 +70,8 @@ const IndividualCalculation = () => {
     // VALUES OF elementPrevProdction()
     const [selectedTirada, getselectedTirada] = useState('');
     const [selectedEditions, getselectedEditions] = useState('');
-    const [selectedMeasurementMetodID, setMeasurementMetodID] = useState('');
-    const [selectedValueMeasurementMetod, getValueMeasurementMetod] = useState();
+    // const [selectedMeasurementMetodID, setMeasurementMetodID] = useState('');
+    const [selectedValueMeasurementMetod, getValueMeasurementMetod] = useState(0);
 
     //VALUES of elementCalcBobina()
     const [selectedInputWeigth, getSelectedInputWeigth] = useState('');
@@ -95,11 +97,11 @@ const IndividualCalculation = () => {
     };
     //elementCalTotalproduction()
     const [paginacionDataDB, getPaginationDataDB] = useState([]);
-    const [selectedPaginationID, getSelectedPaginationID] = useState('');
-    const [selectedValuePaginacion, getSelectedPagination] = useState('');
+    // const [selectedPaginationID, getSelectedPaginationID] = useState('');
+    const [selectedValuePaginacion, getSelectedPagination] = useState(0);
     const [productoDataDB, getProductoDataDB] = useState([]);
-    const [selectedProductoID, getSelectedProductoID] = useState('');
-    const [selectedValueProduct, getSelectedvalueProduct] = useState('');
+    // const [selectedProductoID, getSelectedProductoID] = useState('');
+    const [selectedValueProduct, getSelectedvalueProduct] = useState(0);
     const [selectedTiradaBruta, getSelectedTiradaBruta] = useState('');
     const [resultElementCalTotalproduction, setResultElementCalTotalproduction] = useState(0);
 
@@ -153,14 +155,12 @@ const IndividualCalculation = () => {
                 (_, {rows: {_array}}) => {
                     if (_array.length > 0) {
                         getProductoDataDB(_array);
-                        console.log('producto', _array)
                     } else {
                         console.log('(Producto_table) Error al conectar base de datos en IndividualCalculation Component');
                     }
                 }
             );
         });
-
 
         return () => {
             isActive = false;
@@ -172,17 +172,17 @@ const IndividualCalculation = () => {
         switch (switchValue) {
             case 1://elementPrevProdction()
                 //reset states
-                getselectedTirada('');
-                getselectedEditions('');
-                getValueMeasurementMetod(0);
+                // getselectedTirada('');
+                // getselectedEditions('');
+                // getValueMeasurementMetod(0);
                 //reset to initial values
                 elementPrevProdctionformikRef.current?.resetForm();
                 //clear ref inputs
                 tiradaRef.current.clear();
                 EdicionesRef.current.clear();
-                setMeasurementMetodID(0)//empty for error display
+                // setMeasurementMetodID(0)//empty for error display
                 // getValueMeasurementMetod(0)
-                meditionStyleRef.current.value = 0;
+                // meditionStyleRef.current.value = 0;
                 // console.log(meditionStyleRef.current.value)
                 break;
             case 2:
@@ -194,8 +194,8 @@ const IndividualCalculation = () => {
                 inputRadioRef.current.clear();
                 break;
             case 3:
-                getSelectedPaginationID(0);
-                getSelectedProductoID(0);
+                // getSelectedPaginationID(0);
+                // getSelectedProductoID(0);
                 getSelectedTiradaBruta('');
                 setResultElementCalTotalproduction(0);
                 elementCalTotalproductionFormikRef.current?.resetForm();
@@ -206,42 +206,20 @@ const IndividualCalculation = () => {
         }
     };
 
-    //SCHEMAS
     const SchemaElementPrevProduction = Yup.object().shape({
-        tirada: Yup.number()
-            .min(0, 'Too Short!')
-            .max(100000, 'Too Long!')
-            .required('Required'),
-        editions: Yup.number()
-            .min(1, 'Too Short!')
-            .max(90, 'Too Long!')
-            .required('Required'),
-        meditionType: Yup.number()
-            .min(0, 'Select a value')
-            .required('Required'),
+        tirada: FormYupSchemas.tirada,
+        editions: FormYupSchemas.editions,
+        meditionType: FormYupSchemas.meditionType
     });
 
     const SchemaElementCalcBobina = Yup.object().shape({
-        inputWeigth: Yup.number()
-            .min(1, 'too Short!')
-            .max(10000, 'Too Long!')
-            .required('required'),
-        inputRadio: Yup.number()
-            .min(1, 'too Short!')
-            .max(1000, 'Too Long!')
-            .required('required'),
+        inputWeigth: FormYupSchemas.inputWeigth,
+        inputRadio: FormYupSchemas.inputRadio
     });
     const SchemaElementCalTotalproduction = Yup.object().shape({
-        inputTirBruta: Yup.number()
-            .min(1, 'Too Short!')
-            .max(100000, 'Too Long!')
-            .required('-- Requerido --'),
-        pickerPagination: Yup.number()
-            .min(0, 'Select a value')
-            .required('-- requerido --'),
-        pickerProducto: Yup.number()
-            .min(0, 'Select a value')
-            .required('-- requerido --'),
+        inputTirBruta: FormYupSchemas.inputTirBruta,
+        pickerPagination: FormYupSchemas.pickerPagination,
+        pickerProducto: FormYupSchemas.pickerProducto
     })
 
     let toastRef;
@@ -261,7 +239,7 @@ const IndividualCalculation = () => {
                     initialValues={{
                         tirada: selectedTirada,
                         editions: selectedEditions,
-                        meditionType: 0,
+                        meditionType: selectedValueMeasurementMetod,
                     }}
                     validationSchema={SchemaElementPrevProduction}
                     onSubmit={values => {
@@ -301,13 +279,13 @@ const IndividualCalculation = () => {
                                 }}>
                                     <View style={styles.IconStyle}>
                                         <SvgComponent
-                                            svgData={radio}
+                                            svgData={meditionSVG}
                                             svgWidth={45}
                                             svgHeight={45}
                                         />
                                     </View>
                                     <View style={{flex: 1, paddingLeft: 10}}>
-                                        <Picker
+                                        <CustomPicker
                                             ref={meditionStyleRef}
                                             style={{
                                                 borderWidth: .5,
@@ -317,36 +295,60 @@ const IndividualCalculation = () => {
                                             itemStyle={{fontFamily: 'Anton'}}
                                             mode={'dropdown'}
                                             value={values.meditionType}
-                                            selectedValue={values.meditionType = selectedMeasurementMetodID}
+                                            selectedValue={values.meditionType}
                                             onValueChange={(itemValue) => {
                                                 if (itemValue > 0) {
-                                                    console.log(itemValue)
                                                     handleChange('meditionType')
-                                                    values.meditionType = selectedMeasurementMetodID
-                                                    setMeasurementMetodID(itemValue)
                                                     setFieldTouched('meditionType', true)
                                                     setFieldValue('meditionType', itemValue)
                                                 } else {
                                                     showToast("Debes escoger una opción válida...")
                                                 }
                                             }}
-                                        >
-                                            <Picker.Item label="Elige un tipo de medición" value={0}
-                                                         selected
-                                                         fontFamily={'Anton'}
-                                                         color={'red'}
-                                            />
-                                            {
-                                                measuramentDataDB.length > 0 ?
-                                                    measuramentDataDB.map((item, index) => {
-                                                        return <Picker.Item key={index}
-                                                                            label={'medición ' + item.medition_type + ' / ' + item.gramaje_value + 'g.'}
-                                                                            value={item.medition_id}/>
-                                                    })
-                                                    :
-                                                    <Picker.Item label="No existen datos" value={null}/>
-                                            }
-                                        </Picker>
+                                            dataOptionsPicker={measuramentDataDB.map((item, index) => {
+                                                return <Picker.Item key={index}
+                                                                    label={'medición ' + item.medition_type + ' / ' + item.gramaje_value + 'g.'}
+                                                                    value={item.medition_id}/>
+                                            })}
+                                            defaultItemLabel={'Escoge estilo de medición'}
+                                        />
+                                        {/*<Picker*/}
+                                        {/*    ref={meditionStyleRef}*/}
+                                        {/*    style={{*/}
+                                        {/*        borderWidth: .5,*/}
+                                        {/*        borderColor: COLORS.black,*/}
+                                        {/*    }}*/}
+                                        {/*    name={'meditionType'}*/}
+                                        {/*    itemStyle={{fontFamily: 'Anton'}}*/}
+                                        {/*    mode={'dropdown'}*/}
+                                        {/*    value={values.meditionType}*/}
+                                        {/*    selectedValue={values.meditionType}*/}
+                                        {/*    onValueChange={(itemValue) => {*/}
+                                        {/*        if (itemValue > 0) {*/}
+                                        {/*            handleChange('meditionType')*/}
+                                        {/*            setFieldTouched('meditionType', true)*/}
+                                        {/*            setFieldValue('meditionType', itemValue)*/}
+                                        {/*        } else {*/}
+                                        {/*            showToast("Debes escoger una opción válida...")*/}
+                                        {/*        }*/}
+                                        {/*    }}*/}
+                                        {/*>*/}
+                                        {/*    <Picker.Item label="Elige un tipo de medición" value={0}*/}
+                                        {/*                 selected*/}
+                                        {/*                 fontFamily={'Anton'}*/}
+                                        {/*                 color={COLORS.primary}*/}
+                                        {/*    />*/}
+                                        {/*    {*/}
+                                        {/*        measuramentDataDB.length > 0 ?*/}
+                                        {/*            measuramentDataDB.map((item, index) => {*/}
+                                        {/*                return <Picker.Item key={index}*/}
+                                        {/*                                    label={'medición ' + item.medition_type + ' / ' + item.gramaje_value + 'g.'}*/}
+                                        {/*                                    value={item.medition_id}/>*/}
+                                        {/*            })*/}
+                                        {/*            :*/}
+                                        {/*            <Picker.Item label="No existen datos" value={null}/>*/}
+                                        {/*    }*/}
+                                        {/*</Picker>*/}
                                     </View>
                                 </View>
                             </View>
@@ -572,9 +574,9 @@ const IndividualCalculation = () => {
                 <Formik
                     innerRef={elementCalTotalproductionFormikRef}
                     initialValues={{
-                        pickerPagination: 1,
-                        pickerProducto: 1,
-                        inputTirBruta: '',
+                        pickerPagination: selectedValuePaginacion,
+                        pickerProducto: selectedValueProduct,
+                        inputTirBruta: selectedTiradaBruta,
                     }}
                     validationSchema={SchemaElementCalTotalproduction}
                     onSubmit={values => {
@@ -620,13 +622,13 @@ const IndividualCalculation = () => {
                                 }}>
                                     <View style={styles.IconStyle}>
                                         <SvgComponent
-                                            svgData={peso}
+                                            svgData={paginationSVG}
                                             svgWidth={45}
                                             svgHeight={45}
                                         />
                                     </View>
                                     <View style={{flex: 1, paddingLeft: 10}}>
-                                        <Picker
+                                        <CustomPicker
                                             ref={paginationRef}
                                             style={{
                                                 borderWidth: .5,
@@ -635,35 +637,60 @@ const IndividualCalculation = () => {
                                             name={'pickerPagination'}
                                             itemStyle={{fontFamily: 'Anton'}}
                                             mode={'dropdown'}
-                                            selectedValue={values.pickerPagination = selectedPaginationID}
+                                            selectedValue={values.pickerPagination}
                                             onValueChange={(itemValue) => {
                                                 if (itemValue > 0) {
-                                                    console.log(itemValue)
                                                     handleChange('pickerPagination')
-                                                    values.pickerPagination = selectedPaginationID
-                                                    getSelectedPaginationID(itemValue)
                                                     setFieldTouched('pickerPagination', true)
                                                     setFieldValue('pickerPagination', itemValue)
                                                 } else {
                                                     showToast("Debes escoger una opción válida...")
                                                 }
                                             }}
-
-                                        >
-                                            <Picker.Item label="Elige valor de paginación..." value={0}
-                                                         style={{fontFamily: 'Anton'}}
-                                                         selected
-                                            />
-                                            {paginacionDataDB.length > 0 ?
+                                            dataOptionsPicker={
                                                 paginacionDataDB.map((item, index) => {
                                                     return <Picker.Item key={index}
                                                                         label={' ' + item.paginacion_value}
                                                                         value={item.paginacion_id}/>
                                                 })
-                                                :
-                                                <Picker.Item label="No existen datos" value={null}/>
                                             }
-                                        </Picker>
+                                            defaultItemLabel={'Escoge una paginación'}
+                                        />
+                                        {/*<Picker*/}
+                                        {/*    ref={paginationRef}*/}
+                                        {/*    style={{*/}
+                                        {/*        borderWidth: .5,*/}
+                                        {/*        borderColor: COLORS.black,*/}
+                                        {/*    }}*/}
+                                        {/*    name={'pickerPagination'}*/}
+                                        {/*    itemStyle={{fontFamily: 'Anton'}}*/}
+                                        {/*    mode={'dropdown'}*/}
+                                        {/*    selectedValue={values.pickerPagination}*/}
+                                        {/*    onValueChange={(itemValue) => {*/}
+                                        {/*        if (itemValue > 0) {*/}
+                                        {/*            handleChange('pickerPagination')*/}
+                                        {/*            setFieldTouched('pickerPagination', true)*/}
+                                        {/*            setFieldValue('pickerPagination', itemValue)*/}
+                                        {/*        } else {*/}
+                                        {/*            showToast("Debes escoger una opción válida...")*/}
+                                        {/*        }*/}
+                                        {/*    }}*/}
+
+                                        {/*>*/}
+                                        {/*    <Picker.Item label="Elige valor de paginación..." value={0}*/}
+                                        {/*                 style={{fontFamily: 'Anton'}}*/}
+                                        {/*                 selected*/}
+                                        {/*    />*/}
+                                        {/*    {paginacionDataDB.length > 0 ?*/}
+                                        {/*        paginacionDataDB.map((item, index) => {*/}
+                                        {/*            return <Picker.Item key={index}*/}
+                                        {/*                                label={' ' + item.paginacion_value}*/}
+                                        {/*                                value={item.paginacion_id}/>*/}
+                                        {/*        })*/}
+                                        {/*        :*/}
+                                        {/*        <Picker.Item label="No existen datos" value={null}/>*/}
+                                        {/*    }*/}
+                                        {/*</Picker>*/}
                                     </View>
                                 </View>
                             </View>
@@ -692,7 +719,7 @@ const IndividualCalculation = () => {
                                         />
                                     </View>
                                     <View style={{flex: 1, paddingLeft: 10}}>
-                                        <Picker
+                                        <CustomPicker
                                             ref={ProductoRef}
                                             style={{
                                                 borderWidth: .5,
@@ -701,35 +728,61 @@ const IndividualCalculation = () => {
                                             name={'pickerProducto'}
                                             itemStyle={{fontFamily: 'Anton'}}
                                             mode={'dropdown'}
-                                            selectedValue={values.pickerProducto = selectedProductoID}
+                                            selectedValue={values.pickerProducto}
                                             // selectedValue={selectedMeasurementMetod}
                                             onValueChange={(itemValue) => {
                                                 if (itemValue > 0) {
-                                                    console.log(itemValue)
                                                     handleChange('pickerProducto')
-                                                    values.pickerProducto = selectedProductoID
-                                                    getSelectedProductoID(itemValue)
                                                     setFieldTouched('pickerProducto', true)
                                                     setFieldValue('pickerProducto', itemValue)
                                                 } else {
                                                     showToast("Debes escoger una opción válida...")
                                                 }
                                             }}
-                                        >
-                                            <Picker.Item label="Elige un producto..." value={0}
-                                                         style={{fontFamily: 'Anton'}}
-                                                         selected
-                                            />
-                                            {productoDataDB.length > 0 ?
+                                            dataOptionsPicker={
                                                 productoDataDB.map((item, index) => {
                                                     return <Picker.Item key={index}
                                                                         label={' ' + item.producto_name}
                                                                         value={item.producto_id}/>
                                                 })
-                                                :
-                                                <Picker.Item label="No existen datos" value={null}/>
                                             }
-                                        </Picker>
+                                            defaultItemLabel={'Escoge un producto'}
+                                        />
+                                        {/*<Picker*/}
+                                        {/*    ref={ProductoRef}*/}
+                                        {/*    style={{*/}
+                                        {/*        borderWidth: .5,*/}
+                                        {/*        borderColor: COLORS.black,*/}
+                                        {/*    }}*/}
+                                        {/*    name={'pickerProducto'}*/}
+                                        {/*    itemStyle={{fontFamily: 'Anton'}}*/}
+                                        {/*    mode={'dropdown'}*/}
+                                        {/*    selectedValue={values.pickerProducto}*/}
+                                        {/*    // selectedValue={selectedMeasurementMetod}*/}
+                                        {/*    onValueChange={(itemValue) => {*/}
+                                        {/*        if (itemValue > 0) {*/}
+                                        {/*            handleChange('pickerProducto')*/}
+                                        {/*            setFieldTouched('pickerProducto', true)*/}
+                                        {/*            setFieldValue('pickerProducto', itemValue)*/}
+                                        {/*        } else {*/}
+                                        {/*            showToast("Debes escoger una opción válida...")*/}
+                                        {/*        }*/}
+                                        {/*    }}*/}
+                                        {/*>*/}
+                                        {/*    <Picker.Item label="Elige un producto..." value={0}*/}
+                                        {/*                 style={{fontFamily: 'Anton'}}*/}
+                                        {/*                 selected*/}
+                                        {/*    />*/}
+                                        {/*    {productoDataDB.length > 0 ?*/}
+                                        {/*        productoDataDB.map((item, index) => {*/}
+                                        {/*            return <Picker.Item key={index}*/}
+                                        {/*                                label={' ' + item.producto_name}*/}
+                                        {/*                                value={item.producto_id}/>*/}
+                                        {/*        })*/}
+                                        {/*        :*/}
+                                        {/*        <Picker.Item label="No existen datos" value={null}/>*/}
+                                        {/*    }*/}
+                                        {/*</Picker>*/}
                                     </View>
                                 </View>
                             </View>

@@ -17,12 +17,13 @@ import {Table, TableWrapper, Row, Cell} from 'react-native-table-component';
 import {COLORS} from "../../assets/defaults/settingStyles";
 import {Feather as Icon} from "@expo/vector-icons";
 import * as SQLite from "expo-sqlite";
+import {deleteMeditionStyle} from "../../dbCRUD/actionsSQL";
 
 class Tables extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            tableHead: [''],
+            tableHead: [],
             tableData: [],
             items: [],
             indicator: true,
@@ -35,6 +36,7 @@ class Tables extends Component {
     cellWidth = 85;
     TouchableWidth = 50;
     cellMargin = 16;
+
 
     requestDB(requestProps) {
         this.db.transaction(tx => {
@@ -49,12 +51,12 @@ class Tables extends Component {
                         const val = this.state.items.map(item => {
                             return ['', ...Object.values(item)];
                         });
-                        console.log(this.state.items)
+                        // console.log(this.state.items)
                         this.setState({
-                            tableHead: [...this.state.tableHead, ...Object.keys(this.state.items[0])],
+                            tableHead: ['', ...Object.keys(this.state.items[0])],
                             tableData: [...val],
                             indicator: false,
-                            modalVisible: false
+                            warning: false
                         })
                     } else {
                         this.setState({
@@ -68,14 +70,12 @@ class Tables extends Component {
     };
 
     componentDidMount() {
-        this.requestDB(this.props.request);
+        this.requestDB(this.props.request.allItems);
     };
 
-    UNSAFE_componentWillUpdate(nextProps, nextState) {
-        if (nextState.items.length !== this.state.items.length) {
-            this.setState(this.state.items);
-        }
-    };
+    UNSAFE_componentWillReceiveProps(nextProps) {
+        this.requestDB(this.props.request.allItems);
+    }
 
     numCell(data) {
         let arr = [this.TouchableWidth + (this.cellMargin * 2)];
@@ -89,12 +89,67 @@ class Tables extends Component {
         Alert.alert(`This is id ${id}`);
     };
 
+    _deleteByID(param, elementID) {
+        this.db.transaction(tx => {
+            tx.executeSql(param,
+                [elementID],
+                (_, result) => {
+                    console.log(result);
+                    this.requestDB(this.props.request.allItems);
+                },
+                (_, error) => {
+                    console.log(error)
+                })
+        })
+    };
+
+    _actionCRUD(itemID) {
+        Alert.alert(
+            'MODIFICAR REGISROS',
+            `ELIJA UNA OPCIÓN`,
+            [
+                {
+                    text: 'CANCEL',
+                    onPress: () => console.log('Ask me later pressed')
+                },
+                {
+                    text: 'BORRAR',
+                    onPress: () => this._confirmDelete(itemID),
+                    style: 'cancel'
+                },
+                {text: 'ACTUALIZAR', onPress: () => this.props._onPress('ACTUALIZAR', itemID)}
+            ],
+            {cancelable: false}
+        );
+    };
+
+    _confirmDelete(itemID) {
+        Alert.alert(
+            'ELIMINAR REGISTRO',
+            `¿ DESEA ELIMINAR REGISTRO CON ID ${itemID} ?`,
+            [
+                {
+                    text: 'CANCELAR',
+                    onPress: () => console.log('Ask me later pressed')
+                },
+                {
+                    text: 'SÍ, ESTOY SEGURO.',
+                    onPress: () => this._deleteByID(this.props.request.deleteItem, itemID),
+                    style: 'cancel'
+                }
+                // {text: 'ACTUALIZAR', onPress: () => this.props._onPress('ACTUALIZAR', itemID)}
+            ],
+            {cancelable: false}
+        );
+    };
+
+
     render() {
         const state = this.state;
 
         const element = (index) => (
             !this.props.disable ?
-                <TouchableOpacity onPress={() => this._alertIndex(index[1])}
+                <TouchableOpacity onPress={() => this._actionCRUD(index[1])}
                                   style={{width: this.TouchableWidth, margin: this.cellMargin}}>
                     <View style={styles.btn}>
                         <Icon name={'edit'} size={25} color={'white'}/>
@@ -133,7 +188,7 @@ class Tables extends Component {
                                 marginTop: 50,
                                 fontFamily: 'Anton',
                                 textShadowColor: COLORS.black,
-                                textShadowOffset: { width: 0.5, height: 0.5 },
+                                textShadowOffset: {width: 0.5, height: 0.5},
                                 textShadowRadius: 1
                             }}
                             >No existen registros todavía...</Text>
@@ -163,26 +218,6 @@ class Tables extends Component {
                             </Table>
                         </ScrollView>
                     }
-                    <Modal
-                        presentationStyle="overFullScreen"
-                        animationType="slide"
-                        visible={this.props.modal}
-                        // onShow={() => {
-                        //     Alert.alert('Modal has been opened.');
-                        // }}
-                        // onRequestClose={() => {
-                        //     Alert.alert('Modal has been closed.');
-                        // }}
-                        style={{backgroundColor: 'red'}}
-                    >
-                        <TouchableHighlight
-                            style={{backgroundColor: '#2196F3', marginTop: 10}}
-                            onPress={() => {
-                                this.props._onPress();
-                            }}>
-                            <Text style={styles.textStyle}>Hide Modal</Text>
-                        </TouchableHighlight>
-                    </Modal>
                 </View>
                 :
                 <ActivityIndicator size="large" color="#00ff00"/>

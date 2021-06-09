@@ -35,6 +35,8 @@ const Routes = ({navigation}) => {
 
     }
 
+
+
     const bannerError = () => {
         console.log("An error");
         return;
@@ -86,8 +88,8 @@ const Routes = ({navigation}) => {
                 />
                 <Tab.Screen
                     name="DataBaseStack"
-                    component={DataBaseScreen}
-                    // children={()=><Onboarding initialpage={0}/>}
+                    // component={DataBaseScreen}
+                    children={()=><DataBaseScreen navigation={'navigation'}/>}
                     options={{
                         tabBarLabel: 'BBDD' +
                             '',
