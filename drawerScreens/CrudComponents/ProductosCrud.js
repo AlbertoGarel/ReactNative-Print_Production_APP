@@ -2,17 +2,17 @@ import React, {useEffect, useState, useRef} from 'react';
 import {Alert, StyleSheet, View, Text, Picker, TouchableOpacity} from 'react-native';
 import {pickerPapelcomun, pickerKBA, insertProducto, updateProductoByID, produtoByID} from "../../dbCRUD/actionsSQL";
 import * as SQLite from "expo-sqlite";
-import {FormYupSchemas} from "../../components/form/YupSchemas";
+import {FormYupSchemas} from "../../components/FormComponents/YupSchemas";
 import {COLORS} from "../../assets/defaults/settingStyles";
 import SvgComponent from "../../components/SvgComponent";
 import {nombre, coeficienteSVG, papelComunSVG} from "../../assets/svg/svgContents";
-import CustomPicker from "../../components/form/CustomPicker";
-import CustomTextInput from "../../components/form/CustomTextInput";
+import CustomPicker from "../../components/FormComponents/CustomPicker";
+import CustomTextInput from "../../components/FormComponents/CustomTextInput";
 import {Formik} from "formik";
 import * as Yup from "yup";
 import HRtag from "../../components/HRtag";
 import ToastMesages from "../../components/ToastMessages";
-import ResetButtonForm from "../../components/form/ResetButtonForm";
+import ResetButtonForm from "../../components/FormComponents/ResetButtonForm";
 import {genericUpdatefunction, genericInsertFunction} from '../../dbCRUD/actionsFunctionsCrud'
 
 const ProductosCrud = ({props}) => {

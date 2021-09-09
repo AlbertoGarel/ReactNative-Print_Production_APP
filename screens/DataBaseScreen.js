@@ -49,9 +49,10 @@ import CoeficienteKbaCrud from "../drawerScreens/CrudComponents/CoeficienteKbaCr
 import AutopastersCrud from "../drawerScreens/CrudComponents/AutopastersCrud";
 import ProductosCrud from "../drawerScreens/CrudComponents/ProductosCrud";
 
-const DataBaseScreen = ({navigation}) => {
+const DataBaseScreen = ({navigation, setChangeButtonFunc}) => {
     const Drawer = createDrawerNavigator();
     const isFocused = useIsFocused();
+
     useEffect(() => {
 
     }, [isFocused]);

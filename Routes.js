@@ -1,5 +1,15 @@
-import React from 'react';
-import {TouchableOpacity, SafeAreaView, View, Text, ScrollView, StyleSheet, StatusBar, Vibration, Alert} from "react-native";
+import React, {useState, useEffect} from 'react';
+import {
+    TouchableOpacity,
+    SafeAreaView,
+    View,
+    Text,
+    ScrollView,
+    StyleSheet,
+    StatusBar,
+    Vibration,
+    Alert
+} from "react-native";
 import {NavigationContainer, useNavigation} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
@@ -24,6 +34,7 @@ import DataBaseScreen from "./screens/DataBaseScreen";
  * */
 import {enableScreens} from 'react-native-screens';
 import SearchScreen from "./screens/SearchScreen";
+import SettingsSimpleProductionScreen from "./screens/productionScreens/SettingsSimpleProductionScren";
 
 enableScreens();
 
@@ -31,11 +42,12 @@ const Tab = createBottomTabNavigator();
 
 const Routes = ({navigation}) => {
     const paddingTop = Constants.statusBarHeight
-    const buttonCreateTabNabStyle = () => {
 
+    const [changeButtonFunc, setChangeButtonFunc] = useState(false);
+
+    const buttonChangeTabNabStyleAndfunc = () => {
+        setChangeButtonFunc()
     }
-
-
 
     const bannerError = () => {
         console.log("An error");
@@ -77,19 +89,22 @@ const Routes = ({navigation}) => {
                 }}>
                 <Tab.Screen
                     name="HomeStack"
-                    component={HomeStack}
-                    // children={()=><HomeStack initialpage={2}/>}
+                    // component={HomeStack}
+                    children={(props) => <HomeStack {...props} setChangeButtonFunc={setChangeButtonFunc}/>}
                     options={{
                         tabBarLabel: 'Home',
                         tabBarIcon: ({color = 'red', size = 12}) => (
                             <Icon name={'home'} size={size} color={color}/>
                         ),
+                        //UNMOUNT COMPONENT ONBLUR
+                        // unmountOnBlur: true
                     }}
                 />
                 <Tab.Screen
                     name="DataBaseStack"
                     // component={DataBaseScreen}
-                    children={()=><DataBaseScreen navigation={'navigation'}/>}
+                    children={(props) => <DataBaseScreen {...props} navigation={'navigation'}
+                                                         setChangeButtonFunc={setChangeButtonFunc}/>}
                     options={{
                         tabBarLabel: 'BBDD' +
                             '',
@@ -97,10 +112,19 @@ const Routes = ({navigation}) => {
                             <Icon name={'database'} size={size} color={color}/>
                         ),
                     }}
+                    listeners={{
+                        tabPress: () => {
+                            // e.preventDefault(); // Use this to navigate somewhere else
+                            setChangeButtonFunc(false )
+                        },
+                    }}
                 />
                 <Tab.Screen
                     name="CreateStack"
-                    component={SettingsProductionScreen}
+                    // component={changeButtonFunc ? <SettingsSimpleProductionScreen setChangeButtonFunc={setChangeButtonFunc} /> : SettingsProductionScreen}
+                    children={(props) => changeButtonFunc ?
+                        <SettingsSimpleProductionScreen {...props} setChangeButtonFunc={setChangeButtonFunc}/> :
+                        <SettingsProductionScreen {...props}/>}
                     listeners={{
                         tabPress: () => {
                             // e.preventDefault(); // Use this to navigate somewhere else
@@ -134,10 +158,10 @@ const Routes = ({navigation}) => {
                                       size={30}
                                       color={color}
                                       style={{
-                                          width:70,
+                                          width: 70,
                                           height: 70,
                                           color: 'white',
-                                          backgroundColor: '#FF8000',
+                                          backgroundColor: changeButtonFunc ? '#000' : '#FF8000',
                                           borderRadius: 100,
                                           textAlign: 'center',
                                           textAlignVertical: 'center'
@@ -148,23 +172,37 @@ const Routes = ({navigation}) => {
                     }}/>
                 <Tab.Screen
                     name="SearchStack"
-                    component={SearchScreen}
+                    // component={SearchScreen}
+                    children={(props) => <SearchScreen {...props} setChangeButtonFunc={setChangeButtonFunc}/>}
                     options={{
                         tabBarLabel: 'Search',
                         tabBarIcon: ({color = 'red', size = 12}) => (
                             <Icon name={'search'} size={size} color={color}/>
                         ),
                     }}
+                    listeners={{
+                        tabPress: () => {
+                            // e.preventDefault(); // Use this to navigate somewhere else
+                            setChangeButtonFunc(false )
+                        },
+                    }}
                 />
                 <Tab.Screen
                     name="SettingsStack"
                     component={SettingsScreen}
-                    // children={()=><Onboarding initialpage={0}/>}
+                    // children={(props) => <SettingsScreen {...props} setChangeButtonFunc={setChangeButtonFunc}/>}
                     options={{
                         tabBarLabel: 'Settings',
                         tabBarIcon: ({color = 'red', size = 12}) => (
                             <Icon name={'player-settings'} size={size} color={color}/>
                         ),
+                        // unmountOnBlur: true
+                    }}
+                    listeners={{
+                        tabPress: () => {
+                            // e.preventDefault(); // Use this to navigate somewhere else
+                            setChangeButtonFunc(false )
+                        },
                     }}
                 />
             </Tab.Navigator>

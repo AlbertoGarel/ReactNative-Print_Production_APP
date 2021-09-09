@@ -3,14 +3,14 @@ import {Alert, StyleSheet, View, Text, TouchableOpacity} from 'react-native';
 import {papelComunByID, insertPapelcomun, updatePapelComunByID} from "../../dbCRUD/actionsSQL";
 import * as SQLite from "expo-sqlite";
 import * as Yup from "yup";
-import {FormYupSchemas} from "../../components/form/YupSchemas";
+import {FormYupSchemas} from "../../components/FormComponents/YupSchemas";
 import {genericInsertFunction, genericUpdatefunction} from "../../dbCRUD/actionsFunctionsCrud";
 import {Formik} from "formik";
 import {COLORS} from "../../assets/defaults/settingStyles";
 import HRtag from "../../components/HRtag";
-import CustomTextInput from "../../components/form/CustomTextInput";
+import CustomTextInput from "../../components/FormComponents/CustomTextInput";
 import {propietarioSVG} from "../../assets/svg/svgContents";
-import ResetButtonForm from "../../components/form/ResetButtonForm";
+import ResetButtonForm from "../../components/FormComponents/ResetButtonForm";
 import ToastMesages from "../../components/ToastMessages";
 
 const PropBobinasCrud = ({props}) => {

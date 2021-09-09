@@ -10,9 +10,8 @@ import {
     SafeAreaView,
     KeyboardAvoidingView,
     Dimensions,
-    ActivityIndicator
 } from 'react-native';
-import CustomTextInput from "../components/form/CustomTextInput";
+import CustomTextInput from "../components/FormComponents/CustomTextInput";
 import {search, deleteThin, searchCode, semicircle2} from "../assets/svg/svgContents";
 import SvgComponent from "../components/SvgComponent";
 import {COLORS} from "../assets/defaults/settingStyles";
@@ -21,16 +20,24 @@ import * as SQLite from "expo-sqlite";
 import BgComponent from "../components/BackgroundComponent/BgComponent";
 import HomeHeader from "../components/headers/HomeHeader";
 import {Table, TableWrapper, Row, Cell} from 'react-native-table-component';
+import BottomSheetComponent from "../components/BottomSheetComponent";
+import BarcodeScannerComponent from "../components/BarcodeScannerComponent";
+
+const height = Dimensions.get('window').height / 1.5;
 
 const SearchScreen = () => {
     const db = SQLite.openDatabase('bobinas.db');
     const searchRef = useRef();
+    const bottomSheetRef = useRef();
     const [valueForSearch, setValueForSearch] = useState('');
     const [valuesDB, getValuesDB] = useState([]);
     const [hideHeader, setHideHeader] = useState(false)
 
     const [tableHead, setTablehead] = useState(['']);
     const [tableData, setTableData] = useState([]);
+
+    const [isVisible, SetIsVisible] = useState(false);
+
 
     //BACKGROUND PROP CONST
     const optionsSVG = {
@@ -100,6 +107,13 @@ const SearchScreen = () => {
         return arr;
     };
 
+    const bottomSheetHandler = () => SetIsVisible(!isVisible);
+
+    const getScannedCode = (param) => {
+        setValueForSearch(param);
+        setHideHeader(true);
+    }
+
     return (
         <SafeAreaView style={{flex: 1}}>
             <BgComponent
@@ -138,6 +152,7 @@ const SearchScreen = () => {
                                                       searchRef.current.clear();
                                                       setValueForSearch('');
                                                       getValuesDB([]);
+                                                      setHideHeader(false);
                                                   }}
                                 >
                                     <SvgComponent
@@ -156,6 +171,7 @@ const SearchScreen = () => {
                         placeholder={'buscador de bobinas...'}
                         name={'search'}
                         onChangeText={(valueForSearch) => {
+                            // Alert.alert(valueForSearch)
                             onChangeTexthandler(valueForSearch);
                         }}
                         onBlur={() => {
@@ -174,7 +190,9 @@ const SearchScreen = () => {
                         shadowRadius: 10,
                         elevation: 12,
                     }]}
-                                      onPress={() => Alert.alert('huhgutgh')}
+                                      onPress={() => {
+                                          bottomSheetRef.current.open();
+                                      }}
                     >
                         <SvgComponent
                             svgData={searchCode}
@@ -230,6 +248,19 @@ const SearchScreen = () => {
                     :
                     null
             }
+            <BottomSheetComponent
+                ref={bottomSheetRef}
+                height={height}
+                openDuration={250}
+                onClose={() => bottomSheetHandler()}
+                onOpen={() => bottomSheetHandler()}
+                children={<BarcodeScannerComponent props={{
+                    isVisible: isVisible,
+                    getScannedCode: getScannedCode,
+                    onChangeTexthandler: onChangeTexthandler
+                }}/>}
+                isVisible={isVisible}
+            />
         </SafeAreaView>
     );
 };

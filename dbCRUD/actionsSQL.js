@@ -159,6 +159,8 @@ export const insertLinProd =
 export const deleteLinProdByID =
     "DELETE FROM linea_produccion_table WHERE linea_id = ?;"
 ;
+export const pickerLinProd =
+    `SELECT * FROM linea_produccion_table`
 /**
  *  PAPEL_COMUN_TABLE ALL (propietarios)
  */
@@ -243,6 +245,8 @@ export const updateAutoasterByID =
 export const deleteAutopasterByID =
     "DELETE FROM autopaster_table WHERE autopaster_id = ?;"
 ;
+export const getAutopasterByLineaID =
+    "SELECT * FROM autopaster_table WHERE autopaster_table.linea_fk = ?;"
 /**
  *  PRODUCTO_TABLE ALL
  */
@@ -353,6 +357,18 @@ export const search_bobina_fullWeight =
  *  PRODUCCION_TABLE ALL
  */
 export const produccion_table_ALL = "SELECT * FROM produccion_table "
+;
+/**
+ * BARCODES_TABLE
+ */
+export const barcodes_table_all =
+    "SELECT * FROM barcodes_table;"
+;
+export const barcodesAndroid =
+    "SELECT * FROM barcodes_table WHERE barcode_android = 1;"
+;
+export const barcodesIos =
+    "SELECT * FROM barcodes_table WHERE barcode_ios = 1;"
 ;
 
 // CREATE TABLE "medition_style_table" (

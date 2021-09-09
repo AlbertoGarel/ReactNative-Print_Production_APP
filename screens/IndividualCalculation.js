@@ -9,7 +9,7 @@ import {
     ImageBackground,
     Keyboard
 } from 'react-native';
-import CustomTextInput from "../components/form/CustomTextInput";
+import CustomTextInput from "../components/FormComponents/CustomTextInput";
 import {paginationSVG, meditionSVG, radio, peso, tirada2SVG, edicionesSVG, productoSVG} from '../assets/svg/svgContents';
 import SvgComponent from "../components/SvgComponent";
 import {COLORS} from "../assets/defaults/settingStyles";
@@ -17,11 +17,11 @@ import MultipleSwitchSelector from "../components/MultipleSwitchSelector";
 import * as SQLite from "expo-sqlite";
 import {picker_medition_style, coeficienteSearchValue, picker_pagination, picker_producto} from '../dbCRUD/actionsSQL';
 import {Formik} from 'formik';
-import ResetButtonForm from "../components/form/ResetButtonForm";
+import ResetButtonForm from "../components/FormComponents/ResetButtonForm";
 import ToastMesages from "../components/ToastMessages";
-import {FormYupSchemas} from '../components/form/YupSchemas';
+import {FormYupSchemas} from '../components/FormComponents/YupSchemas';
 import * as Yup from "yup";
-import CustomPicker from "../components/form/CustomPicker";
+import CustomPicker from "../components/FormComponents/CustomPicker";
 
 
 const IndividualCalculation = () => {
@@ -172,8 +172,8 @@ const IndividualCalculation = () => {
         switch (switchValue) {
             case 1://elementPrevProdction()
                 //reset states
-                // getselectedTirada('');
-                // getselectedEditions('');
+                getselectedTirada('');
+                getselectedEditions('');
                 // getValueMeasurementMetod(0);
                 //reset to initial values
                 elementPrevProdctionformikRef.current?.resetForm();

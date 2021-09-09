@@ -64,7 +64,7 @@ const HomeScreen = ({navigation}) => {
                 </View>
                 <View style={styles.subcont}>
                     <HomeCard
-                        iconName={"database"}
+                        iconName={"list-1"}
                         iconSize={iconSize}
                         iconColor={COLORS.quinary}
                         cardtitle={"producción simple"}
@@ -76,10 +76,10 @@ const HomeScreen = ({navigation}) => {
                 </View>
                 <View style={styles.subcont}>
                     <HomeCard
-                        iconName={"bell"}
+                        iconName={"bar-chart"}
                         iconSize={iconSize}
                         iconColor={COLORS.quinary}
-                        cardtitle={"Cálculo"}
+                        cardtitle={"Cálculos"}
                         title="Go to Onboard"
                         navigation={navigation}
                         torender={['Profile', {name: 'Elena'}]}
@@ -87,10 +87,10 @@ const HomeScreen = ({navigation}) => {
                 </View>
                 <View style={styles.subcont}>
                     <HomeCard
-                        iconName={"bar-chart"}
+                        iconName={"file-1"}
                         iconSize={iconSize}
                         iconColor={COLORS.quinary}
-                        cardtitle={"Cálculos"}
+                        cardtitle={"Archivos"}
                         title="Go to Onboard"
                         navigation={navigation}
                         torender={['Profile', {name: 'Elena'}]}

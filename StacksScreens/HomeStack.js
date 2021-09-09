@@ -11,27 +11,30 @@ import {getFocusedRouteNameFromRoute} from '@react-navigation/native'
 import IndividualCalculation from "../screens/IndividualCalculation";
 import {Fontisto as Icon} from "@expo/vector-icons";
 
-const HomeStack = ({navigation, route}) => {
+const HomeStack = ({navigation, route, setChangeButtonFunc}) => {
 
     const Stack = createStackNavigator();
 
-    // useEffect(() => {
-    //     const tabHiddenRoutes = [
-    //         "Producción Simplificada",
+    useEffect(() => {
+        const tabHiddenRoutes = [
+            "Producción Simplificada",
     //         "Boarding",
     //         "Profile",
     //         "Cálculo Individual"
-    //     ];
-    //     if (tabHiddenRoutes.includes(getFocusedRouteNameFromRoute(route))) {
-    //         navigation.setOptions({
-    //             tabBarVisible: false,
-    //         });
-    //     } else {
-    //         navigation.setOptions({
-    //             tabBarVisible: true,
-    //         });
-    //     }
-    // }, [navigation, route]);
+        ];
+        if (tabHiddenRoutes.includes(getFocusedRouteNameFromRoute(route))) {
+            // navigation.setOptions({
+            //     tabBarVisible: false,
+            // });
+            setChangeButtonFunc(true)
+        } else {
+            // navigation.setOptions({
+            //     tabBarVisible: true,
+            // });
+            setChangeButtonFunc(false)
+        }
+    }, [navigation, route, setChangeButtonFunc]);
+
 
     return (
         <Stack.Navigator>
@@ -66,7 +69,9 @@ const HomeStack = ({navigation, route}) => {
                           }}
             />
             <Stack.Screen name="Boarding" component={Onboarding} options={{headerShown: false}}/>
-            <Stack.Screen name="Producción Simplificada" component={SimpleProductionScreen}
+            <Stack.Screen name="Producción Simplificada"
+                // component={SimpleProductionScreen}
+                          children={(props) => <SimpleProductionScreen {...props} setChangeButtonFunc={setChangeButtonFunc}/>}
                           options={{headerShown: true}}/>
             <Stack.Screen name="Cálculo Individual" component={IndividualCalculation} options={{headerShown: true}}/>
         </Stack.Navigator>

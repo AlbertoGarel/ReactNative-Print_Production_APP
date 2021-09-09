@@ -18,7 +18,8 @@ const CustomTextInput = ({
                              _name,
                              _onChangeText,
                              _onBlur,
-                             _defaultValue
+                             _defaultValue,
+                             inputStyled
                          }) => {
 
     return (
@@ -36,7 +37,7 @@ const CustomTextInput = ({
             <TextInput
                 ref={_ref}
                 key={_name}
-                style={{flex: 1, paddingLeft: 20}}
+                style={[{flex: 1, paddingLeft: 20,}, inputStyled ? inputStyled : null]}
                 placeholder={placeholder}
                 keyboardType={type}
                 editable={noEditable ? false : true}

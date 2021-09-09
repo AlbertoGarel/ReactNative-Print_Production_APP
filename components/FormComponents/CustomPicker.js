@@ -1,5 +1,5 @@
 import React, {forwardRef} from 'react';
-import {StyleSheet, Picker, Text, View} from 'react-native';
+import {Picker, Text, View} from 'react-native';
 import {COLORS} from "../../assets/defaults/settingStyles";
 
 const CustomPicker = (props, ref) => {
@@ -32,5 +32,4 @@ const CustomPicker = (props, ref) => {
         </>
     )
 };
-const styles = StyleSheet.create({});
 export default forwardRef(CustomPicker)

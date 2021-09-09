@@ -23,7 +23,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "permissions": [ "CAMERA", "CAMERA_ROLL", "VIBRATE" ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
