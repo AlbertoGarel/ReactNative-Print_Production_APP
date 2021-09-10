@@ -29,7 +29,6 @@ import {
     tirada2SVG
 } from "../../assets/svg/svgContents";
 import {COLORS} from "../../assets/defaults/settingStyles";
-import ViewPagerOne from "../../components/ViewpagerProduction/ViewpagerOne";
 import {Formik} from "formik";
 import * as Yup from "yup";
 import {FormYupSchemas} from "../../components/FormComponents/YupSchemas";
@@ -37,7 +36,8 @@ import CustomTextInput from "../../components/FormComponents/CustomTextInput";
 import SvgComponent from "../../components/SvgComponent";
 import CustomPicker from "../../components/FormComponents/CustomPicker";
 import {
-    autopasterByID, getAutopasterByLineaID,
+    autopasterByID,
+    getAutopasterByLineaID,
     picker_gramaje,
     picker_medition_style,
     picker_pagination,
@@ -47,6 +47,7 @@ import {
 import * as SQLite from "expo-sqlite";
 import ToastMesages from "../../components/ToastMessages";
 import {getDatas, storeData} from "../../data/AsyncStorageFunctions";
+import RadioButtonComponent from "../../components/FormComponents/RadioButtonComponent";
 
 const SettingsProductionScreen = () => {
 
@@ -67,6 +68,9 @@ const SettingsProductionScreen = () => {
     const [gramajeDataDB, getGramajeDataDB] = useState([]);
     const [meditionDataDB, getMeditionDataDB] = useState([]);
     const [autopastersDataDB, getAutopastrsdataDB] = useState([]);
+
+    //STATES FOR INPUT RADIO CUSTOM
+    const [isMedia, setMedia] = useState();
 
     //INPUT VALUES STATES
     const [selectedPortada, getselectedPortada] = useState(0)
@@ -191,15 +195,17 @@ const SettingsProductionScreen = () => {
                 });
         });
         if (selectedLinProd) {
-            console.log('param autopaster line', selectedLinProd)
             db.transaction(tx => {
                 tx.executeSql(
                     getAutopasterByLineaID,
                     [selectedLinProd],
                     (_, {rows: {_array}}) => {
                         if (_array.length > 0) {
-                            console.log('render get autopasters');
+                            console.log('render get autopasters',_array);
                             getAutopastrsdataDB(_array);
+                            //GET MEDIA FOR CUSTOM RADIOS
+                            const autopasterMedia = _array.filter(item=>item.media);
+                            setMedia(autopasterMedia[0].autopaster_id)
                         } else {
                             console.log('(Producto_table) Error al conectar base de datos en SettingsProductionScreen Component to call autopasters table');
                         }
@@ -893,12 +899,12 @@ const SettingsProductionScreen = () => {
                                         />
                                         <SettingsProductionHeader
                                             pagenumber={pagenumber}
-                                            explanation={'Texto explicativo para rellenar campos de configuración.'}
+                                            explanation={'Selecciona fecha de producción y autopasters de manera automática o manual.'}
                                         />
-                                        <View style={styles.subCont}>
+                                        <View style={[styles.subCont]}>
                                             {/*//form here*/}
                                             <View
-                                                style={[styles.swicthparent, {opacity: isCheckedAutomaticSettingsConf ? .2 : 1}]}
+                                                style={[styles.swicthparent]}
                                                 // key={item.checkName + '/' + index}
                                             >
                                                 <Switch
@@ -923,15 +929,28 @@ const SettingsProductionScreen = () => {
                                                 >Usar estadísticas de producciones anteriores para elección de
                                                     autopasters.</Text>
                                             </View>
-                                            {
-                                                autopastersDataDB.length > 0 ?
-                                                    autopastersDataDB.map((item, index) => {
-                                                        return <Text
-                                                            key={index}>{item.name_autopaster}: {item.linea_fk}</Text>
-                                                    })
-                                                    :
-                                                    <Text>no hay autopasters</Text>
-                                            }
+                                            {/*///ENTERA///*/}
+                                            <View>
+                                                <Text style={{fontFamily: 'Anton'}}>BOBINA ENTERA:</Text>
+                                                <RadioButtonComponent
+                                                    data={autopastersDataDB}
+                                                    keysForData={{id: 'name_autopaster', value: 'autopaster_id'}}
+                                                    multipleSelect={false}
+                                                    limitSelection={1}
+                                                    initialValueState={null}
+                                                />
+                                            </View>
+                                            {/*///MEDIA///*/}
+                                            <View>
+                                                <Text style={{fontFamily: 'Anton'}}>MEDIA BOBINA:</Text>
+                                                <RadioButtonComponent
+                                                    data={autopastersDataDB}
+                                                    keysForData={{id: 'name_autopaster', value: 'autopaster_id'}}
+                                                    multipleSelect={false}
+                                                    limitSelection={1}
+                                                    initialValueState={isMedia}
+                                                />
+                                            </View>
                                         </View>
                                     </View>
                                     <Footer
