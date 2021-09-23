@@ -7,14 +7,11 @@ import {
     Text,
     TouchableOpacity,
     Picker,
-    ImageBackground,
     Switch,
-    Dimensions,
-    CheckBox
+    Alert, Dimensions
 } from 'react-native';
 import ViewPager from '@react-native-community/viewpager';
 import Footer from '../../components/onboardingComponents/FooterOnboarding';
-// import Page from '../../components/onboardingComponents/Page';
 import {useNavigation} from '@react-navigation/native';
 import SettingsProductionHeader from "../../components/headers/SettingsProductionHeader";
 import BgComponent from "../../components/BackgroundComponent/BgComponent";
@@ -23,7 +20,7 @@ import {
     lineaprodSVG,
     logo,
     meditionSVG,
-    nombre,
+    nullsSVG,
     paginationSVG,
     productoSVG,
     tirada2SVG
@@ -36,22 +33,21 @@ import CustomTextInput from "../../components/FormComponents/CustomTextInput";
 import SvgComponent from "../../components/SvgComponent";
 import CustomPicker from "../../components/FormComponents/CustomPicker";
 import {
-    autopasterByID,
     getAutopasterByLineaID,
-    picker_gramaje,
     picker_medition_style,
-    picker_pagination,
     picker_producto,
     pickerLinProd
 } from "../../dbCRUD/actionsSQL";
 import * as SQLite from "expo-sqlite";
 import ToastMesages from "../../components/ToastMessages";
-import {getDatas, storeData} from "../../data/AsyncStorageFunctions";
+import {getDatas} from "../../data/AsyncStorageFunctions";
 import RadioButtonComponent from "../../components/FormComponents/RadioButtonComponent";
+import {identifyAutopasters} from "../../utils";
+import {genericInsertFunction} from "../../dbCRUD/actionsFunctionsCrud";
 
 const SettingsProductionScreen = () => {
 
-    const windowWidth = Dimensions.get('window').width;
+    const navigation = useNavigation();
 
     let toastRef;
     const showToast = (message) => {
@@ -63,39 +59,37 @@ const SettingsProductionScreen = () => {
 
     //BASEDATA STATES
     const [productoDataDB, getProductoDataDB] = useState([]);
-    const [paginationDataDB, getPaginationDataDB] = useState([]);
     const [lineProdDataDB, getLineProdDataDB] = useState([]);
-    const [gramajeDataDB, getGramajeDataDB] = useState([]);
     const [meditionDataDB, getMeditionDataDB] = useState([]);
     const [autopastersDataDB, getAutopastrsdataDB] = useState([]);
 
     //STATES FOR INPUT RADIO CUSTOM
-    const [isMedia, setMedia] = useState();
+    const [isMedia, setMedia] = useState(0);
+    const [areEnteras, setEnteras] = useState([]);
+    const [numEnteras, setNumEnteras] = useState(0);
 
     //INPUT VALUES STATES
-    const [selectedPortada, getselectedPortada] = useState(0)
-
     const [selectedTirada, getselectedTirada] = useState('');
     const [selectedProduct, getselectedProduct] = useState(0);
     const [selectedPagination, getselectedPagination] = useState(0);
     const [selectedLinProd, getselectedLinProd] = useState(0);
-    const [selectedGramaje, getselectedGramaje] = useState(0);
     const [selectedMedition, getselectedMedition] = useState(0);
     const [selectedEditions, getselectedEditions] = useState('');
     const [selectedNulls, getselectedNulls] = useState('');
 
     //APP states calcAutopasters
+    const [autopastersSelectedLineProd, getAutopastersSelectedLineProd] = useState([])
+    const [maxPaginationOptionPickerLineSelected, getMaxPaginationOptionPickerLineSelected] = useState([])
     const [isCheckedAutomaticNulls, setCheckedAutomaticNulls] = useState(false);
     const [isCheckedAutomaticSettingsConf, setCheckedAutomaticSettingsConf] = useState(false);
+
     const [nullCopiesByEdition, setNullCopiesByEdition] = useState(0);
     const [nullCopiesByTiradaPercentage, setNullCopiesByTiradaPercentage] = useState(0);
     const [nullCopiesByTirada, setNullCopiesByTirada] = useState(0);
     const [isCheckedAutomaticEditions, setCheckedAutomaticEditions] = useState(false);
     const [isCheckedAutomaticAutopasters, setCheckedAutomaticAutopasters] = useState(false);
-    const [visibleAutopasters, setVisibleAutopasters] = useState(false);
-    const [selectedPaginationValue, getSelectedPaginationValue] = useState('');
-    const navigation = useNavigation();
-    const [pagenumber, setPagenumber] = useState('1')
+
+    const [pagenumber, setPagenumber] = useState('1');
     const handlePageChange = pageNumber => {
         pagerRef.current.setPage(pageNumber);
         setPagenumber(pageNumber + 1);
@@ -105,7 +99,7 @@ const SettingsProductionScreen = () => {
         svgData: logo, svgWidth: '100%', svgHeight: '100%'
     };
     const optionsStyleContSVG = {
-        width: '100%', height: '100%', top: 0, right: 0, opacity: .05
+        width: '100%', height: '100%', top: 0, right: 0, opacity: .1
     };
 
     const db = SQLite.openDatabase('bobinas.db');
@@ -128,20 +122,6 @@ const SettingsProductionScreen = () => {
                     }
                 );
             });
-            //PAGINATION
-            db.transaction(tx => {
-                tx.executeSql(
-                    picker_pagination,
-                    [],
-                    (_, {rows: {_array}}) => {
-                        if (_array.length > 0) {
-                            getPaginationDataDB(_array);
-                        } else {
-                            console.log('(Producto_table) Error al conectar base de datos en IndividualCalculation Component');
-                        }
-                    }
-                );
-            });
             //PRODUCTION LINE
             db.transaction(tx => {
                 tx.executeSql(
@@ -150,20 +130,6 @@ const SettingsProductionScreen = () => {
                     (_, {rows: {_array}}) => {
                         if (_array.length > 0) {
                             getLineProdDataDB(_array);
-                        } else {
-                            console.log('(Producto_table) Error al conectar base de datos en IndividualCalculation Component');
-                        }
-                    }
-                );
-            });
-            //GRAMAJE
-            db.transaction(tx => {
-                tx.executeSql(
-                    picker_gramaje,
-                    [],
-                    (_, {rows: {_array}}) => {
-                        if (_array.length > 0) {
-                            getGramajeDataDB(_array);
                         } else {
                             console.log('(Producto_table) Error al conectar base de datos en IndividualCalculation Component');
                         }
@@ -185,27 +151,104 @@ const SettingsProductionScreen = () => {
                 );
             });
 
+            //AUTOPASTERS
+            db.transaction(tx => {
+                tx.executeSql(
+                    'SELECT * FROM autopaster_table',
+                    [],
+                    (_, {rows: {_array}}) => {
+                        if (_array.length > 0) {
+                            getAutopastrsdataDB(_array);
+                        } else {
+                            console.log('(Producto_table) Error al conectar base de datos en SettingsProductionScreen Component to call autopasters table');
+                        }
+                    }, () => err => console.log(err)
+                );
+            });
+
             getDatas('@NullCopiesData')
                 .then(response => {
                     setNullCopiesByEdition(parseInt(response.nullcopiesbyedition));
                     setNullCopiesByTiradaPercentage(parseInt(response.nullcopiesbydefault));
                 })
-                .catch(err => {
+                .catch(() => {
                     showToast("Completa la configuracions de descartes en \"SETTINGS\"...")
                 });
         });
-        if (selectedLinProd) {
+
+        //GET AND SET VALUES FOR AUTOMATICSETTINGSDATA, AUTOMATICSTADISTICS AND ENTER VALUE MANUALLY FOR NULLS.
+        if (isCheckedAutomaticSettingsConf) {
+            if (!nullCopiesByTiradaPercentage || !nullCopiesByEdition) {
+                showToast("Completa la configuracions de descartes en \"SETTINGS\"...")
+            } else {
+                let nullsByTir = ((parseInt(selectedTirada) * parseInt(nullCopiesByTiradaPercentage)) / 100);
+                let nullsByEd = parseInt(nullCopiesByEdition) * parseInt(selectedEditions);
+                let totalCalcSettingsNulls = nullsByTir + nullsByEd;
+
+                if (isNaN(nullsByTir)) {
+                    if (isNaN(nullsByEd)) nullsByEd = '';
+                    getselectedNulls(nullsByEd)
+                    setNullCopiesByTirada('¿ ?')
+                }
+                if (isNaN(nullsByEd)) {
+                    getselectedNulls(nullsByTir);
+                    setNullCopiesByTirada(nullsByTir)
+                }
+                if (!isNaN(nullsByTir) && !isNaN(nullsByEd)) {
+                    getselectedNulls(totalCalcSettingsNulls)
+                    setNullCopiesByTirada(nullsByTir)
+                }
+            }
+        }
+
+        /**
+         * WHEN PRODUCTION STATISTICS DATA EXISTS, CREATE LOGIC TO TAKE DATA FOR SELECT AUTOPASTERS AND NULLS. IMPORTANT!!!!
+         **/
+        //CODE HERE
+        console.log('ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt')
+
+        return unsubscribe;
+    }, [
+        navigation,
+        isCheckedAutomaticSettingsConf,
+        // selectedTirada,
+        nullCopiesByEdition,
+        nullCopiesByTiradaPercentage,
+        // selectedEditions,
+        // selectedLinProd,
+    ]);
+
+    useEffect(() => {
+        if (maxPaginationOptionPickerLineSelected && selectedPagination) {
             db.transaction(tx => {
                 tx.executeSql(
                     getAutopasterByLineaID,
                     [selectedLinProd],
                     (_, {rows: {_array}}) => {
-                        if (_array.length > 0) {
-                            console.log('render get autopasters',_array);
-                            getAutopastrsdataDB(_array);
-                            //GET MEDIA FOR CUSTOM RADIOS
-                            const autopasterMedia = _array.filter(item=>item.media);
-                            setMedia(autopasterMedia[0].autopaster_id)
+                        if (autopastersDataDB.length > 0) {
+                            getAutopastersSelectedLineProd(_array);
+                            const valuePagination = maxPaginationOptionPickerLineSelected.filter(item => item.paginacion_id === selectedPagination);
+
+                            //CHECK IF 'MEDIA BOBINA' EXIST
+                            const identifyWithMedia = identifyAutopasters(valuePagination[0].paginacion_value);
+                            // //GET 'MEDIA BOBINA' FOR CUSTOM RADIOS
+                            if (identifyWithMedia.media === 1) {
+                                const autopasterMedia = _array.filter(item => item.media);
+                                if (autopasterMedia.length > 0) {
+                                    setMedia(autopasterMedia[0].autopaster_id);
+                                    setNumEnteras(identifyWithMedia.entera);
+                                } else {
+                                    getselectedPagination(0);
+                                    Alert.alert(
+                                        '¡¡ ATENCIÓN !!',
+                                        'No existe autopaster definido para media bobina en esta lìnea de producción.' +
+                                        ' Cree o asigne uno existente en el apartado de base de datos. (BBDD -> Autopasters)'
+                                    )
+                                }
+                            } else {
+                                setMedia(0);
+                                setNumEnteras(identifyWithMedia.entera);
+                            }
                         } else {
                             console.log('(Producto_table) Error al conectar base de datos en SettingsProductionScreen Component to call autopasters table');
                         }
@@ -215,66 +258,138 @@ const SettingsProductionScreen = () => {
         } else {
             console.log('no call autopasters')
         }
+    }, [maxPaginationOptionPickerLineSelected, selectedPagination])
 
-        //GET PAGINATION VALUE FOR CALC NUMBER OF AUTOPASTERS.
-        if (selectedPagination > 0) {
-            const valuePagination = paginationDataDB.filter(item => item.paginacion_id === selectedPagination);
-            getSelectedPaginationValue(valuePagination[0].paginacion_value);
-            console.log('pagination', valuePagination[0].paginacion_value / 16)
-        }
+    const handlerSendOptionsSelected = (toSendProd, toSendAutopastProd) => {
+        const insert_production = "INSERT INTO produccion_table (produccion_id, editions, linea_fk, medition_fk, pagination_fk, producto_fk, tirada, nulls, fecha_produccion) VALUES (?,?,?,?,?,?,?,?,date('now'));"
+        const insert_autopast_prod = "INSERT INTO autopasters_prod_data (autopasters_prod_data_id, production_fk, autopaster_fk, media_defined) VALUES (NULL,?,?,?);"
+        genericInsertFunction(insert_production, toSendProd)
+            .then(result => {
+                if (result.rowsAffected > 0) {
+                    //LOOP INSERT DATA
+                    let cont = 0;
+                    for (const insert of toSendAutopastProd) {
+                        console.log('insert', insert);
+                        genericInsertFunction(insert_autopast_prod, insert)
+                            .then(result => {
+                                if (result.rowsAffected > 0) {
+                                    if (cont === toSendAutopastProd.length) showToast('Actualizado con éxito toda la fase', false)
+                                } else {
+                                    showToast('Error al actualizar')
+                                }
+                            })
+                            .catch(err => {
+                                showToast('Error al actualizar')
+                                console.log(err)
+                            })
+                        cont++;
+                    }
+                } else {
+                    showToast('Error al actualizar')
+                }
+            })
+            .catch(err => {
+                showToast('Error al actualizar')
+                console.log(err)
+            })
+        // db.transaction(tx => {
+        //     tx.executeSql(
+        //         "SELECT * autopasters_prod_data",
+        //         toSendProd,
+        //         (_, {rows: {_array}}) => {
+        //             if (_array.length > 0) {
+        //                 console.log('autopasters_prod_data', _array)
+        //             } else {
+        //                 console.log('(Producto_table) Error al conectar base de datos en IndividualCalculation Component');
+        //             }
+        //         }
+        //     );
+        // });
+    };
 
-        //GET AND SET VALUES FOR AUTOMATICSETTINGSDATA, AUTOMATICSTADISTICS AND ENTER VALUE MANUALLY FOR NULLS.
-        if (isCheckedAutomaticSettingsConf) {
-            let nullsByTir = ((parseInt(selectedTirada) * parseInt(nullCopiesByTiradaPercentage)) / 100);
-            let nullsByEd = parseInt(nullCopiesByEdition) * parseInt(selectedEditions);
-            let totalCalcSettingsNulls = nullsByTir + nullsByEd;
+    const resetForm = () => {
+        //RESET FORM AND STATES
+        fullproduction.current?.resetForm();
+        setMedia(0);
+        setEnteras([]);
+        setNumEnteras(0);
+        getselectedTirada('');
+        getselectedProduct(0);
+        getselectedPagination(0);
+        getselectedLinProd(0);
+        getselectedMedition(0);
+        getselectedEditions('');
+        getselectedNulls('');
+    }
 
-            if (isNaN(nullsByTir)) {
-                if (isNaN(nullsByEd)) nullsByEd = '';
-                getselectedNulls(nullsByEd)
-                setNullCopiesByTirada('¿ ?')
-            }
-            if (isNaN(nullsByEd)) {
-                getselectedNulls(nullsByTir);
-                setNullCopiesByTirada(nullsByTir)
-            }
-            if (!isNaN(nullsByTir) && !isNaN(nullsByEd)) {
-                getselectedNulls(totalCalcSettingsNulls)
-                setNullCopiesByTirada(nullsByTir)
-            }
-        } else {
-            getselectedNulls('')
-        }
-
-        /**
-         * WHEN PRODUCTION STATISTICS DATA EXISTS, CREATE LOGIC TO TAKE DATA FOR SELECT AUTOPASTERS AND NULLS. IMPORTANT!!!!
-         **/
-        //CODE HERE
-
-        return unsubscribe;
-    }, [
-        navigation,
-        selectedPagination,
-        selectedNulls,
-        isCheckedAutomaticSettingsConf,
-        selectedTirada,
-        nullCopiesByEdition,
-        nullCopiesByTiradaPercentage,
-        selectedEditions,
-        selectedLinProd
-    ]);
+    const handlerChangeLineProd = (val) => {
+        //RESET PAGE STATUS ON CHANGE LINE PRODUCTION VALUES.
+        getselectedPagination(0);
+        //     //RESET TO INITIAL STATE WHEN cHANGE OPTION SELECTED
+        setEnteras([]);
+        //GET LIMIT FOR PAGINATION OF LINE PRODUCTION SELECTED.
+        const getLineProd = autopastersDataDB.filter((item => item.linea_fk === val));
+        const limitPagination = getLineProd.length * 16;
+        db.transaction(tx => {
+            tx.executeSql(
+                "SELECT * FROM paginacion_table WHERE paginacion_value <=?;",
+                [limitPagination],
+                (_, {rows: {_array}}) => {
+                    if (_array.length > 0) {
+                        getMaxPaginationOptionPickerLineSelected(_array);
+                    } else {
+                        console.log('(Producto_table) Error al conectar base de datos en IndividualCalculation Component');
+                    }
+                }
+            );
+        });
+    }
 
     const fullProductionSchema = Yup.object().shape({
         tirada: FormYupSchemas.tirada,
         pickerProduct: FormYupSchemas.pickerProducto,
         pickerPagination: FormYupSchemas.pickerProducto,
         pickerlinProd: FormYupSchemas.pickerProducto,
-        pickerGramaje: FormYupSchemas.pickerProducto,
         pickerMedition: FormYupSchemas.pickerProducto,
         inputEditions: FormYupSchemas.editions,
-        inputNulls: FormYupSchemas.inputTirBruta,
+        inputNulls: FormYupSchemas.tirada,
+        customEntera: Yup.array().length(numEnteras, `Debes seleccionar ${numEnteras}`),
+        customMedia: Yup.number().test({
+            name: 'customEntera',
+            // eslint-disable-next-line object-shorthand
+            test: function (value) {
+                // You can add any logic here to generate a dynamic message
+
+                return value < 0
+                    ? this.createError({
+                        message: `Falta por seleccionar 1 Autopaster`,
+                        path: 'customMedia', // Fieldname
+                    })
+                    : true;
+            },
+        }),
     });
 
+    const BoxError = () => {
+        return (
+            <View style={{
+                margin: 5,
+                width: Dimensions.get('window').width - 10,// margin * 2
+                padding: 10,
+                borderRadius: 5,
+                backgroundColor: '#FF000020',
+                position: 'absolute',
+                bottom: 0,
+                borderWidth: 2,
+                borderColor: '#FF000070'
+
+            }}>
+                <Text style={{color: COLORS.supportBackg1, fontFamily: 'Anton'}}>ERROR:</Text>
+                <Text style={{textAlign: 'center', color: COLORS.supportBackg1, fontFamily: 'Anton'}}>Revise errores o
+                    entradas vacías.</Text>
+            </View>
+        )
+    }
 
     return (
         // SafeAreView don't accept padding.
@@ -283,39 +398,62 @@ const SettingsProductionScreen = () => {
                 enableReinitialize
                 innerRef={fullproduction}
                 initialValues={{
-                    tirada: selectedTirada,
+                    tirada: selectedTirada === '' ? selectedTirada : parseInt(selectedTirada),
                     pickerProduct: selectedProduct,
                     pickerPagination: selectedPagination,
                     pickerlinProd: selectedLinProd,
-                    pickerGramaje: selectedGramaje,
                     pickerMedition: selectedMedition,
-                    inputEditions: selectedEditions,
-                    inputNulls: selectedNulls,
+                    inputEditions: selectedEditions === '' ? selectedEditions : parseInt(selectedEditions),
+                    inputNulls: selectedNulls === '' ? selectedNulls : parseInt(selectedNulls),
+                    customEntera: areEnteras,
+                    customMedia: isMedia
                 }}
                 validationSchema={fullProductionSchema}
                 onSubmit={values => {
-                    getselectedTirada(parseInt(values.tirada));
-                    getselectedProduct(values.pickerProduct);
-                    getselectedPagination(values.pickerPagination);
-                    getselectedLinProd(values.pickerlinProd);
-                    getselectedGramaje(values.pickerGramaje);
-                    getselectedMedition(values.pickerMedition);
-                    getselectedEditions(values.inputEditions);
-                    getselectedNulls(values.inputNulls);
-                    const myObject = {
-                        tirada: values.tirada,
-                        producto: values.pickerProduct,
-                        pagination: values.pickerPagination,
-                        linea: values.pickerlinProd,
-                        gramaje: values.pickerGramaje,
-                        medicion: values.pickerMedition,
-                        editions: values.inputEditions,
-                        nulls: values.inputNulls
+                    // getselectedTirada(parseInt(values.tirada));
+                    // getselectedProduct(values.pickerProduct);
+                    // getselectedPagination(values.pickerPagination);
+                    // getselectedLinProd(values.pickerlinProd);
+                    // getselectedMedition(values.pickerMedition);
+                    // getselectedEditions(parseInt(values.inputEditions));
+                    // getselectedNulls(parseInt(values.inputNulls));
+
+
+                    const create_id = Date.now();
+                    const objectAutopast = {
+                        id: create_id,
+                        entera: areEnteras,
+                        media: isMedia
                     }
-                    console.log('objeto para envío', myObject)
-                    // getselectedEditions(parseInt(values.editions));
-                    // const measurementval = measuramentDataDB.filter(item => item.medition_id === values.meditionType);
-                    // getValueMeasurementMetod(measurementval);
+                    const groupAuto = (obj) => {
+                        const id = obj.id;
+                        const _enteras = obj.entera.map(item => [id, item, 0]);
+                        const _media = [id, obj.media, 1];
+                        if (!obj.media) {
+                            return _enteras;
+                        } else {
+                            return [..._enteras, _media];
+                        }
+                    };
+                    //TO SEND BASEDATA
+                    // order insert (production_id, editions, linea_fk, medition_fk, pagination_fk,
+                    // producto_fk, tirada, nulls, fecha_produccion)
+                    const objectProd = {
+                        id: create_id,
+                        editions: values.inputEditions,
+                        linea: values.pickerlinProd,
+                        medicion: values.pickerMedition,
+                        pagination: values.pickerPagination,
+                        producto: values.pickerProduct,
+                        tirada: values.tirada,
+                        nulls: values.inputNulls,
+                    };
+                    // console.log('revisar para envío', objectProd)
+                    const prod_data = Object.values(objectProd);
+                    console.log('revisar para envío', prod_data)
+                    const autopast_prod_data = groupAuto(objectAutopast);
+                    //TRANSACTION FUNCTION
+                    handlerSendOptionsSelected(prod_data, autopast_prod_data)
                 }}
             >
                 {({
@@ -356,9 +494,6 @@ const SettingsProductionScreen = () => {
                                             pagenumber={pagenumber}
                                             explanation={'Escoge opciones relacionadas con el producto.'}
                                         />
-                                        {/*<ViewPagerOne*/}
-                                        {/*    stylesContPrinc={styles.subCont}*/}
-                                        {/*/>*/}
                                         <View style={styles.subCont}>
                                             <View style={{padding: 10}}>
                                                 {(errors.pickerlinProd && touched.pickerlinProd) &&
@@ -400,7 +535,10 @@ const SettingsProductionScreen = () => {
                                                             selectedValue={values.pickerlinProd}
                                                             // selectedValue={selectedMeasurementMetod}
                                                             onValueChange={(itemValue) => {
+                                                                //RESET PAGE STATUS ON CHANGE LINE PRODUCTION VALUES.
+                                                                // getselectedPagination(0);
                                                                 if (itemValue > 0) {
+                                                                    handlerChangeLineProd(itemValue);
                                                                     handleChange('pickerlinProd')
                                                                     setFieldTouched('pickerlinProd', true)
                                                                     setFieldValue('pickerlinProd', itemValue)
@@ -423,7 +561,7 @@ const SettingsProductionScreen = () => {
                                             </View>
                                             <View style={{padding: 10}}>
                                                 {(errors.pickerPagination && touched.pickerPagination) &&
-                                                < Text
+                                                <Text
                                                     style={{
                                                         fontSize: 10,
                                                         color: 'red'
@@ -472,13 +610,17 @@ const SettingsProductionScreen = () => {
                                                                 }
                                                             }}
                                                             dataOptionsPicker={
-                                                                paginationDataDB.map((item, index) => {
-                                                                    return <Picker.Item key={index}
-                                                                                        label={' ' + item.paginacion_value}
-                                                                                        value={item.paginacion_id}/>
-                                                                })
+                                                                selectedLinProd ?
+                                                                    maxPaginationOptionPickerLineSelected.map((item, index) => {
+                                                                        return <Picker.Item key={index}
+                                                                                            label={' ' + item.paginacion_value}
+                                                                                            value={item.paginacion_id}/>
+                                                                    })
+                                                                    :
+                                                                    []
                                                             }
-                                                            defaultItemLabel={'Escoge paginación...'}
+                                                            enabled={maxPaginationOptionPickerLineSelected.length > 0}
+                                                            defaultItemLabel={maxPaginationOptionPickerLineSelected.length === 0 ? 'Paginación deshabilitada...' : 'Escoge paginación...'}
                                                         />
                                                     </View>
                                                 </View>
@@ -502,7 +644,7 @@ const SettingsProductionScreen = () => {
                                                 }}>
                                                     <View style={styles.IconStyle}>
                                                         <SvgComponent
-                                                            svgData={nombre}
+                                                            svgData={productoSVG}
                                                             svgWidth={45}
                                                             svgHeight={45}
                                                         />
@@ -537,64 +679,6 @@ const SettingsProductionScreen = () => {
                                                                 })
                                                             }
                                                             defaultItemLabel={'Escoge un producto...'}
-                                                        />
-                                                    </View>
-                                                </View>
-                                            </View>
-                                            <View style={{padding: 10}}>
-                                                {(errors.pickerGramaje && touched.pickerGramaje) &&
-                                                < Text
-                                                    style={{fontSize: 10, color: 'red'}}>{errors.pickerGramaje}</Text>
-                                                }
-                                                <View style={{
-                                                    backgroundColor: COLORS.white,
-                                                    width: '100%',
-                                                    height: 60,
-                                                    padding: 5,
-                                                    borderRadius: 5,
-                                                    flexDirection: 'row',
-                                                    justifyContent: 'center',
-                                                    alignItems: 'center',
-                                                    borderWidth: .5,
-                                                    borderColor: COLORS.black,
-                                                }}>
-                                                    <View style={styles.IconStyle}>
-                                                        <SvgComponent
-                                                            svgData={productoSVG}
-                                                            svgWidth={45}
-                                                            svgHeight={45}
-                                                        />
-                                                    </View>
-                                                    <View style={{flex: 1, paddingLeft: 10}}>
-                                                        <CustomPicker
-                                                            // ref={ProductoRef}
-                                                            style={{
-                                                                borderWidth: .5,
-                                                                borderColor: COLORS.black,
-                                                            }}
-                                                            name={'pickerGramaje'}
-                                                            itemStyle={{fontFamily: 'Anton'}}
-                                                            mode={'dropdown'}
-                                                            selectedValue={values.pickerGramaje}
-                                                            // selectedValue={selectedMeasurementMetod}
-                                                            onValueChange={(itemValue) => {
-                                                                if (itemValue > 0) {
-                                                                    handleChange('pickerGramaje')
-                                                                    setFieldTouched('pickerGramaje', true)
-                                                                    setFieldValue('pickerGramaje', itemValue)
-                                                                    getselectedGramaje(itemValue)
-                                                                } else {
-                                                                    showToast("Debes escoger una opción válida...")
-                                                                }
-                                                            }}
-                                                            dataOptionsPicker={
-                                                                gramajeDataDB.map((item, index) => {
-                                                                    return <Picker.Item key={index}
-                                                                                        label={' ' + item.gramaje_value}
-                                                                                        value={item.gramaje_id}/>
-                                                                })
-                                                            }
-                                                            defaultItemLabel={'Escoge gramaje...'}
                                                         />
                                                     </View>
                                                 </View>
@@ -697,10 +781,9 @@ const SettingsProductionScreen = () => {
                                                     type={'numeric'}
                                                     _name={'tirada'}
                                                     _onChangeText={handleChange('tirada')}
-                                                    _onBlur={() => {
-                                                        handleBlur('tirada');
-                                                        getselectedTirada(values.tirada)
-                                                    }}
+                                                    _onBlur={handleBlur('tirada')}
+                                                    _onEndEditing={() => getselectedTirada(values.tirada)}
+                                                    _defaultValue={selectedTirada.toString()}
                                                     value={values.tirada}
                                                 />
                                             </View>
@@ -758,12 +841,12 @@ const SettingsProductionScreen = () => {
                                                     styled={{marginBottom: 10}}
                                                     _name={'inputEditions'}
                                                     _onChangeText={handleChange('inputEditions')}
-                                                    _onBlur={() => {
-                                                        getselectedEditions(values.inputEditions)
-                                                        handleBlur('inputEditions')
-                                                    }}
-                                                    value={values.editions}
+                                                    _onBlur={handleBlur('inputEditions')}
+                                                    _onEndEditing={() => getselectedEditions(values.inputEditions)}
+                                                    value={values.inputEditions}
+                                                    _defaultValue={selectedEditions.toString()}
                                                 />
+                                                <Text>{values.inputEditions}</Text>
                                             </View>
                                             <View
                                                 style={[styles.swicthparent, {opacity: isCheckedAutomaticNulls ? .2 : 1}]}
@@ -810,7 +893,7 @@ const SettingsProductionScreen = () => {
                                                 }
                                                 <CustomTextInput
                                                     // _ref={EdicionesRef}
-                                                    svgData={edicionesSVG}
+                                                    svgData={nullsSVG}
                                                     svgWidth={50}
                                                     svgHeight={50}
                                                     placeholder={'Ejemplares "nulos"...'}
@@ -819,6 +902,7 @@ const SettingsProductionScreen = () => {
                                                     _name={'inputNulls'}
                                                     _onChangeText={handleChange('inputNulls')}
                                                     _onBlur={handleBlur('inputNulls')}
+                                                    _onEndEditing={() => getselectedNulls(values.inputNulls)}
                                                     value={values.inputNulls}
                                                     _defaultValue={selectedNulls.toString()}
                                                     noEditable={isCheckedAutomaticNulls || isCheckedAutomaticSettingsConf}
@@ -828,6 +912,7 @@ const SettingsProductionScreen = () => {
                                                     }}
                                                     inputStyled={{color: isCheckedAutomaticNulls || isCheckedAutomaticSettingsConf ? COLORS.black : COLORS.dimgrey + '90'}}
                                                 />
+                                                {/*<Text>{selectedNulls}</Text>*/}
                                             </View>
                                             <View
                                                 style={[styles.swicthparent, {opacity: isCheckedAutomaticSettingsConf ? .2 : 1}]}
@@ -855,28 +940,6 @@ const SettingsProductionScreen = () => {
                                                 >Usar estadísticas de producciones anteriores para calcular ejemplares
                                                     "nulos" según ediciones y tirada</Text>
                                             </View>
-                                            <TouchableOpacity
-                                                style={[styles.touchable, {
-                                                    alignSelf: 'center',
-                                                    margin: 5,
-                                                    opacity: !isValid ? .1 : 1
-                                                }]}
-                                                // onPress={() => coeficienteSearch(values.inputRadio)}
-                                                // onPress={() => Alert.alert(values.inputRadio)}
-                                                // title="CALCULAR"
-                                                color="#841584"
-                                                accessibilityLabel="calcular resultado de bobina"
-                                                onPress={handleSubmit}
-                                                title="Submit"
-                                                disabled={!isValid}
-                                            >
-                                                <Text
-                                                    style={{
-                                                        color: COLORS.white,
-                                                        fontFamily: 'Anton',
-                                                        fontSize: 20
-                                                    }}>CALCULAR</Text>
-                                            </TouchableOpacity>
                                         </View>
                                     </View>
                                     <Footer
@@ -901,7 +964,7 @@ const SettingsProductionScreen = () => {
                                             pagenumber={pagenumber}
                                             explanation={'Selecciona fecha de producción y autopasters de manera automática o manual.'}
                                         />
-                                        <View style={[styles.subCont]}>
+                                        <View style={[styles.subCont, {justifyContent: 'flex-start'}]}>
                                             {/*//form here*/}
                                             <View
                                                 style={[styles.swicthparent]}
@@ -929,40 +992,123 @@ const SettingsProductionScreen = () => {
                                                 >Usar estadísticas de producciones anteriores para elección de
                                                     autopasters.</Text>
                                             </View>
-                                            {/*///ENTERA///*/}
-                                            <View>
-                                                <Text style={{fontFamily: 'Anton'}}>BOBINA ENTERA:</Text>
-                                                <RadioButtonComponent
-                                                    data={autopastersDataDB}
-                                                    keysForData={{id: 'name_autopaster', value: 'autopaster_id'}}
-                                                    multipleSelect={false}
-                                                    limitSelection={1}
-                                                    initialValueState={null}
-                                                />
-                                            </View>
-                                            {/*///MEDIA///*/}
-                                            <View>
-                                                <Text style={{fontFamily: 'Anton'}}>MEDIA BOBINA:</Text>
-                                                <RadioButtonComponent
-                                                    data={autopastersDataDB}
-                                                    keysForData={{id: 'name_autopaster', value: 'autopaster_id'}}
-                                                    multipleSelect={false}
-                                                    limitSelection={1}
-                                                    initialValueState={isMedia}
-                                                />
-                                            </View>
+                                            {selectedLinProd && selectedPagination ?
+                                                <>
+                                                    <View>
+                                                        {/*///ENTERA///*/}
+                                                        {(errors.customEntera && touched.customEntera) &&
+                                                        <Text style={{
+                                                            fontSize: 10,
+                                                            color: 'red',
+                                                            marginLeft: 10
+                                                        }}>{errors.customEntera}</Text>
+                                                        }
+                                                        <RadioButtonComponent
+                                                            title={'BOBINA ENTERA'}
+                                                            data={autopastersSelectedLineProd}
+                                                            keysForData={{
+                                                                id: 'name_autopaster',
+                                                                value: 'autopaster_id'
+                                                            }}
+                                                            multipleSelect={true}
+                                                            limitSelection={numEnteras}
+                                                            initialValueState={areEnteras}
+                                                            notSelectable={isMedia}
+                                                            _setState={setEnteras}
+                                                            // name={'customEntera'}
+                                                        />
+                                                    </View>
+                                                    <View>
+                                                        {/*///MEDIA///*/}
+                                                        {(errors.customMedia && touched.customMedia) &&
+                                                        <Text style={{
+                                                            fontSize: 10,
+                                                            color: 'red',
+                                                            marginLeft: 10
+                                                        }}>{errors.customMedia}</Text>
+                                                        }
+                                                        <RadioButtonComponent
+                                                            title={'MEDIA BOBINA'}
+                                                            data={autopastersSelectedLineProd}
+                                                            keysForData={{
+                                                                id: 'name_autopaster',
+                                                                value: 'autopaster_id'
+                                                            }}
+                                                            multipleSelect={false}
+                                                            limitSelection={1}
+                                                            initialValueState={[isMedia]}
+                                                            _setState={setMedia}
+                                                            // name={'customMedia'}
+                                                        />
+                                                    </View>
+                                                </>
+                                                :
+                                                <>
+                                                    <Text style={{
+                                                        fontSize: 18,
+                                                        fontFamily: 'Anton',
+                                                        marginTop: 15,
+                                                        color: COLORS.primary,
+                                                    }}>
+                                                        SELECCIÓN DE AUTOPASTERS:
+                                                    </Text>
+                                                    <View
+                                                        style={{
+                                                            borderColor: COLORS.buttonEdit,
+                                                            borderWidth: 2,
+                                                            backgroundColor: COLORS.buttonEdit + '50',
+                                                            borderRadius: 5,
+                                                            padding: 10,
+                                                        }}
+                                                    >
+                                                        <Text
+                                                            style={{
+                                                                fontFamily: 'Anton',
+                                                                color: COLORS.dimgrey,
+                                                                textAlign: 'center'
+                                                            }}
+                                                        >Escoge paginación y línea de producción para seleccionar
+                                                            autopasters.</Text>
+                                                    </View>
+                                                </>
+                                            }
                                         </View>
+                                        {!isValid && <BoxError/>
+                                        }
                                     </View>
                                     <Footer
                                         backgroundColor={COLORS.success}
-                                        leftButtonLabel="Back"
+                                        leftButtonLabel={"Back"}
                                         leftButtonPress={() => {
-                                            handlePageChange(1);
+                                            handlePageChange(1)
                                         }}
                                         rightButtonLabel="Continue"
                                         rightButtonPress={() => {
                                             navigation.navigate('HomeStack');
                                         }}
+
+                                        buttonChild={() => <TouchableOpacity
+                                            style={[styles.touchable, {
+                                                alignSelf: 'center',
+                                                marginRight: 0,
+                                                opacity: !isValid ? .1 : 1
+                                            }]}
+                                            // onPress={() => coeficienteSearch(values.inputRadio)}
+                                            // onPress={() => Alert.alert(values.inputRadio)}
+                                            // title="CALCULAR"
+                                            color="#841584"
+                                            accessibilityLabel="calcular resultado de bobina"
+                                            onPress={handleSubmit}
+                                            title="Submit"
+                                            disabled={!isValid}
+                                        >
+                                            <Text
+                                                style={{
+                                                    color: COLORS.white,
+                                                    fontFamily: 'Anton',
+                                                    fontSize: 20
+                                                }}>CALCULAR</Text>
+                                        </TouchableOpacity>}
                                     />
                                 </View>
                             </ViewPager>

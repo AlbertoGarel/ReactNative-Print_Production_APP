@@ -203,10 +203,20 @@ const DataBaseScreen = ({navigation, setChangeButtonFunc}) => {
     };
     const produccionComponentProps = {
         headerTitle: "Producciones abiertas",
-        headerParagraph: "Consulta las producciones gesionadas mediante la aplicación.",
+        headerParagraph: "Consulta las producciones gestionadas mediante la aplicación.",
         textButton: "Nuevo registro",
         requestDB: {
             allItems: produccion_table_ALL,
+            deleteItem: ''
+        },
+        disable: true,
+    };
+    const bobinasProduccionComponentProps = {
+        headerTitle: "bobinas en Producciones abiertas",
+        headerParagraph: "Vista SÒLO para desarrollo.",
+        textButton: "Nuevo registro",
+        requestDB: {
+            allItems: "SELECT * FROM autopasters_prod_data;",
             deleteItem: ''
         },
         disable: true,
@@ -267,6 +277,8 @@ const DataBaseScreen = ({navigation, setChangeButtonFunc}) => {
                                    children={() => <TableViewwCommonScreen props={bobinasComponentProps}/>}/>
                     <Drawer.Screen options={option_vis} name="Producciones"
                                    children={() => <TableViewwCommonScreen props={produccionComponentProps}/>}/>
+                    <Drawer.Screen options={option_vis} name="Boinas en producciones"
+                                   children={() => <TableViewwCommonScreen props={bobinasProduccionComponentProps}/>}/>
                 </Drawer.Navigator>
             </View>
         </SafeAreaView>

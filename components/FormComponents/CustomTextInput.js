@@ -19,7 +19,8 @@ const CustomTextInput = ({
                              _onChangeText,
                              _onBlur,
                              _defaultValue,
-                             inputStyled
+                             inputStyled,
+                             _onEndEditing
                          }) => {
 
     return (
@@ -44,6 +45,7 @@ const CustomTextInput = ({
                 name={_name}
                 onChangeText={_onChangeText}
                 onBlur={_onBlur}
+                onEndEditing={_onEndEditing ?(text)=> _onEndEditing(text) : null}
                 // underlineColorAndroid="transparent"
                 defaultValue={_defaultValue}
             />

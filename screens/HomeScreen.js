@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
     Text,
     View,
@@ -13,9 +13,13 @@ import BgComponent from "../components/BackgroundComponent/BgComponent";
 import {semicircle2} from "../assets/svg/svgContents";
 import HomeHeader from "../components/headers/HomeHeader";
 import Caroussel from "../components/Caroussel";
+import * as SQLite from "expo-sqlite";
+import {produccion_table_ALL} from "../dbCRUD/actionsSQL";
+import {useFocusEffect} from "@react-navigation/native";
 
 
 const HomeScreen = ({navigation}) => {
+    const db = SQLite.openDatabase('bobinas.db');
     //ICON SIZE
     const iconSize = 40;
     //BACKGROUND PROP CONST
@@ -25,6 +29,33 @@ const HomeScreen = ({navigation}) => {
     const optionsStyleContSVG = {
         width: '100%', height: '100%', top: 0, right: 0
     };
+
+    const [isFocus, setIsFocus] = useState(false);
+    const [productions, getProductions] = useState([]);
+
+    useFocusEffect(
+        useCallback(() => {
+            setIsFocus(true);
+            //Production
+            db.transaction(tx => {
+                tx.executeSql(
+                    produccion_table_ALL,
+                    [],
+                    (_, {rows: {_array}}) => {
+                        if (_array.length > 0) {
+                            console.log('produccion table', _array)
+                            getProductions(_array);
+                        } else {
+                            console.log('(Producto_table) Error al conectar base de datos en SettingsProductionScreen Component to call autopasters table');
+                        }
+                    }, () => err => console.log(err)
+                );
+            });
+            return () => {
+                setIsFocus(false);
+            };
+        }, [])
+    );
 
     return (
         <SafeAreaView style={{flex: 1}}>
@@ -40,7 +71,8 @@ const HomeScreen = ({navigation}) => {
                 text={'React Native tiene algunos documentos excelentes, así que después de leer esto, pensé que sería pan comido.'}
             />
             <Caroussel
-                items={'s'}
+                // items={productions}
+                items={productions}
             />
             <View style={{
                 flex: 1,

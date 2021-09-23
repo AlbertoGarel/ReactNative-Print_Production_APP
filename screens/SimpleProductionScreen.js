@@ -97,7 +97,6 @@ const simpleProductionScreen = ({route, setChangeButtonFunc}) => {
                 NoContainPaperRoll.push(i);
             }
         }
-        console.log('length', NoContainPaperRoll)
         //set state for no contain paper roll
         let warningStr = '';
         if (NoContainPaperRoll.length > 0) {
@@ -115,7 +114,6 @@ const simpleProductionScreen = ({route, setChangeButtonFunc}) => {
             validateContainPaperRoll = true;
             warningStr = '';
         }
-        console.log('warningStr', warningStr)
         setWarningText(warningStr)
 
         //Set states

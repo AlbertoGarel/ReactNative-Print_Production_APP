@@ -26,7 +26,7 @@ const CustomPicker = (props, ref) => {
                         // })
                         props.dataOptionsPicker
                         :
-                        <Picker.Item label="No existen datos" value={null}/>
+                        <Picker.Item label={"No existen datos"} value={null}/>
                 }
             </Picker>
         </>

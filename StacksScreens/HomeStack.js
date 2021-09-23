@@ -10,6 +10,7 @@ import SimpleProductionScreen from "../screens/SimpleProductionScreen";
 import {getFocusedRouteNameFromRoute} from '@react-navigation/native'
 import IndividualCalculation from "../screens/IndividualCalculation";
 import {Fontisto as Icon} from "@expo/vector-icons";
+import FullProduction from "../screens/productionScreens/FullProduction";
 
 const HomeStack = ({navigation, route, setChangeButtonFunc}) => {
 
@@ -74,6 +75,7 @@ const HomeStack = ({navigation, route, setChangeButtonFunc}) => {
                           children={(props) => <SimpleProductionScreen {...props} setChangeButtonFunc={setChangeButtonFunc}/>}
                           options={{headerShown: true}}/>
             <Stack.Screen name="Cálculo Individual" component={IndividualCalculation} options={{headerShown: true}}/>
+            <Stack.Screen name="FullProduction" component={FullProduction} options={{headerShown: false}}/>
         </Stack.Navigator>
     );
 };

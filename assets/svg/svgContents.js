@@ -2785,7 +2785,7 @@ export const fingerselectWhiteSVG = `<?xml version="1.0" encoding="utf-8"?>
     <path 
           d="M376.521,238.499c-15.336,0-27.77,12.433-27.77,27.769v-14.146   c0-15.336-12.433-27.769-27.769-27.769c-15.337,0-27.77,12.433-27.77,27.769L293.07,512h67.984v0   c28.189-42.877,43.214-93.066,43.222-144.38l0.015-101.352C404.29,250.931,391.858,238.499,376.521,238.499z"/>
 </g>
-`;// F2441B40-F85F23
+`;
 export const prodCardSVG = `<?xml version="1.0" encoding="utf-8"?>
 <svg height="512" viewBox="0 0 58 58" width="512" xmlns="http://www.w3.org/2000/svg">
     <g id="Page-1" fill="none" fill-rule="evenodd">
@@ -2834,6 +2834,24 @@ export const prodCardSVG = `<?xml version="1.0" encoding="utf-8"?>
                       d="m44 51h-12c-.5522847 0-1-.4477153-1-1s.4477153-1 1-1h12c.5522847 0 1 .4477153 1 1s-.4477153 1-1 1z"/>
             </g>
         </g>
+    </g>
+</svg>
+`;// F2441B40-F85F23
+export const nullsSVG = `<?xml version="1.0" encoding="utf-8"?>
+<svg height="464pt" viewBox="-72 0 464 464" width="464pt" xmlns="http://www.w3.org/2000/svg">
+    <path d="m96 0v96h-96v160l56 56 48-48 56 48 56-48 48 48 56-56v-256zm176 208h-224v-80h224zm0 0" fill="#F2441B40"/>
+    <path d="m96 0-96 96h96zm0 0" fill="#F85F23"/>
+    <path d="m264 352-48-48-56 48-56-48-48 48-56-56v168h320v-168zm0 0" fill="#F2441B40"/>
+    <path d="m48 128h224v80h-224zm0 0" fill="#FFF"/>
+    <path d="m11.199219 307.199219-11.199219-11.199219v168h208c-91.351562 0-168.800781-65.535156-196.800781-156.800781zm0 0"
+          fill="#F2441B40"/>
+    <g fill="#F85F23">
+        <path d="m120 56h16v16h-16zm0 0"/>
+        <path d="m152 56h120v16h-120zm0 0"/>
+        <path d="m120 88h16v16h-16zm0 0"/>
+        <path d="m152 88h120v16h-120zm0 0"/>
+        <path d="m56 384h208v16h-208zm0 0"/>
+        <path d="m56 416h208v16h-208zm0 0"/>
     </g>
 </svg>
 `;

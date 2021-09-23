@@ -81,4 +81,6 @@ export const FormYupSchemas = {
     weight: Yup.number()
         .max(1000, 'Peso máximo sobrepasado')
         .required('Requerido'),
+    customNumber: Yup.number(),
+    customBoolean: Yup.boolean()
 };

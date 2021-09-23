@@ -8,11 +8,12 @@ const Footer = ({
                     leftButtonLabel = false,
                     leftButtonPress = false,
                     rightButtonLabel = false,
-                    rightButtonPress = false
+                    rightButtonPress = false,
+                    buttonChild
                 }) => {
     const windowWidth = useWindowDimensions().width;
     const HEIGHT = windowWidth * 0.21;
-    const FOOTER_PADDING = windowWidth * 0.1;
+    const FOOTER_PADDING = windowWidth * 0.03;
 
     return (
         <View
@@ -29,7 +30,11 @@ const Footer = ({
             {leftButtonLabel && (
                 <RoundedButton label={leftButtonLabel} onPress={leftButtonPress}/>
             )}
-            <RoundedButton label={rightButtonLabel} onPress={rightButtonPress}/>
+            {buttonChild ?
+                buttonChild()
+                :
+                <RoundedButton label={rightButtonLabel} onPress={rightButtonPress}/>
+            }
         </View>
     );
 };

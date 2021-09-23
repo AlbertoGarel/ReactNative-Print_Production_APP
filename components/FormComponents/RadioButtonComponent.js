@@ -3,34 +3,95 @@ import {StyleSheet, View, Text, TouchableWithoutFeedback} from "react-native";
 import {COLORS} from "../../assets/defaults/settingStyles";
 
 const RadioButtonComponent = ({
+                                  title,
                                   data,
                                   multipleSelect,
                                   limitSelection,
                                   initialValueState,
-                                  keysForData
+                                  keysForData,
+                                  notSelectable,
+                                  _setState
                               }) => {
-    const [selectionData, getSelectionData] = useState();
 
     useEffect(() => {
-        if (initialValueState) {
-            getSelectionData(initialValueState);
+        const notselectableout = initialValueState.filter(num => num === notSelectable);
+        if (initialValueState.length > limitSelection) {
+            _setState([]);
+        }
+        if (notselectableout.length > 0) {
+            const resto = initialValueState.filter(num => num !== notSelectable);
+            _setState(resto)
         }
 
-    }, [initialValueState])
+        if (limitSelection === data.length > 0 && !notSelectable) {
+            _setState(data.map(item => item.autopaster_id))
+        }
+        if (limitSelection === data.length - 1 && notSelectable) {
+            const enteras = data.filter(item => item.autopaster_id !== notSelectable);
+            const autopastId = enteras.map(item => item.autopaster_id);
+            _setState(autopastId)
+        }
+    }, [notSelectable, limitSelection]);
+
+    if (
+        // IF NOT MULTIPLE AND NO CONTAIN INITIAL VALUE (NOT 'MEDIA', ONLY 'ENTERA')
+        (!multipleSelect && !initialValueState[0] ||
+            //CONTAIN MULTIPLE AND NO CONTAIN LIMIT SELECTION (NOT 'ENTERA', ONLY 'MEDIA')
+            (multipleSelect && !limitSelection))) {
+        return null
+    }
+
+    const handlerMultipleSelection = (autopastID) => {
+        const exist = initialValueState.filter(num => num === autopastID);
+
+        if (exist.length > 0) {
+            const rest = initialValueState.filter(num => num !== autopastID);
+            _setState(rest)
+        } else {
+            if (initialValueState.length < limitSelection) {
+                _setState([...initialValueState, autopastID]);
+            }
+        }
+    }
 
     return (
-        <>
+        <View>
+            <Text style={{fontFamily: 'Anton', color: COLORS.black}}>{title}:</Text>
             <View style={styles.parent}>
+                {
+                    multipleSelect && <View style={{
+                        width: '100%',
+                        padding: 5,
+                        backgroundColor: COLORS.primary + '50',
+                        borderRadius: 5,
+                        marginTop: 3,
+                        marginBottom: 3,
+                    }}>
+                        {/*//function for bags view*/}
+                        <Text>SELECCIONA <Text style={{
+                            color: COLORS.buttonEdit,
+                            fontWeight: 'bold',
+                            fontFamily: 'Anton'
+                        }}>{limitSelection}</Text> AUTOPASTER{limitSelection > 1 ? 'S' : null}</Text>
+                    </View>
+                }
                 {
                     data.map(item => {
                         return (
                             <TouchableWithoutFeedback key={item[keysForData.id]}
-                                                      onPress={() => getSelectionData(item[keysForData.value])}>
+                                                      onPress={notSelectable === parseInt(item[keysForData.id]) ? null : multipleSelect ? () => handlerMultipleSelection(item[keysForData.value]) : () => _setState(item[keysForData.value])}
+                            >
                                 <View
-                                    style={[styles.box, selectionData === item[keysForData.value] ? styles.selected : styles.noSelected]}>
-                                    <Text style={[styles.predefText, selectionData === item[keysForData.value] ? styles.predefTextSelected : styles.predefTextNoSelected]}>AUTOPASTER</Text>
+                                    style={
+                                        [
+                                            styles.box,
+                                            initialValueState.filter(num => num === item[keysForData.value])[0] === item[keysForData.value] ? styles.selected : styles.noSelected,
+                                            {opacity: notSelectable === parseInt(item[keysForData.id]) ? .2 : 1}
+                                        ]}>
+                                    <Text
+                                        style={[styles.predefText, initialValueState.filter(num => num === item[keysForData.value])[0] === item[keysForData.value] ? styles.predefTextSelected : styles.predefTextNoSelected]}>AUTOPASTER</Text>
                                     <Text style={[styles.text,
-                                        selectionData === item[keysForData.value] ? styles.textSelected : styles.textNoSelected]}
+                                        initialValueState.filter(num => num === item[keysForData.value])[0] === item[keysForData.value] ? styles.textSelected : styles.textNoSelected]}
                                     >{item[keysForData.id]}</Text>
                                 </View>
                             </TouchableWithoutFeedback>
@@ -38,8 +99,11 @@ const RadioButtonComponent = ({
                     })
                 }
             </View>
-            <Text>selectionData: {selectionData}</Text>
-        </>
+            <Text>limitSelection: {JSON.stringify(limitSelection)}</Text>
+            <Text>!initialValueState[0]: {JSON.stringify(!initialValueState[0])}</Text>
+            <Text>multipleSelect: {JSON.stringify(multipleSelect)}</Text>
+            <Text>initialValueState: {JSON.stringify(initialValueState)}</Text>
+        </View>
     )
 };
 const styles = StyleSheet.create({
@@ -91,15 +155,15 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: COLORS.white,
     },
-    predefText:{
+    predefText: {
         fontSize: 10,
         position: 'absolute',
         opacity: .5,
     },
-    predefTextSelected:{
+    predefTextSelected: {
         color: 'dimgrey'
     },
-    predefTextNoSelected:{
+    predefTextNoSelected: {
         color: COLORS.white
     }
 });

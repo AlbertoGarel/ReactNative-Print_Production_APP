@@ -6,10 +6,7 @@ import {
     Alert,
     ScrollView,
     ActivityIndicator,
-    Modal,
-    TouchableHighlight,
     Text,
-    TouchableWithoutFeedback,
     Dimensions,
     Image
 } from 'react-native';
@@ -156,12 +153,12 @@ class Tables extends Component {
                     </View>
                 </TouchableOpacity>
                 :
-                <TouchableWithoutFeedback disabled={true}
+                <TouchableOpacity disabled={true}
                                           style={{width: this.TouchableWidth, margin: this.cellMargin}}>
                     <View style={[styles.btn, {opacity: .4}]}>
                         <Icon name={'edit'} size={25} color={'white'}/>
                     </View>
-                </TouchableWithoutFeedback>
+                </TouchableOpacity>
         );
 
         return (

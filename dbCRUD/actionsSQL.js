@@ -217,7 +217,7 @@ export const pickerKBA =
  *  AUTOPASTER_TABLE ALL
  */
 export const autopaster_table_ALL =
-    "SELECT autopaster_table.autopaster_id As 'id'," +
+    "SELECT linea_produccion_table.produccion_id As 'id'," +
     "autopaster_table.name_autopaster AS 'Nombre'," +
     "linea_produccion_table.linea_name AS 'Nombre de Línea'," +
     "Case autopaster_table.media When 0 Then 'Entera' Else 'Media' End AS 'Tipo de Bobina' " +
@@ -356,7 +356,31 @@ export const search_bobina_fullWeight =
 /**
  *  PRODUCCION_TABLE ALL
  */
-export const produccion_table_ALL = "SELECT * FROM produccion_table "
+export const produccion_table_ALL =
+    `SELECT produccion_id AS 'id',
+    producto_name AS 'producto',
+    kba_value AS 'Cociente producto',
+    linea_name AS 'Linea produccion' ,
+    gramaje_value AS 'Gramaje',
+    paginacion_value AS 'Paginacion',
+    editions AS 'Ediciones',
+    medition_type || ' ' || gramaje_value AS 'Tipo de medicion',
+    tirada AS 'Tirada',
+    nulls AS 'Nulls',
+    date(fecha_produccion) AS 'Fecha de creación'
+    FROM produccion_table
+    JOIN kba_table
+    ON producto_table.cociente_total_fk = kba_table.kba_id
+    JOIN linea_produccion_table
+    ON linea_produccion_table.linea_id = produccion_table.linea_fk
+    JOIN medition_style_table
+    ON medition_style_table.medition_id = produccion_table.medition_fk
+    JOIN gramaje_table
+    ON gramaje_table.gramaje_id = medition_style_table.gramaje_fk
+    JOIN paginacion_table
+    ON paginacion_table.paginacion_id = produccion_table.pagination_fk
+    JOIN producto_table
+    ON producto_table.producto_id = produccion_table.producto_fk`
 ;
 /**
  * BARCODES_TABLE
@@ -371,6 +395,7 @@ export const barcodesIos =
     "SELECT * FROM barcodes_table WHERE barcode_ios = 1;"
 ;
 
+
 // CREATE TABLE "medition_style_table" (
 //     "medition_id"	INTEGER NOT NULL,
 //     "medition_type"	VARCHAR(50),
@@ -380,3 +405,59 @@ export const barcodesIos =
 //     PRIMARY KEY("medition_id" AUTOINCREMENT),
 //     FOREIGN KEY("gramaje_fk") REFERENCES "gramaje_table"("gramaje_id") ON DELETE NO ACTION ON UPDATE NO ACTION
 // )
+
+// CREATE TABLE PRODUCTION
+// CREATE TABLE "produccion_table" (
+//     "produccion_id" INTEGER NOT NULL,
+//     "editions" INTEGER,
+//     "linea_fk" INTEGER,
+//     "medition_fk" INTEGER,
+//     "pagination_fk" INTEGER,
+//     "producto_fk" INTEGER,
+//     "tirada" BIGINT,
+//     "nulls" BIGINT,
+//     "fecha_produccion" DATE,
+//     PRIMARY KEY("produccion_id"),
+//     FOREIGN KEY("linea_fk") REFERENCES "linea_produccion_table"("linea_id") ON DELETE NO ACTION ON UPDATE NO ACTION,
+//     FOREIGN KEY("medition_fk") REFERENCES "medition_style_table"("medition_id") ON DELETE CASCADE ON UPDATE CASCADE,
+//     FOREIGN KEY("pagination_fk") REFERENCES "paginacion_table"("paginacion_id") ON DELETE CASCADE ON UPDATE CASCADE,
+//     FOREIGN KEY("producto_fk") REFERENCES "producto_table"("producto_id") ON DELETE CASCADE ON UPDATE CASCADE
+// );
+
+// CREATE TABLE "autopasters_prod_data" (
+//     "autopasters_prod_data_id" INTEGER NOT NULL,
+//     "production_fk"	INTEGER NOT NULL,
+//     "autopaster_fk"	INTEGER NOT NULL,
+//     "bobina_fk"	INTEGER NOT NULL,
+//     "resto_previsto" INTEGER,
+//     "media_defined" BOOLEAN NOT NULL,
+//     PRIMARY KEY("autopasters_prod_data_id"),
+//     FOREIGN KEY("bobina_fk") REFERENCES "bobina_table"("codigo_bobina") ON DELETE CASCADE ON UPDATE CASCADE,
+//     FOREIGN KEY("autopaster_fk") REFERENCES "autopaster_table"("autopaster_id") ON DELETE CASCADE ON UPDATE CASCADE,
+//     FOREIGN KEY("production_fk") REFERENCES "produccion_table"("produccion_id") ON DELETE CASCADE ON UPDATE CASCADE
+// );
+//INSERT
+// INSERT INTO produccion_table (editions, linea_fk,medition_fk, pagination_fk, producto_fk, tirada, nulls, fecha_produccion)
+// VALUES (?,?,?,?,?,?,?,?)
+
+// SELECT
+// SELECT editions AS 'Ediciones',
+//     linea_name AS 'Linea produccion' ,
+//     medition_type AS 'Medicion',
+//     gramaje_value AS 'Gramaje',
+//     paginacion_value AS 'Paginacion',
+//     producto_name AS 'producto',
+//     tirada AS 'Tirada',
+//     nulls AS 'Nulls',
+//     fecha_produccion AS 'Fecha'
+// FROM produccion_table
+// LEFT JOIN linea_produccion_table
+// ON linea_produccion_table.linea_id = produccion_table.linea_fk
+// LEFT JOIN medition_style_table
+// ON medition_style_table.medition_id = produccion_table.medition_fk
+// LEFT JOIN gramaje_table
+// ON gramaje_table.gramaje_id = medition_style_table.gramaje_fk
+// LEFT JOIN paginacion_table
+// ON paginacion_table.paginacion_id = produccion_table.medition_fk
+// LEFT JOIN producto_table
+// ON producto_table.producto_id = produccion_table.producto_fk

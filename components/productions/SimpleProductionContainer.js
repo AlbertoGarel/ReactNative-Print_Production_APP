@@ -236,7 +236,7 @@ const SimpleProductionContainer = ({
                                     textAlign: 'left',
                                     color: '#ff6961',
                                     paddingLeft: 10
-                                }}>{warningText.length > 0 ? `Faltan bobinas en autopasters: ${warningText}` : `Falta bobina en autopaster: ${warningText}`}</Text>
+                                }}>{warningText.length > 0 ? `Faltan bobinas en autopasters: ${warningText}` : !warningText ? 'Regitra bobinas en todos los autopasters' :`Falta bobina en autopaster: ${warningText}`}</Text>
                             </View>
                         }
                         <View style={styles.secc2}>
