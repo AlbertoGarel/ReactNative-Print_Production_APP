@@ -258,11 +258,51 @@ const SettingsProductionScreen = () => {
         } else {
             console.log('no call autopasters')
         }
-    }, [maxPaginationOptionPickerLineSelected, selectedPagination])
+    }, [maxPaginationOptionPickerLineSelected, selectedPagination]);
+
+    const groupAuto = (obj) => {
+        const [selectedAutopasterswithrolls, getSelectedAutopasterswithrolls] = useState([]);
+        const id = obj.id;
+        const _enteras = obj.entera.map(item => [id, item, 0]);
+        const _media = [id, obj.media, 1];
+        if (!obj.media) {
+            getSelectedAutopasterswithrolls(_enteras);
+        } else {
+            getSelectedAutopasterswithrolls([..._enteras, _media]);
+        }
+        ;
+        const gramajeFK = meditionDataDB.filter(item => item.medition_id === selectedMedition).gramaje_fk
+        const propietario_fk = productoDataDB.filter(item => item.producto_id === selectedProduct).papel_comun_fk
+
+        selectedAutopasterswithrolls.forEach((item, index) => {
+            const searchStatementAutoProdData_Table =
+                //change * for bobina_fk and add resto_previsto > 0 and media_defined from autopaster_data_prod table
+                // valuate add column is_media in bobina_table
+                `SELECT * 
+                 FROM autopasters_prod_data
+                 INNER JOIN bobina_table ON autopasters_prod_data.bobina_fk = bobina_table.codigo_bobina 
+                 WHERE bobina_table.autopaster_fk = 5 AND bobina_table.gramaje_fk = 1 
+                 AND bobina_table.papel_comun_fk = 2`
+            db.transaction(tx => {
+                tx.executeSql(
+                    "SELECT * autopasters_prod_data",
+                    toSendProd,
+                    (_, {rows: {_array}}) => {
+                        if (_array.length > 0) {
+                            console.log('autopasters_prod_data', _array)
+                        } else {
+                            console.log('(Producto_table) Error al conectar base de datos en IndividualCalculation Component');
+                        }
+                    }
+                );
+            });
+        })
+    };
 
     const handlerSendOptionsSelected = (toSendProd, toSendAutopastProd) => {
         const insert_production = "INSERT INTO produccion_table (produccion_id, editions, linea_fk, medition_fk, pagination_fk, producto_fk, tirada, nulls, fecha_produccion) VALUES (?,?,?,?,?,?,?,?,date('now'));"
         const insert_autopast_prod = "INSERT INTO autopasters_prod_data (autopasters_prod_data_id, production_fk, autopaster_fk, media_defined) VALUES (NULL,?,?,?);"
+        //SEARCH BOBINAS FUNCTION
         genericInsertFunction(insert_production, toSendProd)
             .then(result => {
                 if (result.rowsAffected > 0) {
@@ -425,16 +465,7 @@ const SettingsProductionScreen = () => {
                         entera: areEnteras,
                         media: isMedia
                     }
-                    const groupAuto = (obj) => {
-                        const id = obj.id;
-                        const _enteras = obj.entera.map(item => [id, item, 0]);
-                        const _media = [id, obj.media, 1];
-                        if (!obj.media) {
-                            return _enteras;
-                        } else {
-                            return [..._enteras, _media];
-                        }
-                    };
+
                     //TO SEND BASEDATA
                     // order insert (production_id, editions, linea_fk, medition_fk, pagination_fk,
                     // producto_fk, tirada, nulls, fecha_produccion)
@@ -450,7 +481,7 @@ const SettingsProductionScreen = () => {
                     };
                     // console.log('revisar para envío', objectProd)
                     const prod_data = Object.values(objectProd);
-                    console.log('revisar para envío', prod_data)
+                    console.log('revisar para envío', objectProd)
                     const autopast_prod_data = groupAuto(objectAutopast);
                     //TRANSACTION FUNCTION
                     handlerSendOptionsSelected(prod_data, autopast_prod_data)

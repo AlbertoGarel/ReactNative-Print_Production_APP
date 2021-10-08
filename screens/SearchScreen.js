@@ -257,7 +257,6 @@ const SearchScreen = () => {
                 children={<BarcodeScannerComponent props={{
                     isVisible: isVisible,
                     getScannedCode: getScannedCode,
-                    onChangeTexthandler: onChangeTexthandler
                 }}/>}
                 isVisible={isVisible}
             />

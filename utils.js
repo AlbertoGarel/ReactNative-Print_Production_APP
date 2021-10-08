@@ -39,6 +39,7 @@ export const paperRollConsummption = (radius, _setState) => {
 export const numberOfAutopasters = (pagination) => {
     return Math.round(pagination / 16);
 };
+
 export const identifyAutopasters = (num) => {
     const whithMedia = num / 16
     if (whithMedia % 1 === 0) {
@@ -49,4 +50,4 @@ export const identifyAutopasters = (num) => {
         // value 1 for media and defAutopasters - .5 for calc 'entera'.
         return {media: 1, entera: whithMedia - .5}
     }
-}
+};

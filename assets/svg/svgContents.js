@@ -2855,6 +2855,146 @@ export const nullsSVG = `<?xml version="1.0" encoding="utf-8"?>
     </g>
 </svg>
 `;
-export const enterNameSVG = `<?xml version="1.0" encoding="utf-8"?>
-
+export const sunTornadoSVG = `<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2000 1500'>
+    <rect fill='#ee5522' width='2000' height='1500'/>
+    <defs>
+        <radialGradient id='a' gradientUnits='objectBoundingBox'>
+            <stop offset='0' stop-color='#FB3'/>
+            <stop offset='1' stop-color='#ee5522'/>
+        </radialGradient>
+        <linearGradient id='b' gradientUnits='userSpaceOnUse' x1='0' y1='750' x2='1550' y2='750'>
+            <stop offset='0' stop-color='#f7882b'/>
+            <stop offset='1' stop-color='#ee5522'/>
+        </linearGradient>
+        <path id='s' fill='url(#b)'
+              d='M1549.2 51.6c-5.4 99.1-20.2 197.6-44.2 293.6c-24.1 96-57.4 189.4-99.3 278.6c-41.9 89.2-92.4 174.1-150.3 253.3c-58 79.2-123.4 152.6-195.1 219c-71.7 66.4-149.6 125.8-232.2 177.2c-82.7 51.4-170.1 94.7-260.7 129.1c-90.6 34.4-184.4 60-279.5 76.3C192.6 1495 96.1 1502 0 1500c96.1-2.1 191.8-13.3 285.4-33.6c93.6-20.2 185-49.5 272.5-87.2c87.6-37.7 171.3-83.8 249.6-137.3c78.4-53.5 151.5-114.5 217.9-181.7c66.5-67.2 126.4-140.7 178.6-218.9c52.3-78.3 96.9-161.4 133-247.9c36.1-86.5 63.8-176.2 82.6-267.6c18.8-91.4 28.6-184.4 29.6-277.4c0.3-27.6 23.2-48.7 50.8-48.4s49.5 21.8 49.2 49.5c0 0.7 0 1.3-0.1 2L1549.2 51.6z'/>
+        <g id='g'>
+            <use href='#s' transform='scale(0.12) rotate(60)'/>
+            <use href='#s' transform='scale(0.2) rotate(10)'/>
+            <use href='#s' transform='scale(0.25) rotate(40)'/>
+            <use href='#s' transform='scale(0.3) rotate(-20)'/>
+            <use href='#s' transform='scale(0.4) rotate(-30)'/>
+            <use href='#s' transform='scale(0.5) rotate(20)'/>
+            <use href='#s' transform='scale(0.6) rotate(60)'/>
+            <use href='#s' transform='scale(0.7) rotate(10)'/>
+            <use href='#s' transform='scale(0.835) rotate(-40)'/>
+            <use href='#s' transform='scale(0.9) rotate(40)'/>
+            <use href='#s' transform='scale(1.05) rotate(25)'/>
+            <use href='#s' transform='scale(1.2) rotate(8)'/>
+            <use href='#s' transform='scale(1.333) rotate(-60)'/>
+            <use href='#s' transform='scale(1.45) rotate(-30)'/>
+            <use href='#s' transform='scale(1.6) rotate(10)'/>
+        </g>
+    </defs>
+    <g transform='rotate(0 0 0)'>
+        <g transform='rotate(0 0 0)'>
+            <circle fill='url(#a)' r='3000'/>
+            <g opacity='0.5'>
+                <circle fill='url(#a)' r='2000'/>
+                <circle fill='url(#a)' r='1800'/>
+                <circle fill='url(#a)' r='1700'/>
+                <circle fill='url(#a)' r='1651'/>
+                <circle fill='url(#a)' r='1450'/>
+                <circle fill='url(#a)' r='1250'/>
+                <circle fill='url(#a)' r='1175'/>
+                <circle fill='url(#a)' r='900'/>
+                <circle fill='url(#a)' r='750'/>
+                <circle fill='url(#a)' r='500'/>
+                <circle fill='url(#a)' r='380'/>
+                <circle fill='url(#a)' r='250'/>
+            </g>
+            <g transform='rotate(0 0 0)'>
+                <use href='#g' transform='rotate(10)'/>
+                <use href='#g' transform='rotate(120)'/>
+                <use href='#g' transform='rotate(240)'/>
+            </g>
+            <circle fill-opacity='0.1' fill='url(#a)' r='3000'/>
+        </g>
+    </g>
+</svg>
 `;
+export const radiantGradientSVG = `<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%' viewBox='0 0 100 60'>
+    <rect fill='#cc5577' width='100' height='60'/>
+    <g fill-opacity='1'>
+        <rect fill='#cc5577' width='11' height='11'/>
+        <rect fill='#ce5776' x='10' width='11' height='11'/>
+        <rect fill='#d05a76' y='10' width='11' height='11'/>
+        <rect fill='#d15c75' x='20' width='11' height='11'/>
+        <rect fill='#d35f74' x='10' y='10' width='11' height='11'/>
+        <rect fill='#d46174' y='20' width='11' height='11'/>
+        <rect fill='#d66473' x='30' width='11' height='11'/>
+        <rect fill='#d76673' x='20' y='10' width='11' height='11'/>
+        <rect fill='#d96972' x='10' y='20' width='11' height='11'/>
+        <rect fill='#da6c72' y='30' width='11' height='11'/>
+        <rect fill='#db6e71' x='40' width='11' height='11'/>
+        <rect fill='#dc7171' x='30' y='10' width='11' height='11'/>
+        <rect fill='#dd7471' x='20' y='20' width='11' height='11'/>
+        <rect fill='#de7671' x='10' y='30' width='11' height='11'/>
+        <rect fill='#df7971' y='40' width='11' height='11'/>
+        <rect fill='#e07c71' x='50' width='11' height='11'/>
+        <rect fill='#e17e71' x='40' y='10' width='11' height='11'/>
+        <rect fill='#e28171' x='30' y='20' width='11' height='11'/>
+        <rect fill='#e38471' x='20' y='30' width='11' height='11'/>
+        <rect fill='#e38771' x='10' y='40' width='11' height='11'/>
+        <rect fill='#e48972' y='50' width='11' height='11'/>
+        <rect fill='#e58c72' x='60' width='11' height='11'/>
+        <rect fill='#e58f73' x='50' y='10' width='11' height='11'/>
+        <rect fill='#e69173' x='40' y='20' width='11' height='11'/>
+        <rect fill='#e69474' x='30' y='30' width='11' height='11'/>
+        <rect fill='#e79775' x='20' y='40' width='11' height='11'/>
+        <rect fill='#e79a75' x='10' y='50' width='11' height='11'/>
+        <rect fill='#e89c76' x='70' width='11' height='11'/>
+        <rect fill='#e89f77' x='60' y='10' width='11' height='11'/>
+        <rect fill='#e8a278' x='50' y='20' width='11' height='11'/>
+        <rect fill='#e9a47a' x='40' y='30' width='11' height='11'/>
+        <rect fill='#e9a77b' x='30' y='40' width='11' height='11'/>
+        <rect fill='#e9aa7c' x='20' y='50' width='11' height='11'/>
+        <rect fill='#e9ac7e' x='80' width='11' height='11'/>
+        <rect fill='#eaaf7f' x='70' y='10' width='11' height='11'/>
+        <rect fill='#eab281' x='60' y='20' width='11' height='11'/>
+        <rect fill='#eab482' x='50' y='30' width='11' height='11'/>
+        <rect fill='#eab784' x='40' y='40' width='11' height='11'/>
+        <rect fill='#eaba86' x='30' y='50' width='11' height='11'/>
+        <rect fill='#ebbc88' x='90' width='11' height='11'/>
+        <rect fill='#ebbf8a' x='80' y='10' width='11' height='11'/>
+        <rect fill='#ebc18c' x='70' y='20' width='11' height='11'/>
+        <rect fill='#ebc48e' x='60' y='30' width='11' height='11'/>
+        <rect fill='#ebc790' x='50' y='40' width='11' height='11'/>
+        <rect fill='#ebc992' x='40' y='50' width='11' height='11'/>
+        <rect fill='#ebcc94' x='90' y='10' width='11' height='11'/>
+        <rect fill='#ebce97' x='80' y='20' width='11' height='11'/>
+        <rect fill='#ebd199' x='70' y='30' width='11' height='11'/>
+        <rect fill='#ecd39c' x='60' y='40' width='11' height='11'/>
+        <rect fill='#ecd69e' x='50' y='50' width='11' height='11'/>
+        <rect fill='#ecd8a1' x='90' y='20' width='11' height='11'/>
+        <rect fill='#ecdba4' x='80' y='30' width='11' height='11'/>
+        <rect fill='#ecdda6' x='70' y='40' width='11' height='11'/>
+        <rect fill='#ece0a9' x='60' y='50' width='11' height='11'/>
+        <rect fill='#ede2ac' x='90' y='30' width='11' height='11'/>
+        <rect fill='#ede4af' x='80' y='40' width='11' height='11'/>
+        <rect fill='#ede7b2' x='70' y='50' width='11' height='11'/>
+        <rect fill='#ede9b5' x='90' y='40' width='11' height='11'/>
+        <rect fill='#eeecb8' x='80' y='50' width='11' height='11'/>
+        <rect fill='#EEB' x='90' y='50' width='11' height='11'/>
+    </g>
+</svg>
+`;
+export const bgSquaresSVG = `<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg">
+    <g fill-rule="evenodd">
+        <g fill="#ff850050">
+            <path opacity=".5"
+                  d="M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z"/>
+            <path d="M6 5V0H5v5H0v1h5v94h1V6h94V5H6z"/>
+        </g>
+    </g>
+</svg>
+                                
+`;
+export const texturesSVG =
+`<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+    <path fill="#ffffff50"
+          d="M192 15v2a11 11 0 0 0-11 11c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H145v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11 13 13 0 1 1 .02 26 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43a6.1 6.1 0 0 0-3.03 4.87V143h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 181 164a11 11 0 0 0 11 11v2a13 13 0 0 1-13-13 12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84a6.1 6.1 0 0 0-4.87-3.03H145v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 124 181a11 11 0 0 0-11 11h-2a13 13 0 0 1 13-13c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43a6.1 6.1 0 0 0 3.03-4.87V145h-35.02a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 107 124a11 11 0 0 0-22 0c0 1.94 1.16 4.75 2.53 6.11l2.36 2.36a6.93 6.93 0 0 1 1.22 7.56l-.43.84a8.08 8.08 0 0 1-6.66 4.13H49v35.02a6.1 6.1 0 0 0 3.03 4.87l.84.43c1.58.79 4 .4 5.24-.85l2.36-2.36a12.04 12.04 0 0 1 7.51-3.11A13 13 0 0 1 81 192h-2a11 11 0 0 0-11-11c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V145H11.98a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 0 1 0 177v-2a11 11 0 0 0 11-11c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H47v-35.02a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 28 109a13 13 0 1 1 0-26c2.47 0 5.79 1.37 7.53 3.11l2.36 2.36a4.94 4.94 0 0 0 5.24.85l.84-.43A6.1 6.1 0 0 0 47 84.02V49H11.98a8.08 8.08 0 0 1-6.66-4.13l-.43-.84a6.91 6.91 0 0 1 1.22-7.56l2.36-2.36A10.06 10.06 0 0 0 11 28 11 11 0 0 0 0 17v-2a13 13 0 0 1 13 13c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84A6.1 6.1 0 0 0 11.98 47H47V11.98a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 68 11 11 11 0 0 0 79 0h2a13 13 0 0 1-13 13 12 12 0 0 1-7.53-3.11l-2.36-2.36a4.93 4.93 0 0 0-5.24-.85l-.84.43A6.1 6.1 0 0 0 49 11.98V47h35.02a8.08 8.08 0 0 1 6.66 4.13l.43.84a6.91 6.91 0 0 1-1.22 7.56l-2.36 2.36A10.06 10.06 0 0 0 85 68a11 11 0 0 0 22 0c0-1.94-1.16-4.75-2.53-6.11l-2.36-2.36a6.93 6.93 0 0 1-1.22-7.56l.43-.84a8.08 8.08 0 0 1 6.66-4.13H143V11.98a6.1 6.1 0 0 0-3.03-4.87l-.84-.43c-1.59-.8-4-.4-5.24.85l-2.36 2.36A12 12 0 0 1 124 13a13 13 0 0 1-13-13h2a11 11 0 0 0 11 11c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V47h35.02a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 179 28a13 13 0 0 1 13-13zM84.02 143a6.1 6.1 0 0 0 4.87-3.03l.43-.84c.8-1.59.4-4-.85-5.24l-2.36-2.36A12 12 0 0 1 83 124a13 13 0 1 1 26 0c0 2.47-1.37 5.79-3.11 7.53l-2.36 2.36a4.94 4.94 0 0 0-.85 5.24l.43.84a6.1 6.1 0 0 0 4.87 3.03H143v-35.02a8.08 8.08 0 0 1 4.13-6.66l.84-.43a6.91 6.91 0 0 1 7.56 1.22l2.36 2.36A10.06 10.06 0 0 0 164 107a11 11 0 0 0 0-22c-1.94 0-4.75 1.16-6.11 2.53l-2.36 2.36a6.93 6.93 0 0 1-7.56 1.22l-.84-.43a8.08 8.08 0 0 1-4.13-6.66V49h-35.02a6.1 6.1 0 0 0-4.87 3.03l-.43.84c-.79 1.58-.4 4 .85 5.24l2.36 2.36a12.04 12.04 0 0 1 3.11 7.51A13 13 0 1 1 83 68a12 12 0 0 1 3.11-7.53l2.36-2.36a4.93 4.93 0 0 0 .85-5.24l-.43-.84A6.1 6.1 0 0 0 84.02 49H49v35.02a8.08 8.08 0 0 1-4.13 6.66l-.84.43a6.91 6.91 0 0 1-7.56-1.22l-2.36-2.36A10.06 10.06 0 0 0 28 85a11 11 0 0 0 0 22c1.94 0 4.75-1.16 6.11-2.53l2.36-2.36a6.93 6.93 0 0 1 7.56-1.22l.84.43a8.08 8.08 0 0 1 4.13 6.66V143h35.02z"></path>
+</svg>`

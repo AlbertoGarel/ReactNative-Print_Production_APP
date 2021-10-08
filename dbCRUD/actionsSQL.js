@@ -394,6 +394,14 @@ export const barcodesAndroid =
 export const barcodesIos =
     "SELECT * FROM barcodes_table WHERE barcode_ios = 1;"
 ;
+/**
+ * AUTOPASTERS_PROD_TABLE
+ */
+export const autopasters_prod_table_all =
+    `SELECT * FROM autopasters_prod_data;`
+;
+export const autopasters_prod_table_by_production =
+    `SELECT * FROM autopasters_prod_data WHERE production_fk = ?;`
 
 
 // CREATE TABLE "medition_style_table" (

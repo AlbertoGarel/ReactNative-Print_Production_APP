@@ -28,7 +28,7 @@ const BarcodeScannerComponent = ({props}) => {
 
             //GET TO asyncStorage
             getDatas('@storage_codeTypesSelected').then(r => {
-                console.log('datos de storage en barcodeCompnent', r)
+                // console.log('datos de storage en barcodeCompnent', r)
                 const cloneRequest = [...r]
                 const formatSelectedTypes = [];
                 cloneRequest.forEach((codeItem, index) => {
@@ -60,7 +60,6 @@ const BarcodeScannerComponent = ({props}) => {
             if (x >= viewMinX && y >= viewMinY && x <= (viewMinX + finderWidth / 2) && y <= (viewMinY + finderHeight / 2)) {
                 setScanned(true);
                 Vibration.vibrate();
-                props.onChangeTexthandler(data);
                 props.getScannedCode(data);
                 alert(`Bar code with type ${type} and data ${data} has been scanned!`);
             }

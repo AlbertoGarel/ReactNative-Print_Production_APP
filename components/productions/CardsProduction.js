@@ -9,11 +9,14 @@ import {getDatas, storeData} from "../../data/AsyncStorageFunctions";
 import * as SQLite from "expo-sqlite";
 import {coeficienteSearchValue} from "../../dbCRUD/actionsSQL";
 import {paperRollConsummption} from "../../utils";
+import PaperCoilWeightDataCard from "./PaperCoilWeightDataCard";
+import TextInputCoilRadius from "../FormComponents/TextInputCoilRadius";
+import ComsumptionResultCard from "./ComsumptionResultCard";
 
 const paddingContent = 5;
 const border_radius = 3;
 
-//BACKGROUND PROP CONST
+//SVG PROP CONST
 const optionsSVG = {
     svgData: fingerselectOrangeSVG, svgWidth: '100%', svgHeight: '100%'
 };
@@ -89,6 +92,48 @@ const CardsProduction = ({item, updateGetStorage, productToRenderId, handlerEdit
         })
     };
 
+    //PROPS ELEMENTS CARDS
+    const stylesPeperCoilWeight = {
+        parent: styles.dataWeight,
+        textInicio: [styles.textTitle, {backgroundColor: 'white', paddingTop: paddingContent}],
+        subCont: {padding: paddingContent + 1},
+        textRFinal: styles.textTitle,
+        subText: styles.textWeightData,
+    };
+    const stylesTextInput = {
+        parent: [styles.result, {width: '25%', padding: 0}],
+        contPrinc: {
+            borderRadius: border_radius,
+            borderWidth: 2,
+            borderColor: COLORS.primary,
+            padding: paddingContent,
+        },
+        svgData: {opt: optionsSVG, stl: optionsStyleContSVG},
+        textStyle: styles.textTitle,
+        textWeight: styles.textWeightData,
+        textWeightUnit: styles.textWeightUnit
+    };
+    const propsAttrInput = {
+        editable: true,
+        keyboardType: 'numeric',
+        styled: {
+            backgroundColor: '#ff850050',
+            textAlign: 'center',
+            fontFamily: 'Anton'
+        },
+        name: 'id',
+        _onChangeText: text => paperRollConsummption(text, setStateRadius),
+        _onBlur: () => calcPaperRollConsummption(radiusState, item.id),
+        _value: radiusState.toString(),
+        _defaultValue: radiusState.toString()
+    };
+    const styleCopsumptionComponent = {
+        parent: [styles.result, {width: '25%'}],
+        textWeightData: styles.textWeightData,
+        textTitle: styles.textTitle,
+        textWeightUnit: styles.textWeightUnit
+    }
+
     return (
         <View style={styles.contParent}>
             <View style={[styles.subParent, {borderLeftColor: cardColorBand[item.autopasterNum - 1]}]}>
@@ -117,49 +162,19 @@ const CardsProduction = ({item, updateGetStorage, productToRenderId, handlerEdit
                     </View>
                 </View>
                 <View style={styles.parentWeight}>
-                    <View style={styles.dataWeight}>
-                        <Text style={[styles.textTitle, {backgroundColor: 'white', paddingTop: paddingContent}]}>Resto
-                            inicial: <Text style={styles.textWeightData}>{item.restoInicio}</Text> Kg.</Text>
-                        <View style={{padding: paddingContent + 1}}>
-                            <Text style={styles.textTitle}>Resto Final: <Text
-                                style={styles.textWeightData}>{item.restoFinal}</Text> Kg.</Text>
-                        </View>
-                    </View>
-                    <View style={[styles.result, {width: '25%', padding: 0}]}>
-                        <View style={{
-                            borderRadius: border_radius,
-                            borderWidth: 2,
-                            borderColor: COLORS.primary,
-                            padding: paddingContent
-                        }}>
-                            <BgComponent
-                                svgOptions={optionsSVG}
-                                styleOptions={optionsStyleContSVG}
-                            />
-                            <Text style={styles.textTitle}>Radio:</Text>
-                            {/*<Text style={styles.textWeightData}>200 <Text style={styles.textWeightUnit}>Kg.</Text></Text>*/}
-                            <TextInput
-                                editable
-                                keyboardType={'numeric'}
-                                style={{
-                                    backgroundColor: '#ff850050',
-                                    textAlign: 'center',
-                                    fontFamily: 'Anton'
-                                }}
-                                name={'id'}
-                                onChangeText={text => paperRollConsummption(text, setStateRadius)}
-                                // onBlur={() => Alert.alert(radiusState.toString())}
-                                onBlur={() => calcPaperRollConsummption(radiusState, item.id)}
-                                value={radiusState.toString()}
-                                defaultValue={radiusState.toString()}
-                            />
-                        </View>
-                    </View>
-                    <View style={[styles.result, {width: '25%', backgroundColor: item.consumo < 0 ? '#FF9999' : null}]}>
-                        <Text style={styles.textTitle}>Consumo:</Text>
-                        <Text style={[styles.textWeightData,{color: item.consumo < 0 ? 'white' : 'black'}]}>{item.consumo} <Text
-                            style={styles.textWeightUnit}>Kg.</Text></Text>
-                    </View>
+                    <PaperCoilWeightDataCard
+                        stylesPeperCoilWeight={stylesPeperCoilWeight}
+                        restoInicioData={item.restoInicio}
+                        restoFibalData={item.restoFinal}
+                    />
+                    <TextInputCoilRadius
+                        stylesTextInput={stylesTextInput}
+                        propsAttrInput={propsAttrInput}
+                    />
+                    <ComsumptionResultCard
+                        styleCopsumptionComponent={styleCopsumptionComponent}
+                        conumptionRes={item.consumo}
+                    />
                 </View>
                 <View style={styles.percent}>
                     <PercentageBarCard
@@ -196,6 +211,7 @@ const CardsProduction = ({item, updateGetStorage, productToRenderId, handlerEdit
                         {/*<Text style={{color: COLORS.white}}>EDIT</Text>*/}
                     </TouchableOpacity>
                 </View>
+                {/*///*/}
             </View>
         </View>
     )
