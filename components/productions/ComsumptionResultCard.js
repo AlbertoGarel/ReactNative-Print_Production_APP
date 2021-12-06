@@ -1,5 +1,5 @@
 import React from 'react';
-import {StyleSheet, View, Text} from 'react-native';
+import {View, Text} from 'react-native';
 
 const ComsumptionResultCard = ({styleCopsumptionComponent, conumptionRes}) => {
 
@@ -15,4 +15,6 @@ const ComsumptionResultCard = ({styleCopsumptionComponent, conumptionRes}) => {
     )
 }
 
-export default ComsumptionResultCard;
+export default React.memo(ComsumptionResultCard, (prevProps, nextProps) => {
+    return (prevProps.conumptionRes === nextProps.conumptionRes)
+});

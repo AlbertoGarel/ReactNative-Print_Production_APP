@@ -42,8 +42,39 @@ import * as SQLite from "expo-sqlite";
 import ToastMesages from "../../components/ToastMessages";
 import {getDatas} from "../../data/AsyncStorageFunctions";
 import RadioButtonComponent from "../../components/FormComponents/RadioButtonComponent";
-import {identifyAutopasters} from "../../utils";
+import {identifyAutopasters, individualProvidedWeightRollProduction, searchCoefTypeRoll} from "../../utils";
 import {genericInsertFunction} from "../../dbCRUD/actionsFunctionsCrud";
+
+//SEARCH AND SELECT MINOR WEIGHT ROLL IN OTHER PRODUCTION
+const searchStatementAutoProdData_Table =
+    `SELECT * FROM autopasters_prod_data
+     INNER JOIN bobina_table ON autopasters_prod_data.bobina_fk = bobina_table.codigo_bobina
+     WHERE bobina_table.autopaster_fk = ? AND bobina_table.gramaje_fk = ?
+     AND bobina_table.papel_comun_fk = ? AND
+     autopasters_prod_data.resto_previsto > 0 AND
+     autopasters_prod_data.resto_previsto = (SELECT MIN(autopasters_prod_data.resto_previsto) FROM autopasters_prod_data) AND
+     autopasters_prod_data.media_defined = ?;`;
+
+;const searchStatementRoll =
+    `SELECT * FROM bobina_table
+     WHERE NOT EXISTS(SELECT 1 FROM autopasters_prod_data WHERE (autopasters_prod_data.bobina_fk = bobina_table.codigo_bobina))
+     AND bobina_table.autopaster_fk = ? 
+     AND bobina_table.gramaje_fk = ?
+     AND bobina_table.papel_comun_fk = ?
+     AND bobina_table.media = ? 
+     AND (SELECT MIN(bobina_table.peso_actual) FROM bobina_table)
+     AND bobina_table.peso_actual > 0;`;
+
+// [productionID, autopasterFK, bobinaFK, restoPrevisto(calc), mediaDefined(ismedia)]
+const insertAutopastCode =
+    `INSERT INTO autopasters_prod_data 
+     (production_fk, autopaster_fk, bobina_fk, resto_previsto, media_defined, position_roll) 
+     VALUES (?,?,?,?,?,?);`;
+//[productionID, autopasterID, mediaDefined(ismedia)]
+const insertWithoutRoll =
+    `INSERT INTO autopasters_prod_data (production_fk, autopaster_fk, media_defined, position_roll)
+    VALUES (?,?,?,?);`
+
 
 const SettingsProductionScreen = () => {
 
@@ -117,7 +148,7 @@ const SettingsProductionScreen = () => {
                         if (_array.length > 0) {
                             getProductoDataDB(_array);
                         } else {
-                            console.log('(Producto_table) Error al conectar base de datos en IndividualCalculation Component');
+                            console.log('(picker_producto) no se encontraron registros en SettingsProductionScreen');
                         }
                     }
                 );
@@ -131,7 +162,7 @@ const SettingsProductionScreen = () => {
                         if (_array.length > 0) {
                             getLineProdDataDB(_array);
                         } else {
-                            console.log('(Producto_table) Error al conectar base de datos en IndividualCalculation Component');
+                            console.log('(pickerLinProd) no se encontraron registros en SettingsProductionScreen');
                         }
                     }
                 );
@@ -145,7 +176,7 @@ const SettingsProductionScreen = () => {
                         if (_array.length > 0) {
                             getMeditionDataDB(_array);
                         } else {
-                            console.log('(Producto_table) Error al conectar base de datos en IndividualCalculation Component');
+                            console.log('(picker_medition_style) no se encontraron registros en SettingsProductionScreen');
                         }
                     }
                 );
@@ -160,7 +191,7 @@ const SettingsProductionScreen = () => {
                         if (_array.length > 0) {
                             getAutopastrsdataDB(_array);
                         } else {
-                            console.log('(Producto_table) Error al conectar base de datos en SettingsProductionScreen Component to call autopasters table');
+                            console.log('(picker_medition_style) no se encontraron registros en SettingsProductionScreen');
                         }
                     }, () => err => console.log(err)
                 );
@@ -172,7 +203,8 @@ const SettingsProductionScreen = () => {
                     setNullCopiesByTiradaPercentage(parseInt(response.nullcopiesbydefault));
                 })
                 .catch(() => {
-                    showToast("Completa la configuracions de descartes en \"SETTINGS\"...")
+                    //SE LLAMARÁ  @nullCopiesData CUANDO SE ACTIVE LA OPCIÓN, NO CUANDO INICIE LA VISTA.
+                    // showToast("Completa la configuracions de descartes en \"SETTINGS\"...")
                 });
         });
 
@@ -250,7 +282,7 @@ const SettingsProductionScreen = () => {
                                 setNumEnteras(identifyWithMedia.entera);
                             }
                         } else {
-                            console.log('(Producto_table) Error al conectar base de datos en SettingsProductionScreen Component to call autopasters table');
+                            console.log('(getAutopasterByLineaID) no se encontraron registros en SettingsProductionScreen');
                         }
                     }, () => err => console.log(err)
                 );
@@ -260,91 +292,105 @@ const SettingsProductionScreen = () => {
         }
     }, [maxPaginationOptionPickerLineSelected, selectedPagination]);
 
-    const groupAuto = (obj) => {
-        const [selectedAutopasterswithrolls, getSelectedAutopasterswithrolls] = useState([]);
+    const groupAuto = (obj, prodData) => {
+        console.log('----------------------------------------------------estamos dentro')
+        let getSelectedAutopasterswithrolls = [];
         const id = obj.id;
+        // const _enteras = obj['entera'].map(item => [id, item, 0]);
         const _enteras = obj.entera.map(item => [id, item, 0]);
         const _media = [id, obj.media, 1];
         if (!obj.media) {
-            getSelectedAutopasterswithrolls(_enteras);
+            getSelectedAutopasterswithrolls = [...getSelectedAutopasterswithrolls, ..._enteras];
         } else {
-            getSelectedAutopasterswithrolls([..._enteras, _media]);
+            getSelectedAutopasterswithrolls = [...getSelectedAutopasterswithrolls, ..._enteras, _media];
         }
-        ;
-        const gramajeFK = meditionDataDB.filter(item => item.medition_id === selectedMedition).gramaje_fk
-        const propietario_fk = productoDataDB.filter(item => item.producto_id === selectedProduct).papel_comun_fk
-
-        selectedAutopasterswithrolls.forEach((item, index) => {
-            const searchStatementAutoProdData_Table =
-                //change * for bobina_fk and add resto_previsto > 0 and media_defined from autopaster_data_prod table
-                // valuate add column is_media in bobina_table
-                `SELECT * 
-                 FROM autopasters_prod_data
-                 INNER JOIN bobina_table ON autopasters_prod_data.bobina_fk = bobina_table.codigo_bobina 
-                 WHERE bobina_table.autopaster_fk = 5 AND bobina_table.gramaje_fk = 1 
-                 AND bobina_table.papel_comun_fk = 2`
-            db.transaction(tx => {
+        db.transaction(tx => {
+            getSelectedAutopasterswithrolls.forEach(item => {
+                let coefRoll = 0;
+                let nowRollWeight = 0;
+                let positionRoll = 1;
+                let calcWeigth = {};
+                let dataRollInsert = [];
+                let queryParams = [item[1], selectedMedition, selectedProduct, item[2]]
+                // db.transaction(tx => {
                 tx.executeSql(
-                    "SELECT * autopasters_prod_data",
-                    toSendProd,
+                    searchStatementAutoProdData_Table,
+                    //params [autopasterID, gramajeFK, papelComunFK, isMedia]
+                    queryParams,
                     (_, {rows: {_array}}) => {
+                        const meditionVal = meditionDataDB.filter(item => item.medition_id === selectedMedition);
+                        const SumTotalCopies = prodData.nulls + prodData.tirada;
+
                         if (_array.length > 0) {
-                            console.log('autopasters_prod_data', _array)
+                            // OK. INSERT 'CODIGO_BOBINA' ROLL IN autopasters_prod_data.
+                            coefRoll = searchCoefTypeRoll(...meditionVal, ..._array);
+                            nowRollWeight = _array[0].resto_previsto;
+                            calcWeigth = individualProvidedWeightRollProduction(SumTotalCopies, nowRollWeight, coefRoll);
+                            dataRollInsert = [item[0], item[1], _array[0].codigo_bobina, calcWeigth.rollweight, item[2], positionRoll]
+
+                            // INSERT DATA.
+                            genericInsertFunction(insertAutopastCode, dataRollInsert)
+                                .then(response => console.log('response', response))
+                                .catch(err => console.log('err', err))
+
+
                         } else {
-                            console.log('(Producto_table) Error al conectar base de datos en IndividualCalculation Component');
+                            // NO OK. NEGATIVE COIL SEARCH IN PRODUCTION TABLE. SEARCH LAST ROLL IN SELECTED AUTOPASTER.
+                            db.transaction(tx => {
+                                tx.executeSql(
+                                    searchStatementRoll,
+                                    //params [autopasterID, gramajeFK, papelComunFK, isMedia]
+                                    queryParams,
+                                    (_, {rows: {_array}}) => {
+                                        if (_array.length > 0) {
+                                            // OK. INSERT 'CODIGO_BOBINA' ROLL IN autopasters_prod_data.
+                                            coefRoll = searchCoefTypeRoll(...meditionVal, ..._array);
+                                            nowRollWeight = _array[0].peso_actual;
+                                            calcWeigth = individualProvidedWeightRollProduction(SumTotalCopies, nowRollWeight, coefRoll);
+                                            dataRollInsert = [item[0], item[1], _array[0].codigo_bobina, calcWeigth.rollweight, item[2], positionRoll]
+
+                                            // INSERT DATA.
+                                            genericInsertFunction(insertAutopastCode, dataRollInsert)
+                                                .then(response => console.log('response', response))
+                                                .catch(err => console.log('err', err))
+                                        } else {
+                                            // NO ROLL FOUND.
+                                            const insertAutopastWithoutRoll = [...item, positionRoll];
+                                            genericInsertFunction(insertWithoutRoll, insertAutopastWithoutRoll)
+                                                .then(response => console.log('response', response))
+                                                .catch(err => console.log('err', err))
+                                        }
+                                    }
+                                );
+                            })
                         }
-                    }
-                );
+                    }, err => console.log('error en BBDD', err)
+                )
+                ;
             });
         })
     };
 
-    const handlerSendOptionsSelected = (toSendProd, toSendAutopastProd) => {
+    const handlerSendOptionsSelected = (toSendAutopastProd, toSendProd) => {
         const insert_production = "INSERT INTO produccion_table (produccion_id, editions, linea_fk, medition_fk, pagination_fk, producto_fk, tirada, nulls, fecha_produccion) VALUES (?,?,?,?,?,?,?,?,date('now'));"
-        const insert_autopast_prod = "INSERT INTO autopasters_prod_data (autopasters_prod_data_id, production_fk, autopaster_fk, media_defined) VALUES (NULL,?,?,?);"
+        const prod_data = Object.values(toSendProd);
+
         //SEARCH BOBINAS FUNCTION
-        genericInsertFunction(insert_production, toSendProd)
+        genericInsertFunction(insert_production, prod_data)
             .then(result => {
                 if (result.rowsAffected > 0) {
                     //LOOP INSERT DATA
-                    let cont = 0;
-                    for (const insert of toSendAutopastProd) {
-                        console.log('insert', insert);
-                        genericInsertFunction(insert_autopast_prod, insert)
-                            .then(result => {
-                                if (result.rowsAffected > 0) {
-                                    if (cont === toSendAutopastProd.length) showToast('Actualizado con éxito toda la fase', false)
-                                } else {
-                                    showToast('Error al actualizar')
-                                }
-                            })
-                            .catch(err => {
-                                showToast('Error al actualizar')
-                                console.log(err)
-                            })
-                        cont++;
-                    }
+                    groupAuto(toSendAutopastProd, toSendProd);
+                    // showToast('Guardado con éxito.');
+                    // resetForm();
                 } else {
-                    showToast('Error al actualizar')
+                    showToast('Error al guardar.')
                 }
             })
             .catch(err => {
-                showToast('Error al actualizar')
+                showToast('Error al guardar.')
                 console.log(err)
             })
-        // db.transaction(tx => {
-        //     tx.executeSql(
-        //         "SELECT * autopasters_prod_data",
-        //         toSendProd,
-        //         (_, {rows: {_array}}) => {
-        //             if (_array.length > 0) {
-        //                 console.log('autopasters_prod_data', _array)
-        //             } else {
-        //                 console.log('(Producto_table) Error al conectar base de datos en IndividualCalculation Component');
-        //             }
-        //         }
-        //     );
-        // });
     };
 
     const resetForm = () => {
@@ -365,7 +411,7 @@ const SettingsProductionScreen = () => {
     const handlerChangeLineProd = (val) => {
         //RESET PAGE STATUS ON CHANGE LINE PRODUCTION VALUES.
         getselectedPagination(0);
-        //     //RESET TO INITIAL STATE WHEN cHANGE OPTION SELECTED
+        //     //RESET TO INITIAL STATE WHEN CHANGE OPTION SELECTED
         setEnteras([]);
         //GET LIMIT FOR PAGINATION OF LINE PRODUCTION SELECTED.
         const getLineProd = autopastersDataDB.filter((item => item.linea_fk === val));
@@ -378,7 +424,7 @@ const SettingsProductionScreen = () => {
                     if (_array.length > 0) {
                         getMaxPaginationOptionPickerLineSelected(_array);
                     } else {
-                        console.log('(Producto_table) Error al conectar base de datos en IndividualCalculation Component');
+                        console.log('(paginacion_table) no se encontraron registros en SettingsProductionScreen\'');
                     }
                 }
             );
@@ -450,21 +496,12 @@ const SettingsProductionScreen = () => {
                 }}
                 validationSchema={fullProductionSchema}
                 onSubmit={values => {
-                    // getselectedTirada(parseInt(values.tirada));
-                    // getselectedProduct(values.pickerProduct);
-                    // getselectedPagination(values.pickerPagination);
-                    // getselectedLinProd(values.pickerlinProd);
-                    // getselectedMedition(values.pickerMedition);
-                    // getselectedEditions(parseInt(values.inputEditions));
-                    // getselectedNulls(parseInt(values.inputNulls));
-
-
                     const create_id = Date.now();
                     const objectAutopast = {
                         id: create_id,
                         entera: areEnteras,
                         media: isMedia
-                    }
+                    };
 
                     //TO SEND BASEDATA
                     // order insert (production_id, editions, linea_fk, medition_fk, pagination_fk,
@@ -479,12 +516,8 @@ const SettingsProductionScreen = () => {
                         tirada: values.tirada,
                         nulls: values.inputNulls,
                     };
-                    // console.log('revisar para envío', objectProd)
-                    const prod_data = Object.values(objectProd);
-                    console.log('revisar para envío', objectProd)
-                    const autopast_prod_data = groupAuto(objectAutopast);
-                    //TRANSACTION FUNCTION
-                    handlerSendOptionsSelected(prod_data, autopast_prod_data)
+
+                    handlerSendOptionsSelected(objectAutopast, objectProd)
                 }}
             >
                 {({
@@ -1195,3 +1228,46 @@ const styles = StyleSheet.create({
 });
 
 export default SettingsProductionScreen;
+
+const input = [
+    { "brand": "Dell", "model": "Precision", },
+    { "brand": "Apple", "model": "iMac Pro", },
+    { "brand": "Apple", "model": "MacBook Pro", },
+    { "brand": "HP", "model": "Z840", },
+    { "brand": "Apple", "model": "MacBook Pro", },
+    { "brand": "Apple", "model": "iMac", },
+];
+// const autopastersDataProduction =[
+//     {
+//         "autopaster_fk": 5,
+//         "autopasters_prod_data_id": 1,
+//         "bobina_fk": 3057060377853,
+//         "media_defined": 0,
+//         "production_fk": 1635771082521,
+//         "resto_previsto": 184,
+//     },
+//     {
+//         "autopaster_fk": 10,
+//         "autopasters_prod_data_id": 2,
+//         "bobina_fk": 987654321,
+//         "media_defined": 0,
+//         "production_fk": 1635771082521,
+//         "resto_previsto": 84,
+//     },
+//     {
+//         "autopaster_fk": 5,
+//         "autopasters_prod_data_id": 3,
+//         "bobina_fk": 98765432112334444,
+//         "media_defined": 0,
+//         "production_fk": 163577108456560,
+//         "resto_previsto": 14,
+//     },
+// ]
+// const groupedBy = autopast.reduce((acc, item) => {
+//     acc[item.autopaster_fk] ?
+//         acc[item.autopaster_fk]['data'].push(item)
+//         :
+//         acc[item.autopaster_fk] = { title: item.autopaster_fk, data: [ item ] };
+//     return acc;
+//     }, {});
+// const result = Object.values(groupedBy);

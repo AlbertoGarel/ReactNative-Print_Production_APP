@@ -1,11 +1,14 @@
-import React from 'react';
+import React, {useState, useEffect, memo} from 'react';
 import {StyleSheet, View, Text, Dimensions, TouchableOpacity} from 'react-native';
 import {COLORS} from "../../assets/defaults/settingStyles";
 import PaperCoilWeightDataCard from "./PaperCoilWeightDataCard";
 import TextInputCoilRadius from "../FormComponents/TextInputCoilRadius";
 import ComsumptionResultCard from "./ComsumptionResultCard";
-import {fingerselectOrangeSVG} from "../../assets/svg/svgContents";
-import {Feather as Icon} from "@expo/vector-icons";
+import {changeSVG, fingerselectOrangeSVG, outStackSVG} from "../../assets/svg/svgContents";
+import SvgComponent from "../SvgComponent";
+import {paperRollConsummption} from "../../utils";
+import {autopasters_prod_table_by_production} from "../../dbCRUD/actionsSQL";
+import * as SQLite from "expo-sqlite";
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -20,7 +23,53 @@ const optionsStyleContSVG = {
     width: '60%', height: '60%', top: 10, right: 0, transform: [{rotate: "180deg"}]
 };
 
-const FullCardProduction = ({item}) => {
+const FullCardProduction = ({item, updatedataRollState, inputRadioForRollRadius, handlerRemoveItem}) => {
+    const db = SQLite.openDatabase('bobinas.db');
+    //STATES
+    const [radiusState, setStateRadius] = useState('');
+    const [itemData, setItemData] = useState({});
+    const [restoPrevistoAnteriorProduccion, setRestoPrevistoAnteriorProduccion] = useState(0)
+    useEffect(() => {
+        let isMounted = true;
+        //saber si existe esta bobina en producción anterior para seleccionar resto_prevsto si existe.
+        db.transaction(tx => {
+            tx.executeSql(
+                "SELECT resto_previsto FROM autopasters_prod_data WHERE production_fk < ? AND bobina_fk = ?;",
+                [item.production_fk, item.codigo_bobina],
+                (_, {rows: {_array}}) => {
+                    if (_array.length > 0) {
+                        // console.log('resto previsto', _array);
+                        if (isMounted) {
+                            setRestoPrevistoAnteriorProduccion(_array[0].resto_previsto)
+                        }
+                    } else {
+                        console.log('NO EXISTEN restos previstos');
+                    }
+                }
+            );
+        });
+        return () => isMounted = false;
+    }, [item])
+
+    useEffect(() => {
+        let isMounted = true;
+        if (inputRadioForRollRadius.length > 0) {
+            const bobinaCode = item.codigo_bobina;
+            // //FOR TO STRENGTHEN AUTENTICITY OF ROLL CODE IN CASE IT IS REPEATED.
+            const autopasterId = item.autopaster_fk;
+            const itemToUpdate = inputRadioForRollRadius.filter(item => item.bobinaID === bobinaCode && item.autopaster === autopasterId);
+
+            // console.log('itemtoupdate', item)
+            if (itemToUpdate) {
+                setItemData(...itemToUpdate);
+            }
+            if (Object.keys(itemToUpdate).length > 0) {
+                const getRadius = itemToUpdate[0].radius;
+                setStateRadius(getRadius);
+            }
+        }
+        return () => isMounted = false;
+    }, [inputRadioForRollRadius])
 
 //PROPS ELEMENTS CARDS
     const stylesPeperCoilWeight = {
@@ -44,7 +93,7 @@ const FullCardProduction = ({item}) => {
         textWeightUnit: styles.textWeightUnit
     };
     const propsAttrInput = {
-        editable: true,
+        editable: !restoPrevistoAnteriorProduccion,
         keyboardType: 'numeric',
         styled: {
             backgroundColor: '#ff850050',
@@ -52,10 +101,10 @@ const FullCardProduction = ({item}) => {
             fontFamily: 'Anton'
         },
         name: 'id',
-        // _onChangeText: text => paperRollConsummption(text, setStateRadius),
-        // _onBlur: () => calcPaperRollConsummption(radiusState, item.id),
-        // _value: radiusState.toString(),
-        // _defaultValue: radiusState.toString()
+        _onChangeText: text => paperRollConsummption(text, setStateRadius),
+        _onBlur: () => updatedataRollState(radiusState, item),
+        _value: radiusState.toString(),
+        _defaultValue: radiusState.toString()
     };
     const styleCopsumptionComponent = {
         parent: [styles.result, {width: '25%'}],
@@ -64,66 +113,108 @@ const FullCardProduction = ({item}) => {
         textWeightUnit: styles.textWeightUnit
     };
 
-    const ButtonDelete = () => {
+    const ActionsButton = () => {
         return (
-            <TouchableOpacity onPress={() => alert('pressed bottom button')} style={{width: 50, margin: 3}}>
+            <TouchableOpacity onPress={() => handlerRemoveItem(itemData)} style={{width: 50, margin: 3}}>
                 <View style={{
                     padding: 5,
-                    backgroundColor: COLORS.buttonEdit,
+                    backgroundColor: COLORS.buttonEdit + '50',
                     borderRadius: 6,
                     alignSelf: 'flex-start',
                     marginLeft: 5,
                 }}>
-                    <Icon name={'edit'} size={25} color={'white'}/>
+                    <SvgComponent
+                        svgData={outStackSVG}
+                        svgWidth={25}
+                        svgHeight={25}
+                    />
                 </View>
             </TouchableOpacity>
         )
     }
 
+    const textTypeRoll = (param) => {
+        let strMessage = param ? 'Media' : 'Entera'
+        return <Text style={{color: COLORS.primary}}>{strMessage}</Text>
+    };
+
+    const resultIfRadiusExist = (item) => {
+
+    }
+
+    const warningConsumption = React.useMemo(()=> (kilos) => {
+        const value = parseInt(kilos);
+        let color = '';
+        switch (true) {
+            case value <= 60:
+                color = '#FF9999';
+                break;
+            case value > 60 && value <= 100:
+                color = '#FFFF99';
+                break;
+            case value > 100:
+                color = '#BBFFBB'
+                break;
+            default:
+                color = '#FFbe61'
+                break;
+        }
+        ;
+        return color;
+    },[item.resto_previsto])
+
     return (
-        <>
-            {/*<View style={styles.numauto}><Text style={{color: COLORS.white}}>1</Text></View>*/}
-            <View style={styles.cardparent}>
-                <View style={styles.numberandcode}>
-                    {/*<View style={styles.numauto}><Text style={{color: COLORS.white}}>1</Text></View>*/}
-                    <ButtonDelete/>
-                    <View style={[styles.contcode, styles.centerCenter]}><Text
-                        style={{textAlign: 'center'}}>123456789012</Text></View>
-                </View>
-                <View style={styles.parentWeight}>
-                    <PaperCoilWeightDataCard
-                        stylesPeperCoilWeight={stylesPeperCoilWeight}
-                        restoInicioData={item.restoInicio}
-                        restoFibalData={item.restoFinal}
-                    />
-                    <TextInputCoilRadius
-                        stylesTextInput={stylesTextInput}
-                        propsAttrInput={propsAttrInput}
-                    />
-                    <ComsumptionResultCard
-                        styleCopsumptionComponent={styleCopsumptionComponent}
-                        conumptionRes={item.consumo}
-                    />
-                </View>
-                {/*((buttons-*/}
-                <View style={{
-                    width: '100%',
-                    height: 30,
-                    backgroundColor: COLORS.secondary,
-                    flexDirection: 'row',
-                    justifyContent: 'flex-end',
-                    alignItems: 'center'
-                }}>
-                    <Text>avisos para estado bobina</Text>
-                </View>
+        <View style={[styles.cardparent, {backgroundColor: item.media_defined ? '#ECFAFA' : COLORS.white}]}>
+            <View style={styles.numberandcode}>
+                {/*<View style={styles.numauto}><Text style={{color: COLORS.white}}>1</Text></View>*/}
+                <ActionsButton/>
+                <View style={[styles.contcode, styles.centerCenter]}><Text
+                    style={{textAlign: 'center'}}>{item.bobina_fk}</Text></View>
             </View>
-        </>
+            <View style={{justifyContent: 'space-between', flexDirection: 'row'}}>
+                <Text style={{fontFamily: 'Anton'}}>Peso original: <Text
+                    style={{color: COLORS.primary}}>{item.peso_ini}</Text> Kg</Text>
+                <Text style={{fontFamily: 'Anton'}}>Tipo de bobina: {textTypeRoll(item.media_defined)}</Text>
+            </View>
+            <View style={styles.parentWeight}>
+                <PaperCoilWeightDataCard
+                    stylesPeperCoilWeight={stylesPeperCoilWeight}
+                    restoInicioData={restoPrevistoAnteriorProduccion > 0 ? restoPrevistoAnteriorProduccion : itemData ? itemData.weightAct : ''}
+                    restoFinalData={itemData ? itemData.weightEnd : ''}
+                    styleRestPrev={restoPrevistoAnteriorProduccion > 0}
+                />
+                <TextInputCoilRadius
+                    stylesTextInput={stylesTextInput}
+                    propsAttrInput={propsAttrInput}
+                />
+                <ComsumptionResultCard
+                    styleCopsumptionComponent={styleCopsumptionComponent}
+                    conumptionRes={itemData ? (itemData.radius !== '' ? itemData.weightAct - itemData.weightEnd : '') : ''}
+                />
+            </View>
+            {/*((buttons-*/}
+            <View style={{
+                width: '100%',
+                height: 30,
+                backgroundColor: warningConsumption(item.resto_previsto),
+                flexDirection: 'row',
+                justifyContent: 'flex-end',
+                alignItems: 'center',
+                padding: 5,
+            }}>
+                <Text style={{
+                    color: '#020202',
+                    textShadowColor: COLORS.white,
+                    textShadowOffset: {width: 0.5, height: 0.5},
+                    textShadowRadius: 1
+                }}>Resto Previsto: {item.resto_previsto} Kg</Text>
+            </View>
+        </View>
     )
 };
 const styles = StyleSheet.create({
     cardparent: {
         width: '100%',
-        backgroundColor: COLORS.white,
         borderWidth: 2,
         borderColor: COLORS.black,
         padding: 5
@@ -225,7 +316,8 @@ const styles = StyleSheet.create({
     },
     textTitle: {
         fontFamily: 'Anton',
-        textAlign: 'left'
+        textAlign: 'left',
+        paddingLeft: 5
     }
 })
-export default FullCardProduction;
+export default memo(FullCardProduction);

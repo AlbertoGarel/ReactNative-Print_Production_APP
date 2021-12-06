@@ -1,11 +1,12 @@
 import React from 'react';
-import {View, Text, TextInput} from 'react-native';
+import {View, Text, TextInput, Alert} from 'react-native';
 import BgComponent from "../BackgroundComponent/BgComponent";
 
 const TextInputCoilRadius = ({stylesTextInput, propsAttrInput}) => {
-
+    let titleMessage = '!! ATENCIÓN !!'
+    let message = 'No editable hasta terminar producción anterior. Resto inicial solo es una previsión.'
     return (
-        <View style={stylesTextInput.parent}>
+        <View style={stylesTextInput.parent} onStartShouldSetResponder={() => !propsAttrInput.editable ? Alert.alert(titleMessage, message) : null}>
             <View style={stylesTextInput.contPrinc}>
                 <BgComponent
                     svgOptions={stylesTextInput.svgData.opt}

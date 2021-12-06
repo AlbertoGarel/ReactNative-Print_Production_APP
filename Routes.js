@@ -35,6 +35,8 @@ import DataBaseScreen from "./screens/DataBaseScreen";
 import {enableScreens} from 'react-native-screens';
 import SearchScreen from "./screens/SearchScreen";
 import SettingsSimpleProductionScreen from "./screens/productionScreens/SettingsSimpleProductionScren";
+import {getDatas, removeValue, storeData} from "./data/AsyncStorageFunctions";
+import * as Font from "expo-font";
 
 enableScreens();
 
@@ -44,11 +46,18 @@ const Routes = ({navigation}) => {
     const paddingTop = Constants.statusBarHeight
 
     const [changeButtonFunc, setChangeButtonFunc] = useState(false);
+    const [isFontLoad, setIsfontLoad] = useState(false);
+
+    useEffect(()=>{
+        Font.loadAsync({
+            "Anton": require("./assets/fonts/Anton-Regular.ttf"),
+        }).then(response => setIsfontLoad(true));
+    },[])
 
     const buttonChangeTabNabStyleAndfunc = () => {
         setChangeButtonFunc()
     }
-
+    
     const bannerError = () => {
         console.log("An error");
         return;

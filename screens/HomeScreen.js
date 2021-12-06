@@ -18,7 +18,7 @@ import {produccion_table_ALL} from "../dbCRUD/actionsSQL";
 import {useFocusEffect} from "@react-navigation/native";
 
 
-const HomeScreen = ({navigation}) => {
+const HomeScreen = ({navigation, route}) => {
     const db = SQLite.openDatabase('bobinas.db');
     //ICON SIZE
     const iconSize = 40;
@@ -29,7 +29,7 @@ const HomeScreen = ({navigation}) => {
     const optionsStyleContSVG = {
         width: '100%', height: '100%', top: 0, right: 0
     };
-
+    const {itemID} = route.params || false
     const [isFocus, setIsFocus] = useState(false);
     const [productions, getProductions] = useState([]);
 
@@ -43,10 +43,9 @@ const HomeScreen = ({navigation}) => {
                     [],
                     (_, {rows: {_array}}) => {
                         if (_array.length > 0) {
-                            console.log('produccion table', _array)
                             getProductions(_array);
                         } else {
-                            console.log('(Producto_table) Error al conectar base de datos en SettingsProductionScreen Component to call autopasters table');
+                            console.log('(produccion_table_ALL) Sin producciones en HomeScreen Component to call productions_table');
                         }
                     }, () => err => console.log(err)
                 );
@@ -56,6 +55,12 @@ const HomeScreen = ({navigation}) => {
             };
         }, [])
     );
+    useEffect(() => {
+        if (itemID) {
+            const productionsSetState = productions.filter(item => item.id !== itemID);
+            getProductions(productionsSetState);
+        }
+    }, [itemID])
 
     return (
         <SafeAreaView style={{flex: 1}}>

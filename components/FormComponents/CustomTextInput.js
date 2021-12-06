@@ -20,13 +20,14 @@ const CustomTextInput = ({
                              _onBlur,
                              _defaultValue,
                              inputStyled,
-                             _onEndEditing
+                             _onEndEditing,
+                             _value
                          }) => {
 
     return (
         // <View style={styles.container}>
 
-        <View style={[styles.SectionStyle, styled ? styled : null]}>
+        <View style={[styles.SectionStyle, styled ? styled : null, noEditable ? {backgroundColor: '#c2c2c2'} : null]}>
             <View style={styles.IconStyle}>
                 <SvgComponent
                     svgData={svgData}
@@ -38,22 +39,26 @@ const CustomTextInput = ({
             <TextInput
                 ref={_ref}
                 key={_name}
-                style={[{flex: 1, paddingLeft: 20,}, inputStyled ? inputStyled : null]}
+                style={[{
+                    flex: 1,
+                    paddingLeft: 20,
+                }, inputStyled ? inputStyled : null, noEditable ? {fontFamily: 'Anton', color: '#189AB4'} : {color: 'black'}]}
                 placeholder={placeholder}
                 keyboardType={type}
                 editable={noEditable ? false : true}
                 name={_name}
                 onChangeText={_onChangeText}
                 onBlur={_onBlur}
-                onEndEditing={_onEndEditing ?(text)=> _onEndEditing(text) : null}
+                onEndEditing={_onEndEditing ? (text) => _onEndEditing(text) : null}
                 // underlineColorAndroid="transparent"
                 defaultValue={_defaultValue}
+                value={_value}
             />
         </View>
 
         // </View>
     )
-};
+}
 const styles = StyleSheet.create({
     // container: {
     //     // flex: 1,

@@ -9,15 +9,19 @@ const SplashScreen = () => {
     const [isFontLoad, setIsfontLoad] = useState(false)
 
     useEffect(() => {
-        Font.loadAsync({
-            "Anton": require("../assets/fonts/Anton-Regular.ttf"),
-        }).then(response => setIsfontLoad(true));
+        let isMuounted = true;
+        if (isMuounted) {
+            Font.loadAsync({
+                "Anton": require("../assets/fonts/Anton-Regular.ttf"),
+            }).then(response => setIsfontLoad(true));
 
-        Animated.timing(fadeAnim, {
-            toValue: 1,
-            duration: 3000,
-            useNativeDriver: true
-        }).start();
+            Animated.timing(fadeAnim, {
+                toValue: 1,
+                duration: 3000,
+                useNativeDriver: true
+            }).start();
+        }
+        return () => isMuounted = false;
     }, []);
 
     return (

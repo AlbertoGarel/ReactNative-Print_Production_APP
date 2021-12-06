@@ -29,14 +29,21 @@ const BarcodeScannerComponent = ({props}) => {
             //GET TO asyncStorage
             getDatas('@storage_codeTypesSelected').then(r => {
                 // console.log('datos de storage en barcodeCompnent', r)
-                const cloneRequest = [...r]
-                const formatSelectedTypes = [];
-                cloneRequest.forEach((codeItem, index) => {
-                    if (codeItem.checkValue) {
-                        formatSelectedTypes.push('BarCodeScanner.Constants.BarCodeType.' + codeItem.checkName);
-                    }
-                });
-                getBarcodeTypesSelected(formatSelectedTypes);
+                if(r){
+                    const cloneRequest = [...r];
+                    const formatSelectedTypes = [];
+                    cloneRequest.forEach((codeItem, index) => {
+                        if (codeItem.checkValue === true) {
+                            formatSelectedTypes.push('BarCodeScanner.Constants.BarCodeType.' + codeItem.checkName);
+                        }
+                    });
+                    getBarcodeTypesSelected(formatSelectedTypes);
+                }else{
+                    getBarcodeTypesSelected([{
+                        "checkName": "code128",
+                        "checkValue": true,
+                    }])
+                }
             });
 
             if (props.isVisible) {
@@ -61,7 +68,7 @@ const BarcodeScannerComponent = ({props}) => {
                 setScanned(true);
                 Vibration.vibrate();
                 props.getScannedCode(data);
-                alert(`Bar code with type ${type} and data ${data} has been scanned!`);
+                // alert(`Bar code with type ${type} and data ${data} has been scanned!`);
             }
         }
     };

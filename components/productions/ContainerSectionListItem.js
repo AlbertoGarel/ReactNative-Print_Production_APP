@@ -1,67 +1,96 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, View, ActivityIndicator} from 'react-native';
 import {COLORS} from "../../assets/defaults/settingStyles";
 import {autopasters_prod_table_by_production} from "../../dbCRUD/actionsSQL";
 import * as SQLite from "expo-sqlite";
 import {genericUpdatefunction} from "../../dbCRUD/actionsFunctionsCrud";
+import FullCardProduction from "./FullCardProduction";
 
-const ContainerSectionListItem = ({item, itemData}) => {
+//[codigoBobinaFK, productionFK]
+const innerBobinaTableAndProductData =
+    `SELECT * FROM autopasters_prod_data
+     INNER JOIN bobina_table ON bobina_table.codigo_bobina = ?
+     WHERE autopasters_prod_data.production_fk = ?
+     AND autopasters_prod_data.bobina_fk = bobina_table.codigo_bobina
+     `;
+
+const ContainerSectionListItem = ({
+                                      item,
+                                      itemData,
+                                      setStateForRadius,
+                                      updatedataRollState,
+                                      maxRadiusValueDDBB,
+                                      inputRadioForRollRadius,
+                                      handlerRemoveItem
+                                  }) => {
     const db = SQLite.openDatabase('bobinas.db');
     const [existBobinas, getExistBobinas] = useState(null);
+    const [bobinaBBDD, getBobinaBBD] = useState([]);
+    //ROLL DATA
+    const [rollData, getRollData] = useState([]);
 
     useEffect(() => {
         let isMounted = true;
         if (isMounted) {
-            substractBobina_Fk(item);
+            getExistBobinas(item.bobina_fk);
             //GET BOBINAS IF EXIST
-            db.transaction(tx => {
-                tx.executeSql(
-                    `SELECT * FROM bobina_table WHERE autopaster_fk = ? AND papel_comun_fk = ? AND gramaje_fk = ?;`,
-                    [5, 2, 1],
-                    (_, {rows: {_array}}) => {
-                        if (_array.length > 0) {
-                            console.log('bobina seleccionada', _array);
-                            if (_array.length === 1) {
-                                //update
-                                const bobina = _array[0];
-                                const restPrev =  (bobina.peso_ini / 0.038) ;
-                                const arrUpdate = [
-                                    bobina.codigo_bobina,
-                                    restPrev < (itemData.tirada + itemData.nulls) ? Math.round((itemData.tirada + itemData.nulls) - restPrev) : 0,
-                                    item.production_fk,
-                                    item.autopaster_fk
-                                ];
-                                console.log('datos update' ,arrUpdate)
-                                const updt = "UPDATE autopasters_prod_data SET bobina_fk = ?, resto_previsto = ? WHERE production_fk = ? AND autopaster_fk = ?;"
-                                genericUpdatefunction(updt, arrUpdate)
-                                    .then(r => alert('update'))
-                                    .catch(err=> console.log(err))
-                            } else {
-                                //if MORE BOBINAS
+            if (item.bobina_fk) {
+                const params = [item.bobina_fk, item.production_fk]
+                db.transaction(tx => {
+                    tx.executeSql(
+                        innerBobinaTableAndProductData,
+                        //[codigoBobinaFK, productionFK]
+                        params,
+                        (_, {rows: {_array}}) => {
+                            if (_array.length > 0) {
+                                // getRollData(..._array);
+                                getRollData(_array);
+                                // console.log('__________array', _array)
                             }
-                        } else {
-                            console.log('(FullProduction)Error al conectar base de datos en FullProduction Component');
-                        }
-                    }
-                );
-            });
+                        }, err => console.log(err)
+                    );
+                });
+            }
 
         }
         return () => isMounted = false;
     }, [item]);
 
-    const substractBobina_Fk = (item) => {
-        const ArrItems = Array.isArray(item) ? item : [item];
-        console.log(ArrItems.map(roll => roll.bobina_fk));
-        return ArrItems.map(roll => roll.bobina_fk);
-    }
+    useEffect(() => {
+        if (rollData.length > 0) {
+            let forState = [];
+            rollData.forEach(item => {
+                const objToState = {
+                    autopaster: item.autopaster_fk,
+                    bobinaID: item.bobina_fk || 0,
+                    radiusIni: item.radio_actual,
+                    radius: '',
+                    weightIni: item.peso_ini,
+                    weightAct: item.peso_actual,
+                    weightEnd: null,
+                    ismedia: item.media,
+                    toSend: false,
+                    position: item.position_roll
+                };
+                forState.push(objToState);
+            })
+            setStateForRadius(...forState)
+        }
+    }, [rollData])
+
+    // const substractBobina_Fk = (item) => {
+    //     const ArrItems = Array.isArray(item) ? item : [item];
+    //     console.log(ArrItems.map(roll => roll.bobina_fk));
+    //     return ArrItems.map(roll => roll.bobina_fk);
+    // }
+
 
     if (!existBobinas) {
         return (
             <>
-                <Text>{JSON.stringify(item)}</Text>
+                <Text>item: {JSON.stringify(item)}</Text>
                 <Text>----------------------</Text>
-                <Text>{JSON.stringify(itemData)}</Text>
+                <Text>itemData: {JSON.stringify(itemData)}</Text>
                 <View style={styles.contWarning}>
                     <Text style={styles.textWarning}>
                         No existen bobinas para este equipo en producción.
@@ -79,7 +108,19 @@ const ContainerSectionListItem = ({item, itemData}) => {
 
     return (
         <View>
-            <Text>hayyyyyy bobiiinaaass</Text>
+            {rollData.length > 0 ?
+                rollData.map((i, index) => {
+                    return <FullCardProduction key={index} item={i}
+                                               updatedataRollState={updatedataRollState}
+                                               maxRadiusValueDDBB={maxRadiusValueDDBB}
+                                               inputRadioForRollRadius={inputRadioForRollRadius}
+                                               handlerRemoveItem={handlerRemoveItem}
+                    />
+                })
+                :
+                <ActivityIndicator size="large" color={COLORS.buttonEdit}/>
+            }
+            <Text>{JSON.stringify(rollData)}</Text>
         </View>
     )
 }

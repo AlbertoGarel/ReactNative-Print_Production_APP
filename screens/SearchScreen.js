@@ -84,6 +84,7 @@ const SearchScreen = () => {
                     ],
                     (_, {rows: {_array}}) => {
                         if (_array.length > 0) {
+                            console.log(_array.length)
                             getDataSearchForTable(_array)
                         }
                         getValuesDB(_array)
@@ -92,7 +93,6 @@ const SearchScreen = () => {
             } else {
                 getValuesDB([])
             }
-
         });
     };
 
@@ -262,7 +262,7 @@ const SearchScreen = () => {
             />
         </SafeAreaView>
     );
-};
+}
 
 const styles = StyleSheet.create(
     {

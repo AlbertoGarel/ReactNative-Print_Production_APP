@@ -19,7 +19,7 @@ function App() {
     useEffect(() => {
         openDatabase()
             // .then(response => Alert.alert('BBD is ok'))
-            .then(response => showToast('Loading...'))
+            .then(response => showToast('CONECTANDO CON BASE DE DATOS...'))
             .catch(error => showToast('ERROR EN DB'))
     }, []);
 
