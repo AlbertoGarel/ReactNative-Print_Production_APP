@@ -9,6 +9,7 @@ import SvgComponent from "../SvgComponent";
 import {paperRollConsummption} from "../../utils";
 import {autopasters_prod_table_by_production} from "../../dbCRUD/actionsSQL";
 import * as SQLite from "expo-sqlite";
+import Barcode from '@kichiyaki/react-native-barcode-generator';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -68,6 +69,7 @@ const FullCardProduction = ({item, updatedataRollState, inputRadioForRollRadius,
                 setStateRadius(getRadius);
             }
         }
+        console.log('rt',item)
         return () => isMounted = false;
     }, [inputRadioForRollRadius])
 
@@ -142,7 +144,7 @@ const FullCardProduction = ({item, updatedataRollState, inputRadioForRollRadius,
 
     }
 
-    const warningConsumption = React.useMemo(()=> (kilos) => {
+    const warningConsumption = React.useMemo(() => (kilos) => {
         const value = parseInt(kilos);
         let color = '';
         switch (true) {
@@ -161,15 +163,30 @@ const FullCardProduction = ({item, updatedataRollState, inputRadioForRollRadius,
         }
         ;
         return color;
-    },[item.resto_previsto])
+    }, [item.resto_previsto])
 
     return (
         <View style={[styles.cardparent, {backgroundColor: item.media_defined ? '#ECFAFA' : COLORS.white}]}>
             <View style={styles.numberandcode}>
                 {/*<View style={styles.numauto}><Text style={{color: COLORS.white}}>1</Text></View>*/}
                 <ActionsButton/>
-                <View style={[styles.contcode, styles.centerCenter]}><Text
-                    style={{textAlign: 'center'}}>{item.bobina_fk}</Text></View>
+                <View style={[styles.contcode, styles.centerCenter, {padding: 5, minHeight: 70}]}>
+                    {item.peso_ini === item.peso_actual ?
+                        <Barcode
+                            format="CODE128"
+                            value={item.bobina_fk.toString()}
+                            text={item.bobina_fk.toString()}
+                            style={{margin: 10, fontFamily: 'Anton'}}
+                            maxWidth={Dimensions.get('window').width / 2}
+                            height={40}
+                        />
+                        :
+                        <Text
+                            style={{textAlign: 'center'}}>
+                            {item.bobina_fk}
+                        </Text>
+                    }
+                </View>
             </View>
             <View style={{justifyContent: 'space-between', flexDirection: 'row'}}>
                 <Text style={{fontFamily: 'Anton'}}>Peso original: <Text
@@ -231,7 +248,8 @@ const styles = StyleSheet.create({
     },
     numberandcode: {
         flexDirection: 'row',
-        justifyContent: 'flex-end'
+        justifyContent: 'flex-end',
+        alignItems: 'center'
     },
     numauto: {
         width: windowWidth / 2,

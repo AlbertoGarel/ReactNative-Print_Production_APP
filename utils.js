@@ -139,7 +139,7 @@ export const calcValues = (arrObject, objKey) => {
  *
  * */
 export const OriginalWeight = (data) => {
-    return Math.abs((data).toString().substring(9, 12))
+    return Math.abs((data).toString().substring(8, 12))
 };
 /**
  *  orders rolls and calculates kilos consumed of each one
@@ -172,4 +172,58 @@ export const CalcPrevConsKilosRollsAutopaster = (arrObjects, tiradaTotal, gramaj
         kilosPrev = calc_kilosPrev <= 0 ? 0 : calc_kilosPrev;
     })
     return updatedItems;
+}
+/**
+ *  set string name barcode type for BBDD row.
+ *
+ *  @return string
+ *
+ *  @param type: string / integer (barcodeType scanned)
+ *
+ * */
+export const typeBarcodeFiter = (type) => {
+    switch (type) {
+        case 128:
+            return "CODE128";
+        case 39:
+            return "CODE39";
+        case '128A':
+            return "CODE128A";
+        case '128B':
+            return "CODE128B";
+        case '128C':
+            return "CODE128C";
+        case 13:
+            return "EAN13";
+        case 8:
+            return "EAN8";
+        case 5:
+            return "EAN5";
+        case  2:
+            return "EAN2";
+        case 'UPC':
+            return 'UPC';
+        case 'UPCE':
+            return 'UPCE';
+        case 14:
+            return 'ITF14';
+        case 'ITF':
+            return 'ITF';
+        case 'MSI':
+            return 'MSI';
+        case 10:
+            return 'MSI10';
+        case 11:
+            return 'MSI11';
+        case 1010:
+            return 'MSI1010';
+        case 1110:
+            return 'MSI1110';
+        case 'pharmacode':
+            return 'pharmacode';
+        case 'codabar':
+            return 'codabar';
+        default:
+            return 'CODE128';
+    }
 }

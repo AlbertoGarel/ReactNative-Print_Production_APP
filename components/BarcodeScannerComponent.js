@@ -67,7 +67,7 @@ const BarcodeScannerComponent = ({props}) => {
             if (x >= viewMinX && y >= viewMinY && x <= (viewMinX + finderWidth / 2) && y <= (viewMinY + finderHeight / 2)) {
                 setScanned(true);
                 Vibration.vibrate();
-                props.getScannedCode(data);
+                props.getScannedCode({scannedCode: data, codeType: type});
                 // alert(`Bar code with type ${type} and data ${data} has been scanned!`);
             }
         }

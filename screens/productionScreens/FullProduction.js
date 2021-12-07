@@ -45,7 +45,7 @@ import {
     calcValues,
     groupBy,
     OriginalWeight,
-    paperRollConsummption
+    paperRollConsummption, typeBarcodeFiter
 } from "../../utils";
 import {
     genericDeleteFunction,
@@ -477,7 +477,7 @@ const FullProduction = ({route}) => {
     const handlerSetVibleDropMenu = () => setIsVisibleDropMenu(!isVisibleDropMenu);
 
     //CHECK IF THERE IS A ROLL IN THE PRODUCTION TABLE AND THE REEL TABLE TO ADD IN THIS PRODUCTION.
-    const getScannedCode = (scannedCode) => {
+    const getScannedCode = (scanned) => {
         //itemData => {
         //   "editions": 1,
         //   "fecha_produccion": "2021-11-01",
@@ -507,7 +507,13 @@ const FullProduction = ({route}) => {
         //     "resto_previsto": 84,
         //   },
         // ]
+        let {scannedCode, codeType} = scanned;
+        alert(codeType)
+        if(scannedCode.length !== 16){
+            return alert('El valor numérico del código de barras no tiene el formato esperado de 16 cifras.')
+        }
         scannedCode = parseInt(scannedCode);
+        let setCodeType = typeBarcodeFiter(codeType)
         const existRollInProduction = autopastersDataProduction.filter(item => item['bobina_fk'] === scannedCode);
         if (existRollInProduction.length > 0) {
             alert(`Esta bobina ya exite en esta producción en autopaster nº ${existRollInProduction[0].autopaster_fk}`)
@@ -545,7 +551,8 @@ const FullProduction = ({route}) => {
                                             commonRole: generalDataForRoll.papelComun,
                                             autopaster: autopasterID,
                                             grama: generalDataForRoll.gramajeRoll,
-                                            isMedia: isMedia
+                                            isMedia: isMedia,
+                                            // codeType: setCodeType // ADD ROW IN BBDD
                                         }
                                         createThreeButtonAlert(regNewRoll, actionBBDD);
                                     }
@@ -822,6 +829,8 @@ const FullProduction = ({route}) => {
     };
 
     const handlerMoveItem = (param) => {
+        //true for view drag&drop container
+        setIsVisibleDropMenu(!isVisibleDropMenu);
         //1º con param obtenemos la bobina que queremos mover de posición y el autopaster.
         //   se le añadirá un borde o background a la tarjeta movible para diferenciarla.
         getItemForChangePosition(param);
@@ -897,7 +906,8 @@ const FullProduction = ({route}) => {
                                         <Text style={{fontSize: 20, color: COLORS.buttonEdit}}> {title}</Text></Text>
                                     <View style={{display: 'flex', flexDirection: 'row'}}>
                                         <TouchableIcon
-                                            handlerOnPress={handlerSetVibleDropMenu}
+                                            // handlerOnPress={handlerSetVibleDropMenu}
+                                            handlerOnPress={()=>handlerMoveItem(data[0].autopaster_fk)}
                                             touchableStyle={[styles.IconStyle, {
                                                 backgroundColor: COLORS.white,
                                                 borderRadius: 5,
@@ -1038,6 +1048,7 @@ const FullProduction = ({route}) => {
                         backgroundColor: COLORS.whitesmoke
                     }}
                     child={() => <DragDropCardsComponent
+                        individualAutopasterDataForSectionList={individualAutopasterDataForSectionList}
                         item={itemForChangePosition}
                         touc={() => alert('yo')}
                     />}
