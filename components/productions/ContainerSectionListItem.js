@@ -1,10 +1,12 @@
 import React, {useEffect, useState} from 'react';
 import {StyleSheet, Text, View, ActivityIndicator} from 'react-native';
-import {COLORS} from "../../assets/defaults/settingStyles";
+import {COLORS, shadowPlatform} from "../../assets/defaults/settingStyles";
 import {autopasters_prod_table_by_production} from "../../dbCRUD/actionsSQL";
 import * as SQLite from "expo-sqlite";
 import {genericUpdatefunction} from "../../dbCRUD/actionsFunctionsCrud";
 import FullCardProduction from "./FullCardProduction";
+import {cautionSVG, icon360SVG} from "../../assets/svg/svgContents";
+import SvgComponent from "../SvgComponent";
 
 //[codigoBobinaFK, productionFK]
 const innerBobinaTableAndProductData =
@@ -21,7 +23,9 @@ const ContainerSectionListItem = ({
                                       updatedataRollState,
                                       maxRadiusValueDDBB,
                                       inputRadioForRollRadius,
-                                      handlerRemoveItem
+                                      handlerRemoveItem,
+                                      viewCardSpinner,
+                                      bobinaCodeForSpinner
                                   }) => {
     const db = SQLite.openDatabase('bobinas.db');
     const [existBobinas, getExistBobinas] = useState(null);
@@ -31,32 +35,32 @@ const ContainerSectionListItem = ({
 
     useEffect(() => {
         let isMounted = true;
-        if (isMounted) {
-            getExistBobinas(item.bobina_fk);
-            //GET BOBINAS IF EXIST
-            if (item.bobina_fk) {
-                const params = [item.bobina_fk, item.production_fk]
-                db.transaction(tx => {
-                    tx.executeSql(
-                        innerBobinaTableAndProductData,
-                        //[codigoBobinaFK, productionFK]
-                        params,
-                        (_, {rows: {_array}}) => {
-                            if (_array.length > 0) {
-                                // getRollData(..._array);
+
+        getExistBobinas(item.bobina_fk);
+        //GET BOBINAS IF EXIST
+        if (item.bobina_fk) {
+            const params = [item.bobina_fk, item.production_fk]
+            db.transaction(tx => {
+                tx.executeSql(
+                    innerBobinaTableAndProductData,
+                    //[codigoBobinaFK, productionFK]
+                    params,
+                    (_, {rows: {_array}}) => {
+                        if (_array.length > 0) {
+                            if (isMounted) {
                                 getRollData(_array);
                                 // console.log('__________array', _array)
                             }
-                        }, err => console.log(err)
-                    );
-                });
-            }
-
+                        }
+                    }, err => console.log(err)
+                );
+            });
         }
         return () => isMounted = false;
     }, [item]);
 
     useEffect(() => {
+        let isMounted = true;
         if (rollData.length > 0) {
             let forState = [];
             rollData.forEach(item => {
@@ -76,35 +80,24 @@ const ContainerSectionListItem = ({
             })
             setStateForRadius(...forState)
         }
+        return () => isMounted = false;
     }, [rollData])
-
-    // const substractBobina_Fk = (item) => {
-    //     const ArrItems = Array.isArray(item) ? item : [item];
-    //     console.log(ArrItems.map(roll => roll.bobina_fk));
-    //     return ArrItems.map(roll => roll.bobina_fk);
-    // }
-
 
     if (!existBobinas) {
         return (
-            <>
-                <Text>item: {JSON.stringify(item)}</Text>
-                <Text>----------------------</Text>
-                <Text>itemData: {JSON.stringify(itemData)}</Text>
-                <View style={styles.contWarning}>
+            <View style={styles.contWarning}>
+                <View style={{flex: .5}}>
+                    <SvgComponent svgData={cautionSVG} svgWidth={80} svgHeight={80}/>
+                </View>
+                <View style={{flex: 2}}>
                     <Text style={styles.textWarning}>
-                        No existen bobinas para este equipo en producción.
-                    </Text>
-                    <Text style={styles.textWarning}>
-                        Añade una.
-                    </Text>
-                    <Text style={styles.textWarning}>
-                        autopaster: {item.autopaster_fk}
+                        No existen bobinas asignadas.
                     </Text>
                 </View>
-            </>
+            </View>
         )
     }
+    ;
 
     return (
         <View>
@@ -115,29 +108,40 @@ const ContainerSectionListItem = ({
                                                maxRadiusValueDDBB={maxRadiusValueDDBB}
                                                inputRadioForRollRadius={inputRadioForRollRadius}
                                                handlerRemoveItem={handlerRemoveItem}
+                                               viewCardSpinner={viewCardSpinner}
+                                               bobinaCodeForSpinner={bobinaCodeForSpinner === i.codigo_bobina ? bobinaCodeForSpinner : null}
                     />
                 })
                 :
                 <ActivityIndicator size="large" color={COLORS.buttonEdit}/>
             }
-            <Text>{JSON.stringify(rollData)}</Text>
+            {/*<Text>{JSON.stringify(rollData)}</Text>*/}
         </View>
     )
 }
 const styles = StyleSheet.create({
     contWarning: {
         display: 'flex',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
         justifyContent: 'center',
+        alignItems: 'center',
         backgroundColor: COLORS.white,
         borderRadius: 5,
         margin: 10,
-        padding: 10
+        padding: 5,
+        ...shadowPlatform
+
     },
     textWarning: {
+        fontSize: 16,
         textAlign: 'center',
-        color: 'red',
+        color: COLORS.colorSupportfiv,
         fontFamily: 'Anton',
-        textDecorationLine: 'underline'
+        textShadowColor: COLORS.contraster,
+        textShadowOffset: {width: 0.5, height: 0.5},
+        textShadowRadius: 1,
+        // textDecorationLine: 'underline'
     }
 })
 export default ContainerSectionListItem;

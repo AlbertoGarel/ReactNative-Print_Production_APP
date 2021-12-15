@@ -158,7 +158,7 @@ export const CalcPrevConsKilosRollsAutopaster = (arrObjects, tiradaTotal, gramaj
     //3º calcular kilos consumidos por cada uno y asignar posición.
     let isMedia = orderedItems[0].ismedia ? gramajeValues.media : gramajeValues.entera;
     let kilosPrev = Math.round(tiradaTotal * isMedia);
-    alert(kilosPrev)
+    // alert(kilosPrev)
     let updatedItems = [];
     orderedItems.forEach((item, index) => {
         let calc_kilosPrev = kilosPrev - item.weightAct;
@@ -227,3 +227,14 @@ export const typeBarcodeFiter = (type) => {
             return 'CODE128';
     }
 }
+/**
+ *  TAKES PRODUCTION DATA AND RETURNS HTML STRING TO CREATE PDF.
+ *
+ *  @return html string
+ *
+ *  @param type: string / integer (barcodeType scanned)
+ *
+ * */
+export const createHMLstring = (HTMLtemplate, ) => {
+
+};

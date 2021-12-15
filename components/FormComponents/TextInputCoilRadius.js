@@ -6,7 +6,8 @@ const TextInputCoilRadius = ({stylesTextInput, propsAttrInput}) => {
     let titleMessage = '!! ATENCIÓN !!'
     let message = 'No editable hasta terminar producción anterior. Resto inicial solo es una previsión.'
     return (
-        <View style={stylesTextInput.parent} onStartShouldSetResponder={() => !propsAttrInput.editable ? Alert.alert(titleMessage, message) : null}>
+        <View style={stylesTextInput.parent}
+              onStartShouldSetResponder={() => !propsAttrInput.editable ? Alert.alert(titleMessage, message) : null}>
             <View style={stylesTextInput.contPrinc}>
                 <BgComponent
                     svgOptions={stylesTextInput.svgData.opt}
@@ -27,4 +28,6 @@ const TextInputCoilRadius = ({stylesTextInput, propsAttrInput}) => {
         </View>
     )
 }
-export default TextInputCoilRadius;
+export default React.memo(TextInputCoilRadius, (prevProps, nextProps) => {
+    return (prevProps.propsAttrInput === nextProps.propsAttrInput);
+});

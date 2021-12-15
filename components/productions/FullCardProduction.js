@@ -1,6 +1,6 @@
 import React, {useState, useEffect, memo} from 'react';
 import {StyleSheet, View, Text, Dimensions, TouchableOpacity} from 'react-native';
-import {COLORS} from "../../assets/defaults/settingStyles";
+import {COLORS, shadowPlatform} from "../../assets/defaults/settingStyles";
 import PaperCoilWeightDataCard from "./PaperCoilWeightDataCard";
 import TextInputCoilRadius from "../FormComponents/TextInputCoilRadius";
 import ComsumptionResultCard from "./ComsumptionResultCard";
@@ -10,6 +10,7 @@ import {paperRollConsummption} from "../../utils";
 import {autopasters_prod_table_by_production} from "../../dbCRUD/actionsSQL";
 import * as SQLite from "expo-sqlite";
 import Barcode from '@kichiyaki/react-native-barcode-generator';
+import SpinnerSquares from "../SpinnerSquares";
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -24,12 +25,14 @@ const optionsStyleContSVG = {
     width: '60%', height: '60%', top: 10, right: 0, transform: [{rotate: "180deg"}]
 };
 
-const FullCardProduction = ({item, updatedataRollState, inputRadioForRollRadius, handlerRemoveItem}) => {
+const FullCardProduction = ({item, updatedataRollState, inputRadioForRollRadius, handlerRemoveItem, viewCardSpinner,bobinaCodeForSpinner}) => {
     const db = SQLite.openDatabase('bobinas.db');
     //STATES
     const [radiusState, setStateRadius] = useState('');
     const [itemData, setItemData] = useState({});
-    const [restoPrevistoAnteriorProduccion, setRestoPrevistoAnteriorProduccion] = useState(0)
+    const [restoPrevistoAnteriorProduccion, setRestoPrevistoAnteriorProduccion] = useState(0);
+    // const [viewCardSpinner, setViewCardSpinner] = useState(false);
+
     useEffect(() => {
         let isMounted = true;
         //saber si existe esta bobina en producción anterior para seleccionar resto_prevsto si existe.
@@ -43,9 +46,10 @@ const FullCardProduction = ({item, updatedataRollState, inputRadioForRollRadius,
                         if (isMounted) {
                             setRestoPrevistoAnteriorProduccion(_array[0].resto_previsto)
                         }
-                    } else {
-                        console.log('NO EXISTEN restos previstos');
                     }
+                    // else {
+                    //     console.log('NO EXISTEN restos previstos FullCardComponent');
+                    // }
                 }
             );
         });
@@ -69,7 +73,6 @@ const FullCardProduction = ({item, updatedataRollState, inputRadioForRollRadius,
                 setStateRadius(getRadius);
             }
         }
-        console.log('rt',item)
         return () => isMounted = false;
     }, [inputRadioForRollRadius])
 
@@ -167,6 +170,16 @@ const FullCardProduction = ({item, updatedataRollState, inputRadioForRollRadius,
 
     return (
         <View style={[styles.cardparent, {backgroundColor: item.media_defined ? '#ECFAFA' : COLORS.white}]}>
+            {bobinaCodeForSpinner && viewCardSpinner && <View style={{
+                position: 'absolute',
+                height: '100%',
+                width: '100%',
+                backgroundColor: COLORS.white + 90,
+                zIndex: 1
+            }}>
+                <SpinnerSquares/>
+            </View>
+            }
             <View style={styles.numberandcode}>
                 {/*<View style={styles.numauto}><Text style={{color: COLORS.white}}>1</Text></View>*/}
                 <ActionsButton/>
@@ -178,7 +191,7 @@ const FullCardProduction = ({item, updatedataRollState, inputRadioForRollRadius,
                             text={item.bobina_fk.toString()}
                             style={{margin: 10, fontFamily: 'Anton'}}
                             maxWidth={Dimensions.get('window').width / 2}
-                            height={40}
+                            height={20}
                         />
                         :
                         <Text
@@ -234,7 +247,10 @@ const styles = StyleSheet.create({
         width: '100%',
         borderWidth: 2,
         borderColor: COLORS.black,
-        padding: 5
+        padding: 5,
+        borderRadius: 5,
+        marginBottom: 5,
+        ...shadowPlatform
     },
     centerCenter: {
         justifyContent: 'center',
@@ -338,4 +354,4 @@ const styles = StyleSheet.create({
         paddingLeft: 5
     }
 })
-export default memo(FullCardProduction);
+export default FullCardProduction;

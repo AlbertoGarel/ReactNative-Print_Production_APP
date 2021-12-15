@@ -16,5 +16,5 @@ const ComsumptionResultCard = ({styleCopsumptionComponent, conumptionRes}) => {
 }
 
 export default React.memo(ComsumptionResultCard, (prevProps, nextProps) => {
-    return (prevProps.conumptionRes === nextProps.conumptionRes)
+   return (prevProps.conumptionRes === nextProps.conumptionRes)
 });

@@ -20,11 +20,11 @@ const PaperCoilWeightDataCard = ({stylesPeperCoilWeight, restoInicioData, restoF
         };
     }, [pressed]);
 
-    const isPressed = () => {
+    const isPressed = React.useCallback(() => {
         setTimeout(() => {
             getPressed(false)
         }, 3000);
-    };
+    }, []);
 
     return (
         <View style={stylesPeperCoilWeight.parent}>
@@ -71,7 +71,6 @@ const PaperCoilWeightDataCard = ({stylesPeperCoilWeight, restoInicioData, restoF
         </View>
     )
 }
-const styles = StyleSheet.create({})
 export default React.memo(PaperCoilWeightDataCard, (prevProps, nextProps) => {
     return (prevProps.restoInicioData === nextProps.restoInicioData &&
         prevProps.restoFinalData === nextProps.restoFinalData)

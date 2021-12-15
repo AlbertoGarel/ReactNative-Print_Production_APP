@@ -13,7 +13,7 @@ import {
     TouchableWithoutFeedback,
     Keyboard
 } from 'react-native';
-import {COLORS} from "../../assets/defaults/settingStyles";
+import {COLORS, shadowPlatform} from "../../assets/defaults/settingStyles";
 import {Fontisto as Icon} from "@expo/vector-icons";
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import {
@@ -67,6 +67,7 @@ import {useNavigation} from "@react-navigation/native";
 import FloatOpacityModal from "../../components/FloatOpacityModal";
 import DragDropCardsComponent from "../../components/DragDropCardsComponent";
 import TouchableIcon from "../../components/TouchableIcon";
+import SpinnerSquares from "../../components/SpinnerSquares";
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -89,8 +90,20 @@ const autopasters_prod_data_update =
     SET bobina_fk = ?, resto_previsto = ?
     WHERE production_fk = ? AND autopaster_fk = ?;`
 ;
+const UPDATE_PROMISES_ALL =
+    `UPDATE autopasters_prod_data SET
+             position_roll = ?, resto_previsto = ?
+             WHERE production_fk = ? AND bobina_fk = ?;`
+const UPDATE_ItemFromAutopasterSQL =
+    `UPDATE autopasters_prod_data SET
+             bobina_fk = ?, resto_previsto = ?
+             WHERE production_fk = ? AND bobina_fk = ?;`
+const DELETE_ItemFromAutopasterSQL =
+    `DELETE FROM autopasters_prod_data 
+                 WHERE production_fk = ? AND bobina_fk = ?;`
 
 const FullProduction = ({route}) => {
+    const [spin, setSpin] = useState(false);
     const navigation = useNavigation();
     const db = SQLite.openDatabase('bobinas.db');
     useEffect(() => {
@@ -156,6 +169,9 @@ const FullProduction = ({route}) => {
     const [errors, setErrors] = useState({
         inputTirBruta: '',
     });
+    //SPINNER STATE FOR DELETE CARDS
+    const [viewCardSpinner, setViewCardSpinner] = useState(false);
+    const [bobinaCodeForSpinner, setBobinaCodeForSpinner] = useState(false);
 
     //FINAL RESULT OF THE PRODUCTION
     const [finalCalc, setFinalCalc] = useState({
@@ -228,27 +244,28 @@ const FullProduction = ({route}) => {
                     }
                 );
             });
+            //GET DATA FOR BOBINA AND PRODUCTION
+            db.transaction(tx => {
+                    tx.executeSql(
+                        dataProductSelected,
+                        //[gramajeValue (integer), gramajeType (string)]
+                        [item.producto],
+                        (_, {rows: {_array}}) => {
+                            if (_array.length > 0) {
+                                const objectData = {..._array[0]}
+                                setGeneralDataForRoll({
+                                    gramajeRoll: objectData.gramaje_fk,
+                                    papelComun: objectData.papel_comun_fk
+                                });
+                            }
+                        }
+                    )
+                }, err => console.log('error getValuesDataMeditionSelected on fullProduction', err)
+            )
             //GET AUTOPASTERS PRODUCTION
             updateInfoForSectionList();
         }
-        //GET DATA FOR BOBINA AND PRODUCTION
-        db.transaction(tx => {
-                tx.executeSql(
-                    dataProductSelected,
-                    //[gramajeValue (integer), gramajeType (string)]
-                    [item.producto],
-                    (_, {rows: {_array}}) => {
-                        if (_array.length > 0) {
-                            const objectData = {..._array[0]}
-                            setGeneralDataForRoll({
-                                gramajeRoll: objectData.gramaje_fk,
-                                papelComun: objectData.papel_comun_fk
-                            });
-                        }
-                    }
-                )
-            }, err => console.log('error getValuesDataMeditionSelected on fullProduction', err)
-        )
+        console.log('render item')
         return () => isMounted = false;
     }, [item]);
 
@@ -302,7 +319,11 @@ const FullProduction = ({route}) => {
                 [item.id],
                 (_, {rows: {_array}}) => {
                     if (_array.length > 0) {
+                        //ORDERED ITEMS FOR POSITION_ROLL.
+                        _array.sort((a, b) => a.position_roll - b.position_roll);
                         getAutopastersDataProduction(_array);
+                        //set spinner card to false
+                        setViewCardSpinner(false)
                         //update kilos for prduction;
                     } else {
                         console.log('NO EXISTEN bobinas en AUTOPASTERS');
@@ -331,6 +352,25 @@ const FullProduction = ({route}) => {
             getInputRadioForRollRadius([...otherItems, ...thisItem])
         }
     };
+    const setStateForRadiusChangedPosition = (arrItems) => {
+        const autopasterNum = arrItems[0].autopaster;
+        const distincAutopastersNum = inputRadioForRollRadius.filter(item => item.autopaster !== autopasterNum);
+        getInputRadioForRollRadius([...distincAutopastersNum, ...arrItems]);
+        const dataPromisesAll = CalcPrevConsKilosRollsAutopaster(arrItems, itemData.tirada + itemData.nulls, gramajeValues, itemData.produccion_id);
+        let promisesALLforUpdateItems = [];
+        dataPromisesAll.forEach(item => {
+            promisesALLforUpdateItems.push(genericUpdateFunctionConfirm(UPDATE_PROMISES_ALL, item));
+        });
+        //ADD init spinner
+        setSpin(true);
+        Promise.all(promisesALLforUpdateItems)
+            .then(response => {
+                console.log(response);
+                updateInfoForSectionList()
+                setSpin(false);
+            })//END SPINNER
+            .catch(err => console.log(err))
+    }
 
     //CHECK RADIUS STATE OF ALL ROLLS IS COMPLETE, ALL AUTOPASTERS HAVE A ROLLS AND
     // ALL ROLLS HAVE KILOS NEEDED
@@ -422,7 +462,7 @@ const FullProduction = ({route}) => {
     };
 
     //GET VALUE MEDITION OF PRODUCT.
-    const getValuesDataMeditionSelected = (item) => {
+    const getValuesDataMeditionSelected = React.useCallback((item) => {
         //GET TYPE OF MEDITION SELECTED FOR GET VALUE IN BBDD( MEDIA <> ENTERA )
         const typeMedition = item["Tipo de medicion"];
         const typeMeditionSelected = typeMedition.split(' ')[0];
@@ -443,7 +483,7 @@ const FullProduction = ({route}) => {
                 )
             }, err => console.log('error getValuesDataMeditionSelected on fullProduction', err)
         )
-    };
+    }, []);
 
     // SHOW PRODUCTION INFO
     const ShowData = () => {
@@ -472,9 +512,9 @@ const FullProduction = ({route}) => {
         bottomSheetRef.current.open();
     };
 
-    const bottomSheetHandler = () => SetIsVisible(!isVisible);
-    const bottomSheetHandlerRollUsed = () => SetIsVisibleRollUsedForm(!isVisible);
-    const handlerSetVibleDropMenu = () => setIsVisibleDropMenu(!isVisibleDropMenu);
+    const bottomSheetHandler = React.useCallback(() => SetIsVisible(!isVisible), []);
+    const bottomSheetHandlerRollUsed = React.useCallback(() => SetIsVisibleRollUsedForm(!isVisible), []);
+    const handlerSetVibleDropMenu = React.useCallback(() => setIsVisibleDropMenu(!isVisibleDropMenu), []);
 
     //CHECK IF THERE IS A ROLL IN THE PRODUCTION TABLE AND THE REEL TABLE TO ADD IN THIS PRODUCTION.
     const getScannedCode = (scanned) => {
@@ -508,8 +548,8 @@ const FullProduction = ({route}) => {
         //   },
         // ]
         let {scannedCode, codeType} = scanned;
-        alert(codeType)
-        if(scannedCode.length !== 16){
+        // alert(scannedCode)
+        if (scannedCode.length !== 16) {
             return alert('El valor numérico del código de barras no tiene el formato esperado de 16 cifras.')
         }
         scannedCode = parseInt(scannedCode);
@@ -538,7 +578,23 @@ const FullProduction = ({route}) => {
                                 (_, {rows: {_array}}) => {
                                     if (_array.length > 0) {
                                         // esto es lo encontrado bobina_table
+                                        const text = `BOBINA REGISTRADA:\n ¿DATOS CORRECTOS?`;
+                                        const registerDadataOfBBDD = autopastersDataProduction.filter(item => item.autopaster_fk === autopasterID);
+                                        const actionBBDD = registerDadataOfBBDD[0].bobina_fk ? 'insert' : 'update';
+                                        const regNewRoll = {
+                                            scanCode: _array[0].codigo_bobina,
+                                            originalWeight: _array[0].peso_ini,
+                                            actualWeight: _array[0].peso_actual,
+                                            radius: _array[0].radio_actual,
+                                            commonRole: _array[0].papel_comun_fk,
+                                            autopaster: autopasterID,//change autopaster original for scanned
+                                            grama: _array[0].gramaje_fk,
+                                            isMedia: _array[0].media,
+                                            // codeType: setCodeType // ADD ROW IN BBDD
+                                        }
+                                        createThreeButtonAlert(regNewRoll, actionBBDD, text);
                                     } else {
+                                        const text = `REGISTRO DE BOBINA:\n ¿ES NUEVA?`;
                                         const OrWeight = OriginalWeight(scannedCode);
                                         const registerDadataOfBBDD = autopastersDataProduction.filter(item => item.autopaster_fk === autopasterID);
                                         const isMedia = registerDadataOfBBDD[0].media_defined;
@@ -554,7 +610,7 @@ const FullProduction = ({route}) => {
                                             isMedia: isMedia,
                                             // codeType: setCodeType // ADD ROW IN BBDD
                                         }
-                                        createThreeButtonAlert(regNewRoll, actionBBDD);
+                                        createThreeButtonAlert(regNewRoll, actionBBDD, text);
                                     }
                                 }
                             );
@@ -567,24 +623,26 @@ const FullProduction = ({route}) => {
     }
 
     //USER DETERMINES IF THE REEL TO INCLUDE IS NEW OR USED.
-    const createThreeButtonAlert = (param, actionDDBB) =>
-        Alert.alert(`REGISTRO DE BOBINA:
-        ¿ES NUEVA?`, `código:  ${param.scanCode}`, [
-            {
-                text: 'CANCELAR',
-                onPress: () => bottomSheetRef.current.close(),
-            },
-            {
-                text: 'NO',
-                onPress: () => {
-                    getScannedCodeforUsedRegisterRoll(param);
-                    bottomSheetRollUsedRef.current.open();
-
+    const createThreeButtonAlert = (param, actionDDBB, text) => {
+        let newBobina = `,\nPeso Actual: ${param.actualWeight} Kg,\nRadio: ${param.radius ? param.radius : 'Bobina completa'}`
+        Alert.alert(`${text}`,
+            `Código:  ${param.scanCode}${text.charAt(0) === 'B' ? newBobina : ''}`, [
+                {
+                    text: 'CANCELAR',
+                    onPress: () => bottomSheetRef.current.close(),
                 },
-                style: 'red',
-            },
-            {text: 'SI', onPress: () => registerNewBobina(param, actionDDBB)},
-        ]);
+                {
+                    text: 'NO',
+                    onPress: () => {
+                        getScannedCodeforUsedRegisterRoll(param);
+                        bottomSheetRollUsedRef.current.open();
+
+                    },
+                    style: 'red',
+                },
+                {text: 'SI', onPress: () => registerNewBobina(param, actionDDBB)},
+            ]);
+    }
 
     //REGISTER NEW ROLL AND UPDATE EMPTY AUTOPASTER.
     const registerNewBobina = React.useCallback((BobinaParams, actionDDBB) => {
@@ -595,16 +653,27 @@ const FullProduction = ({route}) => {
         let productionID = item.id;
         const AutopasterNum = BobinaParams.autopaster;
         const getKilosNeededForAutopaster = kilosNeeded.filter(item => item[AutopasterNum]);
-        const total_kilos = Object.values(getKilosNeededForAutopaster[0])[0];
+
+        let total_kilos = '';
+        if (getKilosNeededForAutopaster.length === 0) {
+            total_kilos = itemData.tirada + itemData.nulls;
+        } else {
+            total_kilos = Object.values(getKilosNeededForAutopaster[0])[0];
+        }
+
         let restoPrevisto = 0
         if (total_kilos >= 0) {
             restoPrevisto = BobinaParams.actualWeight
         } else {
             restoPrevisto = BobinaParams.actualWeight - Math.abs(total_kilos);
         }
+        const insertReplace =
+            `INSERT OR REPLACE INTO bobina_table (codigo_bobina, peso_ini, peso_actual, radio_actual, papel_comun_fk, autopaster_fk, gramaje_fk, media)
+     VALUES (?,?,?,?,?,?,?,?)`;
         if (actionDDBB === 'insert') {
-            genericInsertFunction(insertBobina, values)
-                .then(() => {
+            genericInsertFunction(insertReplace, values)
+                .then(response => {
+                    console.log('response', response)
                     const valuesPropData = [
                         null,
                         productionID,
@@ -622,13 +691,14 @@ const FullProduction = ({route}) => {
                 .catch(err => console.log(err))
         }
         if (actionDDBB === 'update') {
-            genericInsertFunction(insertBobina, values)
+            //evaluar si ya está en base de datos bobina_table
+            genericInsertFunction(insertReplace, values)
                 .then(resp => {
                     let total = itemData.tirada + itemData.nulls;
                     let isMedia = BobinaParams.media_defined ? gramajeValues.media : gramajeValues.entera;
                     const valuesPropData = [
                         BobinaParams.scanCode,
-                        Math.round(BobinaParams.actualWeight - total * isMedia),
+                        Math.round(BobinaParams.actualWeight - (total * isMedia)),
                         productionID,
                         BobinaParams.autopaster,
                     ]
@@ -643,7 +713,7 @@ const FullProduction = ({route}) => {
         }
         // SET FALSE SO AS NOT TO CALCULATE PRODUCTION WITHOUT THIS ROLL.
         setCalculationProductionButton(false);
-    });
+    }, []);
 
     const EmptyFooter = () => {
         return (
@@ -675,7 +745,7 @@ const FullProduction = ({route}) => {
 
 
     //CALCULATE THE KILOS CONSUMED FROM THE GROSS LOT OF NEWSPAPERS OF PRODUCTION.
-    const calcTirada = (tirBruta) => {
+    const calcTirada = React.useCallback((tirBruta) => {
         tirBruta = parseInt(tirBruta);
         let resultData = {tiradaBruta: 0, kilosTirada: 0, kilosConsumidos: 0};
         resultData.kilosConsumidos = inputRadioForRollRadius.reduce((acc, item) => acc + (parseInt(item.weightAct) - parseInt(item.weightEnd)), 0);
@@ -683,11 +753,11 @@ const FullProduction = ({route}) => {
         resultData.tiradaBruta = tirBruta;
 
         return resultData;
-    };
+    }, []);
 
     //HANDLER ONCHANGETEXT FOR EVALUATE AND DELETE BAD CHARACTERS.
     //CLEAN ERRORS ON THE NEXT CHANGE
-    const handlerOnchangeTirBruta = (param) => {
+    const handlerOnchangeTirBruta = React.useCallback((param) => {
         setErrors({inputTirBruta: ''});
         let char = param.charAt(param.length - 1);
         let deleteBadChar = param.split(char, param.length - 1)[0];
@@ -715,45 +785,16 @@ const FullProduction = ({route}) => {
             setCalculationProductionButton(false)
         }
         getSelectedTiradaBruta(defValue);
-    }
+    }, []);
 
     //HANDLER ONBLUR FOR VALIDATE INPUT. 'IS REQUIRED' IS EVALUATED. SET VISIBLE BUTTON FOR CREATE PDF.
-    const ValidateTirBruta = React.useCallback(() => {
+    const ValidateTirBruta = () => {
         if (selectedTiradaBruta.length <= 0) {
             setErrors({inputTirBruta: 'El campo es requerido.'});
         } else {
             setInputirBrutaEnable(true)
             setFinalCalc(calcTirada(selectedTiradaBruta));
         }
-    });
-
-    //FOR SEND DATA TO DDBB WHEN PRODUCTION FINISH AND CREATE PDF.
-    const handlerSaveDataAndSend = () => {
-        const rollsDataProduction = [...inputRadioForRollRadius];//FULL DATA ROLL OF END PRODUCTION.
-        const extraDataObject = generalDataForRoll;//gramaje value & papel_comun value
-        const productionDataObject = productProdData[0]
-        const request_update_AllBobinaTable =
-            `UPDATE bobina_table SET
-             peso_actual = ?, radio_actual = ?, autopaster_fk = ?
-             WHERE codigo_bobina = ?;`
-        const deleteProduction =
-            `DELETE FROM produccion_table
-            WHERE produccion_id = ?`;
-        const arrPromiseAll = [];
-        rollsDataProduction.forEach(roll => {
-            arrPromiseAll.push(genericUpdateFunctionConfirm(request_update_AllBobinaTable, [roll.weightEnd, parseInt(roll.radius), roll.autopaster, roll.bobinaID]))
-        });
-        Promise.all(arrPromiseAll)
-            .then(response => {
-                if (response.every(item => item === 1)) {
-                    return genericDeleteFunction(deleteProduction, [item.id])
-                } else {
-                    alert('fallo al insertar')
-                }
-            })
-            .then(response => navigation.navigate('Home', {itemID: item.id}))
-            .catch(err => console.log(err))
-        navigation.navigate('Home', {item: item.id})
     };
 
     const confirmDelete = (param) => {
@@ -765,22 +806,16 @@ const FullProduction = ({route}) => {
                     onPress: () => console.log('Cancel Pressed'),
                     style: 'cancel',
                 },
-                {text: 'OK', onPress: () => handlerRemoveItem(param)},
+                {
+                    text: 'OK', onPress: () => {
+                        handlerRemoveItem(param)
+                        setViewCardSpinner(true)
+                    }
+                },
             ]);
     }
 
     const handlerRemoveItem = (param) => {
-        const UPDATE_PROMISES_ALL =
-            `UPDATE autopasters_prod_data SET
-             position_roll = ?, resto_previsto = ?
-             WHERE production_fk = ? AND bobina_fk = ?;`
-        const UPDATE_ItemFromAutopasterSQL =
-            `UPDATE autopasters_prod_data SET
-             bobina_fk = ?, resto_previsto = ?
-             WHERE production_fk = ? AND bobina_fk = ?;`
-        const DELETE_ItemFromAutopasterSQL =
-            `DELETE FROM autopasters_prod_data 
-                 WHERE production_fk = ? AND bobina_fk = ?;`
         let paramsAction = [];
         let promisesALLforUpdateItems = [];
         //1º con param obtenemos la bobina que queremos eliminar y la sacamos de tabla autopasters_prod_data.
@@ -788,7 +823,8 @@ const FullProduction = ({route}) => {
         const productionID = itemData.produccion_id;
         const thisAutopaster = param.autopaster;
         const bobinaForRemoveID = param.bobinaID;// console.log('individualAutopasterDataForSectionList', individualAutopasterDataForSectionList)
-
+        // get bobina code for spinner card
+        setItemForSpinnerCard(bobinaForRemoveID)
         //2º saber si existe una o más bobinas.
         const allRollsOfThisAutopasters = individualAutopasterDataForSectionList.filter(item => item.title === thisAutopaster)[0].data;
         const ArrLength = allRollsOfThisAutopasters.length; // console.log('allRollsOfThisAutopasters', allRollsOfThisAutopasters)
@@ -823,10 +859,16 @@ const FullProduction = ({route}) => {
                 }
             })
             .then(() => {
+                getInputRadioForRollRadius(inputRadioForRollRadius.filter(item => item.bobinaID !== bobinaForRemoveID))
                 updateInfoForSectionList()
             })
+            // .then(() => setViewCardSpinner(false))
             .catch(err => console.log(err))
     };
+
+    const setItemForSpinnerCard = React.useCallback((bobinaForRemoveID) => {
+        setBobinaCodeForSpinner(bobinaForRemoveID);
+    }, []);
 
     const handlerMoveItem = (param) => {
         //true for view drag&drop container
@@ -842,6 +884,40 @@ const FullProduction = ({route}) => {
 
         //4º procesamos los cambios de manera inmediata al acabar el movimiento, recalculando peso de cada una según su posición
         //   y actualizamos BBDD.
+    };
+
+    //FOR SEND DATA TO DDBB WHEN PRODUCTION FINISH AND CREATE PDF.
+    const handlerSaveDataAndSend = () => {
+        const rollsDataProduction = [...inputRadioForRollRadius];//FULL DATA ROLL OF END PRODUCTION.
+        const extraDataObject = generalDataForRoll;//gramaje value & papel_comun value
+        const productionDataObject = productProdData[0]
+        const request_update_AllBobinaTable =
+            `UPDATE bobina_table SET
+             peso_actual = ?, radio_actual = ?, autopaster_fk = ?
+             WHERE codigo_bobina = ?;`
+        const deleteProduction =
+            `DELETE FROM produccion_table
+            WHERE produccion_id = ?`;
+        const arrPromiseAll = [];
+        rollsDataProduction.forEach(roll => {
+            arrPromiseAll.push(genericUpdateFunctionConfirm(request_update_AllBobinaTable, [roll.weightEnd, parseInt(roll.radius), roll.autopaster, roll.bobinaID]))
+        });
+        // GET DATA OF PRODUCTION FOR PDF.
+
+
+
+        // ACTION FOR SAVE ROLLS DATA AND DELETE PRODUCTION.
+        // Promise.all(...arrPromiseAll)
+        //     .then(response => {
+        //         if (response.every(item => item === 1)) {
+        //             return genericDeleteFunction(deleteProduction, [item.id])
+        //         } else {
+        //             alert('fallo al insertar')
+        //         }
+        //     })
+        //     .then(response => navigation.navigate('Home', {itemID: item.id}))
+        //     .catch(err => console.log(err))
+        // navigation.navigate('Home', {item: item.id})
     };
 
     return (
@@ -893,6 +969,8 @@ const FullProduction = ({route}) => {
                                                                           maxRadiusValueDDBB={maxRadiusValueDDBB}
                                                                           inputRadioForRollRadius={inputRadioForRollRadius}
                                                                           handlerRemoveItem={confirmDelete}
+                                                                          viewCardSpinner={viewCardSpinner}
+                                                                          bobinaCodeForSpinner={bobinaCodeForSpinner}
                         />}
                         ListEmptyComponent={() => <ActivityIndicator size="large" color={COLORS.buttonEdit}/>}
                         ListFooterComponent={() => <EmptyFooter/>}
@@ -905,9 +983,9 @@ const FullProduction = ({route}) => {
                                         UNIDAD:
                                         <Text style={{fontSize: 20, color: COLORS.buttonEdit}}> {title}</Text></Text>
                                     <View style={{display: 'flex', flexDirection: 'row'}}>
-                                        <TouchableIcon
+                                        {data.length > 1 && <TouchableIcon
                                             // handlerOnPress={handlerSetVibleDropMenu}
-                                            handlerOnPress={()=>handlerMoveItem(data[0].autopaster_fk)}
+                                            handlerOnPress={() => handlerMoveItem(data[0].autopaster_fk)}
                                             touchableStyle={[styles.IconStyle, {
                                                 backgroundColor: COLORS.white,
                                                 borderRadius: 5,
@@ -923,7 +1001,7 @@ const FullProduction = ({route}) => {
                                             svgName={changeSVG}
                                             WidthSVG={40}
                                             heightSVG={40}
-                                        />
+                                        />}
                                         <TouchableIcon
                                             handlerOnPress={() => handlerAddBobina(data[0].autopaster_fk)}
                                             touchableStyle={[styles.IconStyle, {
@@ -946,7 +1024,7 @@ const FullProduction = ({route}) => {
                             </>
                         )}
                     />
-                    <Text>{JSON.stringify(individualAutopasterDataForSectionList)}</Text>
+                    {/*<Text>{JSON.stringify(individualAutopasterDataForSectionList)}</Text>*/}
                 </View>
             </View>
             <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}
@@ -993,8 +1071,10 @@ const FullProduction = ({route}) => {
                             _value={selectedTiradaBruta}
                         />
                     </View>
-                    {/*<CustomTextArea toState={getContentTextArea}/>*/}
-                    <Text>{JSON.stringify(inputRadioForRollRadius)}</Text>
+                    <CustomTextArea toState={getContentTextArea}/>
+                    {/*<Text>{JSON.stringify(inputRadioForRollRadius)}</Text>*/}
+                    {/*<Text>{JSON.stringify(kilosNeeded)}</Text>*/}
+                    {/*<Text>{JSON.stringify(individualAutopasterDataForSectionList.map(t => t.title))}</Text>*/}
                 </View>
             </TouchableWithoutFeedback>
             {/*<TouchableOpacity style={[styles.buttonData, {top: windowHeight - (tabBarHeight * 2.3)}]}*/}
@@ -1043,20 +1123,23 @@ const FullProduction = ({route}) => {
                 isVisibleDropMenu && <FloatOpacityModal
                     setVisibleMenu={handlerSetVibleDropMenu}
                     styled={{
-                        height: 550,
+                        // height: Dimensions.get('window').height / 1.6,
+                        height: 'auto',
                         width: Dimensions.get('window').width - 10,
                         backgroundColor: COLORS.whitesmoke
                     }}
-                    child={() => <DragDropCardsComponent
-                        individualAutopasterDataForSectionList={individualAutopasterDataForSectionList}
-                        item={itemForChangePosition}
-                        touc={() => alert('yo')}
+                    child={() => <DragDropCardsComponent props={{
+                        inputRadioForRollRadius: inputRadioForRollRadius,
+                        autopasterNum: itemForChangePosition,
+                        setStateForRadiusChangedPosition: setStateForRadiusChangedPosition,
+                        spin: spin
+                    }}
                     />}
                 />
             }
         </SafeAreaView>
     )
-}
+};
 const styles = StyleSheet.create({
     parent: {
         // flex: 1,
@@ -1069,8 +1152,8 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.primary,
         // marginBottom: 20,
         borderBottomLeftRadius: 130,
-        elevation: 12,
         overflow: 'hidden',
+        ...shadowPlatform
     },
     title: {
         textTransform: 'capitalize',
@@ -1114,14 +1197,14 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         justifyContent: 'space-between',
         alignItems: 'center',
-        backgroundColor: COLORS.white,
-        paddingLeft: 5,
+        backgroundColor: '#e9e5ed',
+        padding: 3,
         marginTop: 0,
         marginBottom: 5,
         borderRadius: 5,
         borderWidth: 2,
         borderColor: COLORS.white,
-        elevation: 12,
+        ...shadowPlatform
     },
     headerText: {
         color: COLORS.black,

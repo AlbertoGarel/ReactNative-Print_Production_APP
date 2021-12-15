@@ -1,3 +1,22 @@
+import {Platform} from 'react-native';
+/*
+* boxShadow Ios or Android
+* */
+const shadowPlatform =
+    Platform.OS === 'ios' ?
+        {
+            shadowColor: "#000",
+            shadowOffset: {
+                width: 0,
+                height: 2,
+            },
+            shadowOpacity: 0.23,
+            shadowRadius: 2.62,
+        }
+        :
+        {elevation: 6}
+
+
 /*
 *  DEFAULT VALUES FOR STYLES AND OTHERS
 * */
@@ -44,5 +63,6 @@ const GRADIENT_COLORS = {
 
 export {
     COLORS,
-    GRADIENT_COLORS
+    GRADIENT_COLORS,
+    shadowPlatform
 };
