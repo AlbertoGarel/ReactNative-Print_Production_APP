@@ -11,6 +11,7 @@ import {autopasters_prod_table_by_production} from "../../dbCRUD/actionsSQL";
 import * as SQLite from "expo-sqlite";
 import Barcode from '@kichiyaki/react-native-barcode-generator';
 import SpinnerSquares from "../SpinnerSquares";
+import CustomBarcode from "../CustomBarcode";
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -25,36 +26,65 @@ const optionsStyleContSVG = {
     width: '60%', height: '60%', top: 10, right: 0, transform: [{rotate: "180deg"}]
 };
 
-const FullCardProduction = ({item, updatedataRollState, inputRadioForRollRadius, handlerRemoveItem, viewCardSpinner,bobinaCodeForSpinner}) => {
+const FullCardProduction = ({
+                                item,
+                                updatedataRollState,
+                                inputRadioForRollRadius,
+                                handlerRemoveItem,
+                                viewCardSpinner,
+                                bobinaCodeForSpinner,
+                                // handlerCodePathSVG,
+                                setStateForRadius
+                            }) => {
     const db = SQLite.openDatabase('bobinas.db');
     //STATES
     const [radiusState, setStateRadius] = useState('');
     const [itemData, setItemData] = useState({});
-    const [restoPrevistoAnteriorProduccion, setRestoPrevistoAnteriorProduccion] = useState(0);
+    const [restoPrevistoAnteriorProduccion, setRestoPrevistoAnteriorProduccion] = useState('');
     // const [viewCardSpinner, setViewCardSpinner] = useState(false);
+    const [codePathSVG, setCodePATHSVG] = useState('');
+    // const handlerCodePathSVG = () => setCodePATHSVG;
 
     useEffect(() => {
         let isMounted = true;
+
+        const objToState = {
+            autopaster: item.autopaster_fk,
+            bobinaID: item.bobina_fk || 0,
+            radiusIni: item.radio_actual,
+            radius: '',
+            weightIni: item.peso_ini,
+            weightAct: item.peso_actual,
+            weightEnd: null,
+            ismedia: item.media,
+            toSend: false,
+            position: item.position_roll,
+        };
+        setStateForRadius(objToState, codePathSVG);
+
         //saber si existe esta bobina en producción anterior para seleccionar resto_prevsto si existe.
-        db.transaction(tx => {
-            tx.executeSql(
-                "SELECT resto_previsto FROM autopasters_prod_data WHERE production_fk < ? AND bobina_fk = ?;",
-                [item.production_fk, item.codigo_bobina],
-                (_, {rows: {_array}}) => {
-                    if (_array.length > 0) {
-                        // console.log('resto previsto', _array);
-                        if (isMounted) {
-                            setRestoPrevistoAnteriorProduccion(_array[0].resto_previsto)
+        if (restoPrevistoAnteriorProduccion.length > 0 && codePathSVG.length === 0) {
+            db.transaction(tx => {
+                tx.executeSql(
+                    "SELECT resto_previsto FROM autopasters_prod_data WHERE production_fk < ? AND bobina_fk = ?;",
+                    [item.production_fk, item.codigo_bobina],
+                    (_, {rows: {_array}}) => {
+                        if (_array.length > 0) {
+                            // console.log('resto previsto', _array);
+                            if (isMounted) {
+                                setRestoPrevistoAnteriorProduccion(_array[0].resto_previsto);
+                            }
                         }
+                        // else {
+                        //     console.log('NO EXISTEN restos previstos FullCardComponent');
+                        // }
                     }
-                    // else {
-                    //     console.log('NO EXISTEN restos previstos FullCardComponent');
-                    // }
-                }
-            );
-        });
+                );
+            });
+        }
+        // console.log(item)
         return () => isMounted = false;
-    }, [item])
+    }, [item, codePathSVG])
 
     useEffect(() => {
         let isMounted = true;
@@ -64,7 +94,6 @@ const FullCardProduction = ({item, updatedataRollState, inputRadioForRollRadius,
             const autopasterId = item.autopaster_fk;
             const itemToUpdate = inputRadioForRollRadius.filter(item => item.bobinaID === bobinaCode && item.autopaster === autopasterId);
 
-            // console.log('itemtoupdate', item)
             if (itemToUpdate) {
                 setItemData(...itemToUpdate);
             }
@@ -74,7 +103,24 @@ const FullCardProduction = ({item, updatedataRollState, inputRadioForRollRadius,
             }
         }
         return () => isMounted = false;
-    }, [inputRadioForRollRadius])
+    }, [inputRadioForRollRadius]);
+
+    // useEffect(() => {
+    //     const objToState = {
+    //         autopaster: item.autopaster_fk,
+    //         bobinaID: item.bobina_fk || 0,
+    //         radiusIni: item.radio_actual,
+    //         radius: '',
+    //         weightIni: item.peso_ini,
+    //         weightAct: item.peso_actual,
+    //         weightEnd: null,
+    //         ismedia: item.media,
+    //         toSend: false,
+    //         position: item.position_roll,
+    //         codepathSVG: ''
+    //     };
+    //     setStateForRadius(objToState);
+    // }, [item])
 
 //PROPS ELEMENTS CARDS
     const stylesPeperCoilWeight = {
@@ -143,10 +189,6 @@ const FullCardProduction = ({item, updatedataRollState, inputRadioForRollRadius,
         return <Text style={{color: COLORS.primary}}>{strMessage}</Text>
     };
 
-    const resultIfRadiusExist = (item) => {
-
-    }
-
     const warningConsumption = React.useMemo(() => (kilos) => {
         const value = parseInt(kilos);
         let color = '';
@@ -166,7 +208,7 @@ const FullCardProduction = ({item, updatedataRollState, inputRadioForRollRadius,
         }
         ;
         return color;
-    }, [item.resto_previsto])
+    }, [item.resto_previsto]);
 
     return (
         <View style={[styles.cardparent, {backgroundColor: item.media_defined ? '#ECFAFA' : COLORS.white}]}>
@@ -185,17 +227,19 @@ const FullCardProduction = ({item, updatedataRollState, inputRadioForRollRadius,
                 <ActionsButton/>
                 <View style={[styles.contcode, styles.centerCenter, {padding: 5, minHeight: 70}]}>
                     {item.peso_ini === item.peso_actual ?
-                        <Barcode
+                        <CustomBarcode
                             format="CODE128"
                             value={item.bobina_fk.toString()}
                             text={item.bobina_fk.toString()}
-                            style={{margin: 10, fontFamily: 'Anton'}}
+                            style={{margin: 10}}
+                            textStyle={{fontWeight: 'bold'}}
                             maxWidth={Dimensions.get('window').width / 2}
                             height={20}
+                            getCodePathSVG={setCodePATHSVG}
                         />
                         :
                         <Text
-                            style={{textAlign: 'center'}}>
+                            style={{textAlign: 'center', fontWeight: 'bold'}}>
                             {item.bobina_fk}
                         </Text>
                     }

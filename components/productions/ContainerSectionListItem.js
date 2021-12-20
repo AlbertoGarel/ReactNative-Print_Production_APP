@@ -32,6 +32,11 @@ const ContainerSectionListItem = ({
     const [bobinaBBDD, getBobinaBBD] = useState([]);
     //ROLL DATA
     const [rollData, getRollData] = useState([]);
+    // const [codePathSVG, setCodePATHSVG] = useState('');
+
+    // useEffect(()=>{
+    //     console.log(codePathSVG)
+    // },[codePathSVG ])
 
     useEffect(() => {
         let isMounted = true;
@@ -48,7 +53,22 @@ const ContainerSectionListItem = ({
                     (_, {rows: {_array}}) => {
                         if (_array.length > 0) {
                             if (isMounted) {
+                                console.log('.  .   .   .   .   .   .   .   .  .')
                                 getRollData(_array);
+                                //     const objToState = {
+                                //         autopaster: _array[0].autopaster_fk,
+                                //         bobinaID: _array[0].bobina_fk || 0,
+                                //         radiusIni: _array[0].radio_actual,
+                                //         radius: '',
+                                //         weightIni: _array[0].peso_ini,
+                                //         weightAct: _array[0].peso_actual,
+                                //         weightEnd: null,
+                                //         ismedia: _array[0].media,
+                                //         toSend: false,
+                                //         position: _array[0].position_roll,
+                                //         codepathSVG: ''
+                                //     };
+                                // setStateForRadius(objToState)
                                 // console.log('__________array', _array)
                             }
                         }
@@ -59,29 +79,40 @@ const ContainerSectionListItem = ({
         return () => isMounted = false;
     }, [item]);
 
-    useEffect(() => {
-        let isMounted = true;
-        if (rollData.length > 0) {
-            let forState = [];
-            rollData.forEach(item => {
-                const objToState = {
-                    autopaster: item.autopaster_fk,
-                    bobinaID: item.bobina_fk || 0,
-                    radiusIni: item.radio_actual,
-                    radius: '',
-                    weightIni: item.peso_ini,
-                    weightAct: item.peso_actual,
-                    weightEnd: null,
-                    ismedia: item.media,
-                    toSend: false,
-                    position: item.position_roll
-                };
-                forState.push(objToState);
-            })
-            setStateForRadius(...forState)
-        }
-        return () => isMounted = false;
-    }, [rollData])
+    // useEffect(() => {
+    //     let isMounted = true;
+    //     console.log('.             .               .           .            . ', codePathSVG)
+    //     if (rollData.length > 0) {
+    //         let forState = [];
+    //         rollData.forEach(item => {
+    //             const objToState = {
+    //                 autopaster: item.autopaster_fk,
+    //                 bobinaID: item.bobina_fk || 0,
+    //                 radiusIni: item.radio_actual,
+    //                 radius: '',
+    //                 weightIni: item.peso_ini,
+    //                 weightAct: item.peso_actual,
+    //                 weightEnd: null,
+    //                 ismedia: item.media,
+    //                 toSend: false,
+    //                 position: item.position_roll,
+    //                 codepathSVG: codePathSVG
+    //             };
+    //             forState.push(objToState);
+    //         })
+    //         setStateForRadius(...forState)
+    //     }
+    //     return () => isMounted = false;
+    // }, [rollData]);
+
+    // useEffect(() => {
+    //     if (rollData.length && codePathSVG > 0) {
+    //         //let it = inputRadioForRollRadius.filter(item => item.bobinaID === rollData[0].bobina_fk)[0]
+    //         // if (inputRadioForRollRadius.length && it.length > 0) {
+    //             setStateForRadius(rollData, codePathSVG)
+    //         // }
+    //     }
+    // }, [codePathSVG, rollData])
 
     if (!existBobinas) {
         return (
@@ -110,6 +141,8 @@ const ContainerSectionListItem = ({
                                                handlerRemoveItem={handlerRemoveItem}
                                                viewCardSpinner={viewCardSpinner}
                                                bobinaCodeForSpinner={bobinaCodeForSpinner === i.codigo_bobina ? bobinaCodeForSpinner : null}
+                                               // handlerCodePathSVG={setCodePATHSVG}
+                                               setStateForRadius={setStateForRadius}
                     />
                 })
                 :

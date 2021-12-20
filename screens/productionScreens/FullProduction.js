@@ -68,6 +68,7 @@ import FloatOpacityModal from "../../components/FloatOpacityModal";
 import DragDropCardsComponent from "../../components/DragDropCardsComponent";
 import TouchableIcon from "../../components/TouchableIcon";
 import SpinnerSquares from "../../components/SpinnerSquares";
+import {htmlDefaultTemplate} from "../../PDFtemplates/defaultTemplateHTML";
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -106,11 +107,13 @@ const FullProduction = ({route}) => {
     const [spin, setSpin] = useState(false);
     const navigation = useNavigation();
     const db = SQLite.openDatabase('bobinas.db');
+
     useEffect(() => {
         db.exec([{sql: 'PRAGMA foreign_keys = ON;', args: []}], false, () =>
             console.log('Foreign keys turned on')
         );
     }, [])
+
     const bottomSheetRef = useRef();
     const bottomSheetRollUsedRef = useRef();
 
@@ -294,6 +297,7 @@ const FullProduction = ({route}) => {
                 let autopaster = []
                 for (let item of keys) {
                     let getisMedia = autopastersDataProduction.filter(res => parseInt(item) === parseInt(res.autopaster_fk));
+                    console.log('jhjshjshjhjhfsjfs', getisMedia)
                     let total = itemData.tirada + itemData.nulls;
                     let isMedia = getisMedia[0].media_defined ? gramajeValues.media : gramajeValues.entera;
                     autopaster = [
@@ -333,24 +337,19 @@ const FullProduction = ({route}) => {
         });
     }
 
-    const setStateForRadius = (item) => {
+    const setStateForRadius = (item, svgPathCode) => {
         let {autopaster, bobinaID} = item;
-        let otherItems = [];
-        let thisItem = inputRadioForRollRadius.filter(roll => {
-            if (roll.autopaster === autopaster && roll.bobinaID === bobinaID) {
-                return roll;
-            } else {
-                otherItems = [
-                    ...otherItems,
-                    roll
-                ]
-            }
-        })
+
+        let otherItems = inputRadioForRollRadius.filter(roll => roll.bobinaID !== bobinaID);
+        let thisItem = inputRadioForRollRadius.filter(roll => roll.bobinaID === bobinaID);
         if (thisItem.length === 0) {
-            getInputRadioForRollRadius([...inputRadioForRollRadius, item])
+            item.codepathSVG = svgPathCode || 0;
+            getInputRadioForRollRadius([...otherItems, item])
         } else {
-            getInputRadioForRollRadius([...otherItems, ...thisItem])
+            thisItem[0].codepathSVG = svgPathCode || 0;
+            getInputRadioForRollRadius([...otherItems, ...thisItem]);
         }
+
     };
     const setStateForRadiusChangedPosition = (arrItems) => {
         const autopasterNum = arrItems[0].autopaster;
@@ -645,7 +644,7 @@ const FullProduction = ({route}) => {
     }
 
     //REGISTER NEW ROLL AND UPDATE EMPTY AUTOPASTER.
-    const registerNewBobina = React.useCallback((BobinaParams, actionDDBB) => {
+    const registerNewBobina = (BobinaParams, actionDDBB) => {
         let getRollsAutopaster = autopastersDataProduction.filter(item => item.autopaster_fk === BobinaParams.autopaster);
         let maxPositionRoll = getRollsAutopaster.sort((a, b) => b.position_roll - a.position_roll)[0].position_roll || 0;
         let finalPositionRoll = maxPositionRoll + 1;
@@ -713,7 +712,7 @@ const FullProduction = ({route}) => {
         }
         // SET FALSE SO AS NOT TO CALCULATE PRODUCTION WITHOUT THIS ROLL.
         setCalculationProductionButton(false);
-    }, []);
+    };
 
     const EmptyFooter = () => {
         return (
@@ -888,9 +887,24 @@ const FullProduction = ({route}) => {
 
     //FOR SEND DATA TO DDBB WHEN PRODUCTION FINISH AND CREATE PDF.
     const handlerSaveDataAndSend = () => {
+        const dataProd = {
+            date: item["Fecha de creación"],
+            prodLine: item["Linea produccion"],
+            pagination: item["Paginación"],
+            product: item["producto"],
+            editions: item["Ediciones"]
+        }
         const rollsDataProduction = [...inputRadioForRollRadius];//FULL DATA ROLL OF END PRODUCTION.
         const extraDataObject = generalDataForRoll;//gramaje value & papel_comun value
+        const autopasterNumLine = autopastersLineProdData.map(i => i.name_autopaster).sort((a, b) => a - b);
         const productionDataObject = productProdData[0]
+        // console.log('item', item)// item["Fecha de creación"],item["Linea produccion"], item["Paginación"]
+        // console.log('finalCalc', finalCalc)// finalCalc.kilosConsumidos, finalCalc.kilosTirada, finalCalc.tiradaBruta
+        // console.log('rollsDataProduction', rollsDataProduction)
+        // console.log('extraDataObject', extraDataObject)
+        // console.log('productionDataObject', productionDataObject)
+        // console.log('inputRadioForRollRadius', inputRadioForRollRadius)
+        console.log('_______________html', htmlDefaultTemplate(item, finalCalc, inputRadioForRollRadius, autopasterNumLine))
         const request_update_AllBobinaTable =
             `UPDATE bobina_table SET
              peso_actual = ?, radio_actual = ?, autopaster_fk = ?
@@ -903,7 +917,6 @@ const FullProduction = ({route}) => {
             arrPromiseAll.push(genericUpdateFunctionConfirm(request_update_AllBobinaTable, [roll.weightEnd, parseInt(roll.radius), roll.autopaster, roll.bobinaID]))
         });
         // GET DATA OF PRODUCTION FOR PDF.
-
 
 
         // ACTION FOR SAVE ROLLS DATA AND DELETE PRODUCTION.
@@ -1071,9 +1084,9 @@ const FullProduction = ({route}) => {
                             _value={selectedTiradaBruta}
                         />
                     </View>
-                    <CustomTextArea toState={getContentTextArea}/>
-                    {/*<Text>{JSON.stringify(inputRadioForRollRadius)}</Text>*/}
-                    {/*<Text>{JSON.stringify(kilosNeeded)}</Text>*/}
+                    {/*<CustomTextArea toState={getContentTextArea}/>*/}
+                    <Text>{JSON.stringify(inputRadioForRollRadius)}</Text>
+                    <Text>{JSON.stringify(kilosNeeded)}</Text>
                     {/*<Text>{JSON.stringify(individualAutopasterDataForSectionList.map(t => t.title))}</Text>*/}
                 </View>
             </TouchableWithoutFeedback>
