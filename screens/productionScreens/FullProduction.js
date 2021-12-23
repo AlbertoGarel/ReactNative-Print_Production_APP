@@ -744,7 +744,7 @@ const FullProduction = ({route}) => {
 
 
     //CALCULATE THE KILOS CONSUMED FROM THE GROSS LOT OF NEWSPAPERS OF PRODUCTION.
-    const calcTirada = React.useCallback((tirBruta) => {
+    const calcTirada = (tirBruta) => {
         tirBruta = parseInt(tirBruta);
         let resultData = {tiradaBruta: 0, kilosTirada: 0, kilosConsumidos: 0};
         resultData.kilosConsumidos = inputRadioForRollRadius.reduce((acc, item) => acc + (parseInt(item.weightAct) - parseInt(item.weightEnd)), 0);
@@ -752,7 +752,7 @@ const FullProduction = ({route}) => {
         resultData.tiradaBruta = tirBruta;
 
         return resultData;
-    }, []);
+    };
 
     //HANDLER ONCHANGETEXT FOR EVALUATE AND DELETE BAD CHARACTERS.
     //CLEAN ERRORS ON THE NEXT CHANGE
@@ -890,7 +890,7 @@ const FullProduction = ({route}) => {
         const dataProd = {
             date: item["Fecha de creación"],
             prodLine: item["Linea produccion"],
-            pagination: item["Paginación"],
+            pagination: item["Paginacion"],
             product: item["producto"],
             editions: item["Ediciones"]
         }
@@ -903,19 +903,19 @@ const FullProduction = ({route}) => {
         // console.log('rollsDataProduction', rollsDataProduction)
         // console.log('extraDataObject', extraDataObject)
         // console.log('productionDataObject', productionDataObject)
-        // console.log('inputRadioForRollRadius', inputRadioForRollRadius)
-        console.log('_______________html', htmlDefaultTemplate(item, finalCalc, inputRadioForRollRadius, autopasterNumLine))
-        const request_update_AllBobinaTable =
-            `UPDATE bobina_table SET
-             peso_actual = ?, radio_actual = ?, autopaster_fk = ?
-             WHERE codigo_bobina = ?;`
-        const deleteProduction =
-            `DELETE FROM produccion_table
-            WHERE produccion_id = ?`;
-        const arrPromiseAll = [];
-        rollsDataProduction.forEach(roll => {
-            arrPromiseAll.push(genericUpdateFunctionConfirm(request_update_AllBobinaTable, [roll.weightEnd, parseInt(roll.radius), roll.autopaster, roll.bobinaID]))
-        });
+        // console.log('inputRadioForRollRadius', inputRadioForRollRadius)y
+        console.log('_______________html', htmlDefaultTemplate(dataProd, finalCalc, rollsDataProduction, autopasterNumLine))
+        // const request_update_AllBobinaTable =
+        //     `UPDATE bobina_table SET
+        //      peso_actual = ?, radio_actual = ?, autopaster_fk = ?
+        //      WHERE codigo_bobina = ?;`
+        // const deleteProduction =
+        //     `DELETE FROM produccion_table
+        //     WHERE produccion_id = ?`;
+        // const arrPromiseAll = [];
+        // rollsDataProduction.forEach(roll => {
+        //     arrPromiseAll.push(genericUpdateFunctionConfirm(request_update_AllBobinaTable, [roll.weightEnd, parseInt(roll.radius), roll.autopaster, roll.bobinaID]))
+        // });
         // GET DATA OF PRODUCTION FOR PDF.
 
 

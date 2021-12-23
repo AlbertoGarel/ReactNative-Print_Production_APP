@@ -1,10 +1,19 @@
 const htmlDefaultTemplate = (dataProduction, prodResult, cardsData, numAutopastersLine) => {
     const {date, prodLine, pagination, product, editions} = dataProduction;
     const {kilosConsumidos, kilosTirada, tiradaBruta} = prodResult;
+    cardsData.sort((a, b) => a.autopaster - b.autopaster);
+    console.log('oooo', cardsData)
+    const repeatNum = cardsData.reduce((acc, item) => {
+        acc[item.autopaster] = (acc[item.autopaster] || 0) + 1;
+        return acc;
+    }, {});
+    let maxRepeat = Object.values(repeatNum).sort((a, b) => b - a)[0];
+    let autopasters = numAutopastersLine;
+    console.log('iiii', repeatNum)
+
     //falta: trabajador, empresa
     const restos = (data, autopasters, secondInd, firstInd) => {
-        const d = data.filter(item => item.auto === autopasters[secondInd])[firstInd];
-        console.log(d)
+        const d = data.filter(item => item.autopaster == autopasters[secondInd])[firstInd];
         if (!d) {
             return ''
         } else if (d.weightIni === d.weightAct) {
@@ -14,39 +23,31 @@ const htmlDefaultTemplate = (dataProduction, prodResult, cardsData, numAutopaste
         }
 
     };
-    cardsData.sort((a, b) => a.autopaster - b.autopaster);
-    const repeatNum = data.reduce((acc, item) => {
-        acc[item.auto] = (acc[item.auto] || 0) + 1;
-        return acc;
-    }, {});
-
-    let maxRepeat = Object.values(repeatNum).sort((a, b) => b - a)[0];
-    let autopasters = numAutopastersLine;
-
+    //CREATE AND FILL TABLE
     const createTable = () => {
-        let tabla = "<table border='0'><tr>";
+        let tabla = "<table border='0'>";
+        tabla += "</tr>";
         for (let j = 0; j < autopasters.length; j++) {
-            tabla += "<td style='text-align: center; background-color: #c2c2c2;'>" + (autopasters[j]) + "</td>";
+            tabla += "<td>" + (autopasters[j]) + "</td>";
         }
         tabla += "</tr>";
 
         for (let i = 0; i < maxRepeat; i++) {
             tabla += "<tr>";
             for (let j = 0; j < autopasters.length; j++) {
-                tabla += "<td style='text-align: center'>" + restos(data, autopasters, j, i) + "</td>";
+                tabla += "<td>" + restos(cardsData, autopasters, j, i) + "</td>";
             }
             tabla += "</tr>";
         }
         tabla += "</table>";
         return tabla;
-    }
+    };
+    // FILL DATA CARDS
     const createCards = () => {
-        let cardsToString = '';
-        cardsData.forEach(e => {
-            let comsumption = e.weightIni - e.weightEnd;
-            cardsToString = cardsToString +
-            `
-                 <article  class="border">
+        let cardsToString = ``
+            cardsData.forEach(e => {
+            // let comsumption = e.weightIni - e.weightEnd;
+                cardsToString += `<article  class="border">
         <div class="twoRowBetween">
           <div id="cardLeftRow" class="twoRowBetween" style=" align-self: stretch">
             <div class="startColumn" style="height:100%">
@@ -72,26 +73,25 @@ const htmlDefaultTemplate = (dataProduction, prodResult, cardsData, numAutopaste
           </div>
           <div id="cardRightRow" class="column">
             <div id="cardCode" class="centerCenter border pad3">`
-            +
-            e.codepathSVG.length > 0 ?
-                `<svg height="20mm" width="100" fill="#000000">
+
+                e.codepathSVG.length > 0 ?
+                    cardsToString += `<svg style="width: 100%; height: 50px" viewBox="0 0 200 20" fill="#000000">
                     <path d="${e.codepathSVG}" />
                 </svg>
-                <p style="text-align: center">${e.bobinaID}</p>`
-                :
-                <p>${e.bobinaID}</p>
-                +
-                `</div>
+                <p style="text-align: center; font-size: 20px">${e.bobinaID}</p>`
+                    :
+                    cardsToString += `<p style="font-size: 20px">${e.bobinaID}</p>`
+
+                cardsToString += `</div>
             <div id="cardFinally" class="centerRight pad3">
               <p>consumido</p>
               <div class="marginL border height9 width30 centerCenter">
-                ${comsumption}
+                ${e.weightAct - e.weightEnd}
               </div>
             </div>
           </div>
         </div>
-      </article>
-      `
+      </article>`
         })
         return cardsToString;
     }
@@ -114,19 +114,11 @@ const htmlDefaultTemplate = (dataProduction, prodResult, cardsData, numAutopaste
     return `
     <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=Edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
   <title>Default Template</title>
-
-  <!-- HTML -->
-
-
-  <!-- Custom Styles -->
-  <!--<link rel="stylesheet" href="style.css">-->
   <Style>
     html{
   margin:0;
@@ -238,8 +230,8 @@ justify-content: flex-start;
 .width30{
   width: 30mm;
 }
-.width55{
-  width: 55mm;
+.widt90{
+  width: 90mm;
 }
 .width60{
   width: 60mm;
@@ -276,10 +268,18 @@ justify-content: flex-start;
   color: black;
   margin: 3mm 0;
 }
+table>tr>td{
+ text-align: center;
+ background-color: #c2c2c2;
+}
+td{
+text-align: center;
+}
 #cabecera{
  background-color: #c2c2c2;
  padding: 0 2mm;
  border-radius: 5px;
+ border: 2px solid black;
 }
 #rotativa{
   width: 100%;
@@ -323,7 +323,7 @@ padding-right: 0;
   height: 20mm;
 }
 #numauto{
-  font-size: 50px;
+  font-size: 40px;
     font-weight: bolder;
 }
 .square{
@@ -337,17 +337,20 @@ td{
   height: 10mm;
   border: 1px solid black;
 }
-#main>article.flex1.border{
+table>tr>td{
+ text-align: center;
+ background-color: #c2c2c2;
+}
+#main>article.border{
   margin: 2mm 0;
   break-inside: avoid;
 }
   </Style>
 </head>
-
 <body id="body">
   <section id="main">
     <article id="cabecera" class="centerRow">
-      <div id="title" class="height9 width55 border centerCenter" style="background-color: white">
+      <div id="title" class="height9 width90 border centerCenter" style="background-color: white">
         <p>**empresa**</p>
       </div>
       <h1>PARTE DE ENTRADA BOBINAS A MÁQUINA
@@ -367,14 +370,18 @@ td{
               <p>${product}</p>
             </div>
           </div>
-          <div id="ediciones" class="centerRow fullWidth">
-            <p>ediciones</p>
-            <div class="marginL height9 width30 border centerCenter">
-              <p>${editions}</p>
+          <div id="ediciones" class="flexStart fullWidth">
+            <div class="centerCenter">
+                <p>ediciones</p>
+                <div class="marginL height9 width30 border centerCenter">
+                    <p>${editions}</p>
+                </div>
             </div>
-            <p class="marginXL">paginación</p>
-            <div class="marginL height9 width30 border centerCenter">
-              <p>${pagination}</p>
+            <div class="centerCenter marginL">
+                <p class="marginXL">paginación</p>
+                <div class="marginL height9 width30 border centerCenter">
+                    <p>${pagination}</p>
+                </div>
             </div>
           </div>
           <div id="producto" class=" simpleContainer" style="width: 100%">
@@ -404,8 +411,7 @@ td{
           </div>
           <div id="responsable" class="fullWidth between">
             <p id="responsable">responsable</p>
-            <div id="writeResponsable" class="marginL border height9 centerLeft">
-              
+            <div id="writeResponsable" class="marginL border height9 centerLeft">   
             </div>
           </div>
         </article>
@@ -426,7 +432,6 @@ td{
       ${createCards()}
   </section>
 </body>
-
 </html>
     `
 };
