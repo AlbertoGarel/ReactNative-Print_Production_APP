@@ -227,14 +227,3 @@ export const typeBarcodeFiter = (type) => {
             return 'CODE128';
     }
 }
-/**
- *  TAKES PRODUCTION DATA AND RETURNS HTML STRING TO CREATE PDF.
- *
- *  @return html string
- *
- *  @param type: string / integer (barcodeType scanned)
- *
- * */
-export const createHMLstring = (HTMLtemplate, ) => {
-
-};

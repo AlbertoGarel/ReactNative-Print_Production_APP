@@ -55,7 +55,19 @@ const HomeStack = ({navigation, route, setChangeButtonFunc}) => {
                 }}
 
             />
-            <Stack.Screen name="Profile" component={ProfileScreen}/>
+            <Stack.Screen name="Profile" component={ProfileScreen}
+                          options={{
+                              title: "Documentos .PDF",
+                              headerStyle: {
+                                  backgroundColor: COLORS.primary,
+                              },
+                              headerTintColor: '#fff',
+                              headerTitleStyle: {
+                                  fontWeight: 'bold',
+                              },
+                              headerShown: true
+                          }}
+            />
             <Stack.Screen name="Settings" component={SettingsScreen}
                           options={{
                               title: 'App bobinas',

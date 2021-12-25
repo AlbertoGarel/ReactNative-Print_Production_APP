@@ -16,19 +16,23 @@ const UserDataComponent = ({props}) => {
     const UserDataFormRef = useRef();
 
     const [userNameState, setUserNameState] = useState('');
+    const [enterpriseNameState, setEnterpriseNameState] = useState('');
 
     const SchemaDataUser = Yup.object().shape({
-        username: FormYupSchemas.onlyLeters
+        username: FormYupSchemas.onlyLeters,
+        enterprisename: FormYupSchemas.onlyLeters
     });
 
     useEffect(() => {
         let isMounted = true;
-        getDatas('@UserDataForm').then(name => {
-            if (!name) {
+        getDatas('@UserDataForm').then(obj => {
+            if (!obj) {
                 setUserNameState('');
+                setEnterpriseNameState('')
             }
-            if (name) {
-                setUserNameState(name);
+            if (obj) {
+                setUserNameState(obj.name);
+                setEnterpriseNameState(obj.enterprise)
             }
         })
             .catch(err => Alert.alert(err))
@@ -41,11 +45,12 @@ const UserDataComponent = ({props}) => {
                 enableReinitialize
                 innerRef={UserDataFormRef}
                 initialValues={{
-                    username: userNameState
+                    username: userNameState,
+                    enterprisename: enterpriseNameState
                 }}
                 validationSchema={SchemaDataUser}
                 onSubmit={values => {
-                    storeData('@UserDataForm', values.username)
+                    storeData('@UserDataForm', {name: values.username, enterprise: values.enterprisename})
                         .then(store => {
                             props.showToast('guardando...');
                         })
@@ -79,13 +84,30 @@ const UserDataComponent = ({props}) => {
                                 svgData={userSVG}
                                 svgWidth={50}
                                 svgHeight={50}
-                                placeholder={'Ejemplares bruto...'}
-                                text={'Nombre:'}
+                                placeholder={'Nombre de operario...'}
+                                text={'Operario:'}
                                 _name={'username'}
                                 _onChangeText={handleChange('username')}
                                 _onBlur={handleBlur('username')}
                                 value={values.username}
                                 _defaultValue={values.username}
+                            />
+                            {(errors.enterprisename && touched.enterprisename) &&
+                            < Text
+                                style={{fontSize: 10, color: 'red', marginLeft: 10}}>{errors.enterprisename}</Text>
+                            }
+                            <CustomTextInput
+                                // _ref={UserNameRef}
+                                svgData={userSVG}
+                                svgWidth={50}
+                                svgHeight={50}
+                                placeholder={'Nombre de empresa...'}
+                                text={'Empresa:'}
+                                _name={'enterprisename'}
+                                _onChangeText={handleChange('enterprisename')}
+                                _onBlur={handleBlur('enterprisename')}
+                                value={values.enterprisename}
+                                _defaultValue={values.enterprisename}
                             />
                             <TouchableOpacity
                                 style={{

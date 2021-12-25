@@ -89,6 +89,7 @@ const SettingsProductionScreen = () => {
     const fullproduction = useRef();
 
     //BASEDATA STATES
+    const [papelComun, getPapelComun] = useState([]);
     const [productoDataDB, getProductoDataDB] = useState([]);
     const [lineProdDataDB, getLineProdDataDB] = useState([]);
     const [meditionDataDB, getMeditionDataDB] = useState([]);
@@ -139,7 +140,21 @@ const SettingsProductionScreen = () => {
         const unsubscribe = navigation.addListener('focus', () => {
             //CODE FOR REFRESH BASEDATA HERE AND PAGES OF PAGEVIEWER
             handlePageChange(0);
-            //PRODUCT
+            //PRODUCT ALL
+            db.transaction(tx => {
+                tx.executeSql(
+                    'SELECT * FROM producto_table',
+                    [],
+                    (_, {rows: {_array}}) => {
+                        if (_array.length > 0) {
+                            getPapelComun(_array);
+                        } else {
+                            console.log('(picker_producto) no se encontraron registros en SettingsProductionScreen');
+                        }
+                    }
+                );
+            });
+            //PRODUCT PICKER
             db.transaction(tx => {
                 tx.executeSql(
                     picker_producto,
@@ -311,7 +326,8 @@ const SettingsProductionScreen = () => {
                 let positionRoll = 1;
                 let calcWeigth = {};
                 let dataRollInsert = [];
-                let queryParams = [item[1], selectedMedition, selectedProduct, item[2]]
+                let queryParams = [item[1], selectedMedition, papelComun.filter(i=> i.producto_id === selectedProduct)[0].papel_comun_fk, item[2]]
+                //alert(selectedProduct) CHANGE SELECTED PRODUCT FOR ID PAPEL COMÚN
                 // db.transaction(tx => {
                 tx.executeSql(
                     searchStatementAutoProdData_Table,

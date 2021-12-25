@@ -30,7 +30,7 @@ import {
     autopasters_prod_table_by_production, insertBobina,
     picker_coeficiente
 } from "../../dbCRUD/actionsSQL";
-import {storeData} from "../../data/AsyncStorageFunctions";
+import {getDatas, storeData} from "../../data/AsyncStorageFunctions";
 import BarcodesTypeSelection from "../../components/BarcodesTypeSelection";
 import FullCardProduction from "../../components/productions/FullCardProduction";
 import BgComponent from "../../components/BackgroundComponent/BgComponent";
@@ -69,6 +69,7 @@ import DragDropCardsComponent from "../../components/DragDropCardsComponent";
 import TouchableIcon from "../../components/TouchableIcon";
 import SpinnerSquares from "../../components/SpinnerSquares";
 import {htmlDefaultTemplate} from "../../PDFtemplates/defaultTemplateHTML";
+import {createAndSavePDF} from "../../data/FileSystemFunctions";
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -897,14 +898,22 @@ const FullProduction = ({route}) => {
         const rollsDataProduction = [...inputRadioForRollRadius];//FULL DATA ROLL OF END PRODUCTION.
         const extraDataObject = generalDataForRoll;//gramaje value & papel_comun value
         const autopasterNumLine = autopastersLineProdData.map(i => i.name_autopaster).sort((a, b) => a - b);
-        const productionDataObject = productProdData[0]
+        const productionDataObject = productProdData[0];
+
+        getDatas('@UserDataForm')
+            .then(resp => htmlDefaultTemplate(dataProd, resp, finalCalc, rollsDataProduction, autopasterNumLine))
+            .then(resp=> createAndSavePDF(`${dataProd.date}_${dataProd.product}`, resp))
+            .catch(err => {
+                alert('Complete DATOS DE ENCABEZADO.')
+                setTimeout(() => navigation.navigate('SettingsStack'), 2000)
+            })
         // console.log('item', item)// item["Fecha de creación"],item["Linea produccion"], item["Paginación"]
         // console.log('finalCalc', finalCalc)// finalCalc.kilosConsumidos, finalCalc.kilosTirada, finalCalc.tiradaBruta
         // console.log('rollsDataProduction', rollsDataProduction)
         // console.log('extraDataObject', extraDataObject)
         // console.log('productionDataObject', productionDataObject)
         // console.log('inputRadioForRollRadius', inputRadioForRollRadius)y
-        console.log('_______________html', htmlDefaultTemplate(dataProd, finalCalc, rollsDataProduction, autopasterNumLine))
+        // console.log('_______________html', htmlDefaultTemplate(dataProd, dataUserAndEnterprise, finalCalc, rollsDataProduction, autopasterNumLine))
         // const request_update_AllBobinaTable =
         //     `UPDATE bobina_table SET
         //      peso_actual = ?, radio_actual = ?, autopaster_fk = ?

@@ -224,7 +224,7 @@ class Tables extends Component {
 
 const styles = StyleSheet.create({
     container: {padding: 6, backgroundColor: 'transparent', alignSelf: 'center'},
-    head: {height: 40, backgroundColor: COLORS.primary},
+    head: {height: 'auto', backgroundColor: COLORS.primary},
     text: {margin: 16, textAlign: 'center'},
     row: {flexDirection: 'row', backgroundColor: COLORS.white},
     row2: {flexDirection: 'row', backgroundColor: COLORS.primary + '20'},

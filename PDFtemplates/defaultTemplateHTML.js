@@ -1,4 +1,5 @@
-const htmlDefaultTemplate = (dataProduction, prodResult, cardsData, numAutopastersLine) => {
+const htmlDefaultTemplate = (dataProduction, dataUserAndEnterprise, prodResult, cardsData, numAutopastersLine) => {
+    const {name, enterprise} = dataUserAndEnterprise
     const {date, prodLine, pagination, product, editions} = dataProduction;
     const {kilosConsumidos, kilosTirada, tiradaBruta} = prodResult;
     cardsData.sort((a, b) => a.autopaster - b.autopaster);
@@ -9,7 +10,6 @@ const htmlDefaultTemplate = (dataProduction, prodResult, cardsData, numAutopaste
     }, {});
     let maxRepeat = Object.values(repeatNum).sort((a, b) => b - a)[0];
     let autopasters = numAutopastersLine;
-    console.log('iiii', repeatNum)
 
     //falta: trabajador, empresa
     const restos = (data, autopasters, secondInd, firstInd) => {
@@ -75,10 +75,10 @@ const htmlDefaultTemplate = (dataProduction, prodResult, cardsData, numAutopaste
             <div id="cardCode" class="centerCenter border pad3">`
 
                 e.codepathSVG.length > 0 ?
-                    cardsToString += `<svg style="width: 100%; height: 50px" viewBox="0 0 200 20" fill="#000000">
+                    cardsToString += `<div class="centerColumn"><svg style="width: 100%; height: 50px" viewBox="0 0 200 20" fill="#000000">
                     <path d="${e.codepathSVG}" />
                 </svg>
-                <p style="text-align: center; font-size: 20px">${e.bobinaID}</p>`
+                <p style="text-align: center; font-size: 20px">${e.bobinaID}</p></div>`
                     :
                     cardsToString += `<p style="font-size: 20px">${e.bobinaID}</p>`
 
@@ -86,7 +86,7 @@ const htmlDefaultTemplate = (dataProduction, prodResult, cardsData, numAutopaste
             <div id="cardFinally" class="centerRight pad3">
               <p>consumido</p>
               <div class="marginL border height9 width30 centerCenter">
-                ${e.weightAct - e.weightEnd}
+                ${e.weightAct - e.weightEnd} kg.
               </div>
             </div>
           </div>
@@ -120,16 +120,17 @@ const htmlDefaultTemplate = (dataProduction, prodResult, cardsData, numAutopaste
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Default Template</title>
   <Style>
+  @page {
+    margin: 0mm;
+  }
     html{
   margin:0;
-  padding: 5mm;
   box-sizing: border-box;
 }
 body {
     font-size: 16px;
     text-transform: uppercase;
     font-weight: bolder;
-    border: 2px solid #c2c2c2;
     min-width: 595px;
     min-height: 842px;
     margin: 0px;
@@ -144,8 +145,7 @@ p{
 #main{
   flex: 1;
   background-color: transparent;
-  margin: 5mm;
-  padding: .5mm;
+  padding: 5mm;
 }
 .simpleContainer{
   display: flex;
@@ -351,7 +351,7 @@ table>tr>td{
   <section id="main">
     <article id="cabecera" class="centerRow">
       <div id="title" class="height9 width90 border centerCenter" style="background-color: white">
-        <p>**empresa**</p>
+        <p>${enterprise}</p>
       </div>
       <h1>PARTE DE ENTRADA BOBINAS A MÁQUINA
       </h1>
@@ -387,7 +387,7 @@ table>tr>td{
           <div id="producto" class=" simpleContainer" style="width: 100%">
             <p>trabajador</p>
             <div id="productWrite" class="marginL border width60 height9 centerLeft padL3">
-              ***
+              ${name}
             </div>
           </div>
           <div class="rowStreetch fullWidth" style="border-left: 2px solid black;">
