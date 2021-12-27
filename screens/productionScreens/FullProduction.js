@@ -69,7 +69,7 @@ import DragDropCardsComponent from "../../components/DragDropCardsComponent";
 import TouchableIcon from "../../components/TouchableIcon";
 import SpinnerSquares from "../../components/SpinnerSquares";
 import {htmlDefaultTemplate} from "../../PDFtemplates/defaultTemplateHTML";
-import {createAndSavePDF} from "../../data/FileSystemFunctions";
+import {createAndSaveHTML, createAndSavePDF} from "../../data/FileSystemFunctions";
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -902,7 +902,10 @@ const FullProduction = ({route}) => {
 
         getDatas('@UserDataForm')
             .then(resp => htmlDefaultTemplate(dataProd, resp, finalCalc, rollsDataProduction, autopasterNumLine))
-            .then(resp=> createAndSavePDF(`${dataProd.date}_${dataProd.product}`, resp))
+            .then(resp => {
+                createAndSavePDF(`${dataProd.date}_${dataProd.product}`, resp)
+                createAndSaveHTML(`${dataProd.date}_${dataProd.product}`, resp)
+            })
             .catch(err => {
                 alert('Complete DATOS DE ENCABEZADO.')
                 setTimeout(() => navigation.navigate('SettingsStack'), 2000)

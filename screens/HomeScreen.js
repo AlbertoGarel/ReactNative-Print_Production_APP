@@ -116,10 +116,10 @@ const HomeScreen = ({navigation, route}) => {
                         iconName={"bar-chart"}
                         iconSize={iconSize}
                         iconColor={COLORS.quinary}
-                        cardtitle={"Cálculos"}
+                        cardtitle={"Gráficas"}
                         title="Go to Onboard"
                         navigation={navigation}
-                        torender={['Profile', {name: 'Elena'}]}
+                        torender={['charts', {name: 'Elena'}]}
                     />
                 </View>
                 <View style={styles.subcont}>
@@ -127,10 +127,10 @@ const HomeScreen = ({navigation, route}) => {
                         iconName={"file-1"}
                         iconSize={iconSize}
                         iconColor={COLORS.quinary}
-                        cardtitle={"Archivos"}
+                        cardtitle={"Documentos"}
                         title="Go to Onboard"
                         navigation={navigation}
-                        torender={['Profile', {name: 'Elena'}]}
+                        torender={['pdf documents', {name: 'Elena'}]}
                     />
                 </View>
             </View>

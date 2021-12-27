@@ -3,7 +3,7 @@ import {Alert, View} from 'react-native';
 import {createStackNavigator} from "@react-navigation/stack";
 import HomeScreen from "../screens/HomeScreen";
 import {COLORS} from "../assets/defaults/settingStyles";
-import ProfileScreen from "../screens/ProfileScreen";
+import DocumentsViewerScreen from "../screens/DocumentsViewerScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import Onboarding from "../screens/Onboarding";
 import SimpleProductionScreen from "../screens/SimpleProductionScreen";
@@ -11,6 +11,7 @@ import {getFocusedRouteNameFromRoute} from '@react-navigation/native'
 import IndividualCalculation from "../screens/IndividualCalculation";
 import {Fontisto as Icon} from "@expo/vector-icons";
 import FullProduction from "../screens/productionScreens/FullProduction";
+import ChartsScreens from "../screens/ChartsScreen";
 
 const HomeStack = ({navigation, route, setChangeButtonFunc}) => {
 
@@ -55,9 +56,22 @@ const HomeStack = ({navigation, route, setChangeButtonFunc}) => {
                 }}
 
             />
-            <Stack.Screen name="Profile" component={ProfileScreen}
+            <Stack.Screen name="pdf documents" component={DocumentsViewerScreen}
                           options={{
                               title: "Documentos .PDF",
+                              headerStyle: {
+                                  backgroundColor: COLORS.primary,
+                              },
+                              headerTintColor: '#fff',
+                              headerTitleStyle: {
+                                  fontWeight: 'bold',
+                              },
+                              headerShown: true
+                          }}
+            />
+            <Stack.Screen name="charts" component={ChartsScreens}
+                          options={{
+                              title: "Gráficas",
                               headerStyle: {
                                   backgroundColor: COLORS.primary,
                               },

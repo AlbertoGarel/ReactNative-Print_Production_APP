@@ -75,7 +75,7 @@ const htmlDefaultTemplate = (dataProduction, dataUserAndEnterprise, prodResult, 
             <div id="cardCode" class="centerCenter border pad3">`
 
                 e.codepathSVG.length > 0 ?
-                    cardsToString += `<div class="centerColumn"><svg style="width: 100%; height: 50px" viewBox="0 0 200 20" fill="#000000">
+                    cardsToString += `<div class="centerColumn" style="overflow: hidden"><svg style="width: 100%; height: 40px" viewBox="0 0 200 20" fill="#000000">
                     <path d="${e.codepathSVG}" />
                 </svg>
                 <p style="text-align: center; font-size: 20px">${e.bobinaID}</p></div>`
@@ -96,29 +96,13 @@ const htmlDefaultTemplate = (dataProduction, dataUserAndEnterprise, prodResult, 
         return cardsToString;
     }
 
-
-    // Object {
-    //     "autopaster": 5,
-    //         "bobinaID": 3057060277853,
-    //         "codepathSVG": 0,
-    //         "ismedia": 0,
-    //         "position": 1,
-    //         "radius": 0,
-    //         "radiusIni": null,
-    //         "toSend": true,
-    //         "weightAct": 600,
-    //         "weightEnd": 0,
-    //         "weightIni": 700,
-    // },
-
     return `
     <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=Edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Default Template</title>
+  <title>${date}_${product}</title>
   <Style>
   @page {
     margin: 0mm;

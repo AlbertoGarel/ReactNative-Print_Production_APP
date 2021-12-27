@@ -14,7 +14,7 @@ import {NavigationContainer, useNavigation} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import HomeScreen from "./screens/HomeScreen";
-import ProfileScreen from "./screens/ProfileScreen";
+import DocumentsViewerScreen from "./screens/DocumentsViewerScreen";
 import Onboarding from "./screens/Onboarding";
 import {COLORS} from './assets/defaults/settingStyles'
 import SettingsScreen from "./screens/SettingsScreen";

@@ -10,7 +10,7 @@ import {openDatabase} from './dbCRUD/actionsSQL';
 import Toast from "react-native-easy-toast";
 import ToastMesages from "./components/ToastMessages";
 import * as FileSystem from 'expo-file-system';
-import {appFolder, checkAndCreateFolder, checkExistFolder} from "./data/FileSystemFunctions";
+import {appFolder, appHTMLfolderForPdf, checkAndCreateFolder, checkExistFolder} from "./data/FileSystemFunctions";
 
 function App() {
 
@@ -21,15 +21,20 @@ function App() {
         let isMounted = true;
 
         openDatabase()
-            // .then(response => Alert.alert('BBD is ok'))
             .then(response => showToast('CONECTANDO CON BASE DE DATOS...'))
             .catch(error => showToast('ERROR EN DB'));
 
         checkAndCreateFolder(appFolder)
             .then(response => response)
             .catch(err => err);
+        checkAndCreateFolder(appHTMLfolderForPdf)
+            .then(response => response)
+            .catch(err => err);
 
         checkExistFolder(appFolder)
+            .then(response => response)
+            .catch(err => console.log(err))
+        checkExistFolder(appHTMLfolderForPdf)
             .then(response => response)
             .catch(err => console.log(err))
 

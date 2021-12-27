@@ -1,41 +1,66 @@
 import React, {useEffect, useState} from 'react';
-import {SafeAreaView, SectionList, StatusBar, StyleSheet, Text, View} from 'react-native';
-import {deleteFile, getLocalURI, readFolder, diskcapacity} from "../data/FileSystemFunctions";
+import {Dimensions, SafeAreaView, SectionList, StyleSheet, Text, View} from 'react-native';
+import {
+    deleteFile,
+    diskcapacity,
+    readFolder,
+    readFileHTMLFromDocumentDirectory,
+    sendFile
+} from "../data/FileSystemFunctions";
 import SpinnerSquares from "../components/SpinnerSquares";
 import SvgComponent from "../components/SvgComponent";
-import {pdfSVG, sendDataSmartPhoneSVG, trashSVG, viewFileSVG} from "../assets/svg/svgContents";
+import {
+    closeWindowSVG,
+    pdfSVG,
+    sendDataSmartPhoneSVG,
+    trashSVG,
+    viewFileSVG
+} from "../assets/svg/svgContents";
 import {COLORS, shadowPlatform} from "../assets/defaults/settingStyles";
 import HRtag from "../components/HRtag";
 import TouchableIcon from "../components/TouchableIcon";
+import {WebView} from 'react-native-webview';
 
-const ProfileScreen = ({navigation, route}) => {
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
+
+const DocumentsViewerScreen = ({navigation, route}) => {
 
     const [spinner, setSpinner] = useState(true);
     const [files, getFiles] = useState([]);
     const [dataSection, getDataSection] = useState([]);
     const [reload, getReload] = useState(false);
     const [totalCapacity, getTotalCapacity] = useState({});
+    const [viewPdfContainer, setViewPdfContainer] = useState(false);
+    const [viewPDFelement, setViewPDFelement] = useState('');
+
     useEffect(() => {
+        let isMounted = true;
+
         diskcapacity()
-            .then(capacity => getTotalCapacity(capacity))
+            .then(capacity => {
+                if (isMounted) getTotalCapacity(capacity)
+            })
             .catch(err => console.log(err));
         readFolder()
-            .then(r => {
-                getFiles(r);
-                console.log('files encont', r)
-                getDataSection(group(r))
-                setSpinner(false);
-                getReload(false);
+            .then(response => {
+                if (isMounted) {
+                    getFiles(response);
+                    getDataSection(group(response));
+                    setSpinner(false);
+                    getReload(false);
+                }
             })
-            .catch(err => console.log('error en profile', err))
+            .catch(err => console.log('error en profile', err));
+
+        return () => isMounted = false;
     }, [reload]);
 
     // GROUP FILES FOR DATE.
     const group = (arrayToGroup) => {
         const groupedForSectionList = arrayToGroup.reduce((acc, item) => {
             const title = item.split('_')[0];
-            // const name = item.split('_')[1];
-            acc[item.split('_')[0]] ?
+            acc[title] ?
                 acc[title]['data'].push(item)
                 :
                 acc[title] = {title: title, data: [item]};
@@ -55,9 +80,11 @@ const ProfileScreen = ({navigation, route}) => {
                 <Text style={styles.title}>{title.split('_')[1]}</Text>
             </View>
             <View style={styles.contItem}>
-                <TouchableIcon handlerOnPress={() => alert('press')} heightSVG={30} WidthSVG={30} svgName={viewFileSVG}
+                <TouchableIcon handlerOnPress={() => handlerViewPdf(title)} heightSVG={30}
+                               WidthSVG={30}
+                               svgName={viewFileSVG}
                                touchableStyle={styles.touchableStyle}/>
-                <TouchableIcon handlerOnPress={() => getLocalURI(title)} heightSVG={30} WidthSVG={30}
+                <TouchableIcon handlerOnPress={() => sendFile(title)} heightSVG={30} WidthSVG={30}
                                svgName={sendDataSmartPhoneSVG} touchableStyle={styles.touchableStyle}/>
                 <TouchableIcon handlerOnPress={() => handlerDelete(title)} heightSVG={30} WidthSVG={30}
                                svgName={trashSVG}
@@ -66,10 +93,16 @@ const ProfileScreen = ({navigation, route}) => {
         </View>
     );
 
+    const handlerViewPdf = async (filename) => {
+        setViewPdfContainer(!viewPdfContainer)
+        // RETURN HTML FILE AS STRING
+        let uri = await readFileHTMLFromDocumentDirectory(filename)
+        setViewPDFelement(uri);
+    }
+
     if (spinner) {
         return <SpinnerSquares/>
     }
-    ;
 
     if (dataSection.length === 0) {
         return (
@@ -79,7 +112,6 @@ const ProfileScreen = ({navigation, route}) => {
             </View>
         )
     }
-    ;
 
     return (
         <SafeAreaView style={styles.container}>
@@ -99,20 +131,33 @@ const ProfileScreen = ({navigation, route}) => {
                 renderItem={({item}) => <Item title={item}/>}
                 renderSectionHeader={({section: {title}}) => <Text style={styles.header}>{title}</Text>}
             />
+            {viewPDFelement.length > 0 && viewPdfContainer && <View style={styles.contwebView}>
+                <View style={styles.buttonCloseCont}>
+                    <TouchableIcon handlerOnPress={() => setViewPdfContainer(!viewPdfContainer)} heightSVG={30}
+                                   WidthSVG={30}
+                                   svgName={closeWindowSVG}
+                                   touchableStyle={styles.touchableStyle}/>
+                </View>
+                <WebView
+                    style={styles.webView}
+                    originWhitelist={['*']}
+                    javaScriptEnabled={true}
+                    domStorageEnabled={true}
+                    source={{html: viewPDFelement}}
+                />
+            </View>}
         </SafeAreaView>
     );
-}
+};
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: COLORS.white
         // paddingTop: StatusBar.currentHeight,
-        // marginHorizontal: 16,
     },
     item: {
         backgroundColor: COLORS.whitesmoke,
         padding: 5,
-        // marginVertical: 8,
         flexDirection: 'row',
         justifyContent: 'space-between'
     },
@@ -135,11 +180,9 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     touchableStyle: {
-        // backgroundColor: COLORS.white,
         borderRadius: 5,
         padding: 1,
         marginRight: 5,
-        // ...shadowPlatform
     },
     absolutePos: {
         fontSize: 10,
@@ -160,6 +203,29 @@ const styles = StyleSheet.create({
     textDiskCap: {
         fontSize: 10,
         fontWeight: 'bold'
+    },
+    contwebView: {
+        position: 'absolute',
+        flex: 1,
+        width: 'auto',
+        height: windowHeight - 165,
+        top: 5,
+        right: 5,
+        left: 5,
+        margin: 'auto',
+        backgroundColor: 'white',
+        borderWidth: 2,
+        borderColor: COLORS.primary + 90,
+    },
+    webView: {
+        flex: 1
+    },
+    buttonCloseCont: {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        backgroundColor: COLORS.primary + 90,
+        padding: 3
     }
-});
-export default ProfileScreen;
+})
+export default DocumentsViewerScreen;
