@@ -18,7 +18,7 @@ const border_radius = 3;
 
 //SVG PROP CONST
 const optionsSVG = {
-    svgData: fingerselectOrangeSVG, svgWidth: '100%', svgHeight: '100%'
+    svgData: fingerselectOrangeSVG, svgWidth: '100%', svgHeight: '100%', color: COLORS.primary
 };
 const optionsStyleContSVG = {
     width: '60%', height: '60%', top: 10, right: 0, transform: [{rotate: "180deg"}]
@@ -165,7 +165,7 @@ const CardsProduction = ({item, updateGetStorage, productToRenderId, handlerEdit
                     <PaperCoilWeightDataCard
                         stylesPeperCoilWeight={stylesPeperCoilWeight}
                         restoInicioData={item.restoInicio}
-                        restoFibalData={item.restoFinal}
+                        restoFinalData={item.restoFinal}
                     />
                     <TextInputCoilRadius
                         stylesTextInput={stylesTextInput}

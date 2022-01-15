@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {View, SafeAreaView, Image, StyleSheet, Text} from 'react-native';
+import {View, SafeAreaView, Image, StyleSheet, Text, ScrollView} from 'react-native';
 import {
     createDrawerNavigator,
     DrawerContentScrollView,
@@ -49,13 +49,27 @@ import CoeficienteKbaCrud from "../drawerScreens/CrudComponents/CoeficienteKbaCr
 import AutopastersCrud from "../drawerScreens/CrudComponents/AutopastersCrud";
 import ProductosCrud from "../drawerScreens/CrudComponents/ProductosCrud";
 
+const CustomSidebarMenu = (props) => {
+    return (
+        <ScrollView>
+            <SafeAreaView style={{flex: 1}}>
+                <Image
+                    style={[styles.image, {backgroundColor: COLORS.white}]}
+                    source={require('../assets/images/splash/Logo_AlbertoGarel.png')}
+                />
+                <DrawerItemList {...props} />
+            </SafeAreaView>
+        </ScrollView>
+    );
+};
+
 const DataBaseScreen = ({navigation, setChangeButtonFunc}) => {
     const Drawer = createDrawerNavigator();
-    const isFocused = useIsFocused();
+    // const isFocused = useIsFocused();
 
-    useEffect(() => {
-
-    }, [isFocused]);
+    // useEffect(() => {
+    //
+    // }, [isFocused]);
 
     // useFocusEffect(
     //     React.useCallback(() => {
@@ -230,19 +244,20 @@ const DataBaseScreen = ({navigation, setChangeButtonFunc}) => {
         drawerIcon: () => <Icon name={'eye'} size={15} color={COLORS.primary}/>,
     };
 
-    const CustomSidebarMenu = (props) => {
-        return (
-            <SafeAreaView style={{flex: 1}}>
-                <Image
-                    style={[styles.image, {backgroundColor: COLORS.white}]}
-                    source={require('../assets/images/splash/Logo_AlbertoGarel.png')}
-                />
-                <DrawerContentScrollView {...props}>
-                    <DrawerItemList {...props} />
-                </DrawerContentScrollView>
-            </SafeAreaView>
-        );
-    };
+    // const CustomSidebarMenu = (props) => {
+    //     console.log('sidebar render')
+    //     return (
+    //         <SafeAreaView style={{flex: 1}}>
+    //             <Image
+    //                 style={[styles.image, {backgroundColor: COLORS.white}]}
+    //                 source={require('../assets/images/splash/Logo_AlbertoGarel.png')}
+    //             />
+    //             <DrawerContentScrollView {...props}>
+    //                 <DrawerItemList {...props} />
+    //             </DrawerContentScrollView>
+    //         </SafeAreaView>
+    //     );
+    // };
 
     return (
         <SafeAreaView style={{flex: 1}}>

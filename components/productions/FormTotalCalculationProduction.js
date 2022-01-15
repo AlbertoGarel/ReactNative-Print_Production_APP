@@ -1,11 +1,8 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, View, Text, Image, Alert} from "react-native";
-import HRtag from "../HRtag";
+import {StyleSheet, View, Text, Image} from "react-native";
 import {COLORS} from "../../assets/defaults/settingStyles";
-import BgComponent from "../BackgroundComponent/BgComponent";
-import {semicircle2} from "../../assets/svg/svgContents";
 import CustomTextInput from "../FormComponents/CustomTextInput";
-import {getDatas, storeData} from "../../data/AsyncStorageFunctions";
+import {storeData} from "../../data/AsyncStorageFunctions";
 
 const FormTotalCalculationProduction = ({
                                             renderNowItem,
@@ -39,11 +36,10 @@ const FormTotalCalculationProduction = ({
     }, [renderNowItem, objsaved]);
 
     const totalTirada = (coefVal, paginVal, consumptionVal) => {
-
-        if (!isNaN(coefVal) && !isNaN(paginVal) && !isNaN(consumptionVal)) {
+        if (!isNaN(consumptionVal) && consumptionVal > 0 ) {
             let result = coefVal * paginVal * consumptionVal;
             getCalculationConsumptionTirada(result);
-
+            getInputTiradaError(false);
         } else {
             getInputTiradaError(true);
         }
@@ -51,11 +47,12 @@ const FormTotalCalculationProduction = ({
 
     const validateNumber = (val) => {
         let isFalse = true;
-        if (!isNaN(val) || val > 0) {
+        if (!isNaN(val) && val > 0) {
             isFalse = false;
             updateCoefStorage(val);
         }
         getInputCoefError(isFalse);
+        return true;
     };
 
     const updateCoefStorage = (coefState) => {
@@ -65,7 +62,7 @@ const FormTotalCalculationProduction = ({
 
         const productToSave = [...restProducts, productToUpdate];
         storeData('@simpleProdData', productToSave)
-            .then(r => updateGetStorage())
+            .then(() => updateGetStorage())
             .catch(err => console.log(err))
 
     }
@@ -95,7 +92,10 @@ const FormTotalCalculationProduction = ({
                         type={'numeric'}
                         _name={'inputCoef'}
                         _onChangeText={(text) => getCoef(text)}
-                        _onBlur={() => validateNumber(coef)}
+                        _onBlur={() => {
+                            let isGod = validateNumber(coef)
+                            if (isGod) totalTirada(coef, pagination, inputTiradaVal);
+                        }}
                         value={coef}
                         _defaultValue={coef.toString()}
                         styled={{
@@ -194,12 +194,6 @@ const styles = StyleSheet.create({
         fontFamily: 'Anton',
         borderRadius: 5,
         padding: 5,
-        // textShadowColor: COLORS.dimgrey,
-        // textShadowOffset: {
-        //     width: 0.8,
-        //     height: 0.8
-        // },
-        // textShadowRadius: 1,
     },
     parentForm: {
         backgroundColor: COLORS.whitesmoke,
@@ -208,7 +202,6 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: '#ff8500',
         borderRadius: 5,
-        // alignItems: 'center'
     }
 })
 export default FormTotalCalculationProduction;

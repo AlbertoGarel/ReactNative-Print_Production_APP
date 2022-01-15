@@ -1,13 +1,17 @@
 import * as FileSystem from 'expo-file-system';
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
-import * as IntentLauncher from 'expo-intent-launcher';
+import * as DocumentPicker from 'expo-document-picker';
+import * as SQLite from "expo-sqlite";
+import {Alert} from 'react-native';
+import {arrayEquals} from "../utils";
 
 /**
  * FOLDER NAME FOR SAVE FILES
  * */
 export const appFolder = `${FileSystem.documentDirectory}documentsAppBobinas/`;
 export const appHTMLfolderForPdf = `${FileSystem.documentDirectory}documentsHTMLAppBobinas/`;
+export const dataBaseFolder = FileSystem.documentDirectory + 'SQLite'
 
 // FILESYSTEM
 /**
@@ -48,7 +52,7 @@ export const checkAndCreateFolder = async (folder_path = appFolder) => {
 export const checkExistFolder = async (folder_path = appFolder) => {
     try {
         let info = await FileSystem.getInfoAsync(folder_path)
-        console.log('exist folder', info.exists)
+        return info.exists;
     } catch (err) {
         return console.log('NO exist folder', err)
     }
@@ -92,13 +96,13 @@ export const deleteFile = async fileName => {
  * @param html type: string (HTML CODE)
  *
  * */
-export const createAndSaveHTML = async (fileName, html) => {
-    try {
-        await FileSystem.writeAsStringAsync(appHTMLfolderForPdf + fileName + '.html', html);
-    } catch (error) {
-        console.error(error);
-    }
-};
+// export const createAndSaveHTML = async (fileName, html) => {
+//     try {
+//         await FileSystem.writeAsStringAsync(appHTMLfolderForPdf + fileName + '.html', html);
+//     } catch (error) {
+//         console.error(error);
+//     }
+// };
 
 /**
  * READ AS STRING STORED HTML FILE.
@@ -121,10 +125,18 @@ export const readFileHTMLFromDocumentDirectory = async fileName => {
  * @param html type: string (HTML CODE)
  *
  * */
-export const createAndSavePDF = async (fileName, html) => {
+export const createAndSavePDF_HTML_file = async (fileName, html) => {
     try {
+        const contentPath = await FileSystem.readDirectoryAsync(appFolder);
+        console.log('contentPath', contentPath)
+        console.log('filName', fileName)
+        const searchEqualName = contentPath.filter(i=> i.split(/[\(\.]/)[0] === fileName);
+        console.log('searchEqualName', searchEqualName)
+        const finallyName = searchEqualName.length > 0 ? `${fileName}(${searchEqualName.length})` : fileName;
+        console.log('finallyName', finallyName)
         const {uri} = await Print.printToFileAsync({html});
-        await FileSystem.copyAsync({from: uri, to: appFolder + fileName + '.pdf'});
+        await FileSystem.copyAsync({from: uri, to: appFolder + finallyName + '.pdf'});
+        await FileSystem.writeAsStringAsync(appHTMLfolderForPdf + finallyName + '.html', html);
     } catch (error) {
         console.error(error);
     }
@@ -164,3 +176,134 @@ export const diskcapacity = async () => {
         console.log(e)
     }
 };
+/**
+ *
+ * SHARE LOCAL FILE.
+ *
+ * */
+export const sendDataBase = async () => {
+    try {
+        await Sharing.shareAsync(FileSystem.documentDirectory + 'SQLite/bobinas.db');
+    } catch (e) {
+        alert('error fileURI')
+    }
+};
+/**
+ *
+ * IMPORT LOCAL DATABSE FILE.
+ *
+ * */
+export const importDataBase = async (fakeMessage) => {
+    try {
+        let sql = 'SELECT * FROM sqlite_master WHERE type = "table"'
+        const databaseToImport = await DocumentPicker.getDocumentAsync({
+            type: "application/octet-stream",
+            copyToCacheDirectory: true,
+            multiple: false
+        })
+
+        if (databaseToImport.type !== 'success') {
+            // throw 1 // return for not display innecessary alert.
+            return;
+        }
+
+        const Importedversion = SQLite.openDatabase(databaseToImport);
+        const db = SQLite.openDatabase('bobinas.db');
+
+        // CHECK DATABASE VERSION. IF ARE DISTINCT NO CONTINUE
+        if (Importedversion.version !== db.version) {
+            if (Importedversion.version > db.version) {
+                throw 2;
+            } else if (Importedversion.version < db.version) {
+                throw 3;
+            } else {
+                throw 4;
+            }
+        }
+        //READ DIRECTORY DOCUMENTPICKER CACHE.
+        const documentpickerfolder = await FileSystem.readDirectoryAsync((`${FileSystem.cacheDirectory}DocumentPicker`))
+
+        //CREATE FOLDER IN FileSystem.documentDirectory FOR UPLOADED DATABASE FILE.
+        if (!(await FileSystem.getInfoAsync(FileSystem.documentDirectory + 'SQLite/imported')).exists) {
+            await FileSystem.makeDirectoryAsync(FileSystem.documentDirectory + 'SQLite/imported');
+        }
+
+        // COPY AND RENAME FILE TO UPLOADED DATABASE FILE.
+        await FileSystem.copyAsync({
+            from: FileSystem.cacheDirectory + 'DocumentPicker/' + documentpickerfolder[0],
+            to: FileSystem.documentDirectory + 'SQLite/imported/imported.db'
+        });
+
+        // CHECK EXIST CREATED FILE IN DOCUMENTDIRECTORY/IMPORTED.
+        if (await FileSystem.getInfoAsync(FileSystem.documentDirectory + 'SQLite/imported/imported.db')) {
+            const importedDb = SQLite.openDatabase('imported/imported.db')
+
+            let promise1 = new Promise((resolve, reject) => {
+                importedDb.transaction((tx) => {
+                    tx.executeSql(sql, [],
+                        (_, result) => resolve(result.rows._array.map(i => i.name)),
+                        (_, err) => reject(err));
+                }, err => err);
+            });
+            let promise2 = new Promise((resolve, reject) => {
+                db.transaction((tx) => {
+                    tx.executeSql(sql, [],
+                        (_, result) => resolve(result.rows._array.map(i => i.name)),
+                        (_, err) => reject(err));
+                }, err => err);
+            });
+
+            //RESOLVE PROMISES
+            const promiseAllResult = await Promise.all([promise1, promise2])
+
+            //COMPARE ARRAY TABLE COLUMN NAMES
+            const areEquals = await arrayEquals(promiseAllResult[0], promiseAllResult[1]);
+            if (areEquals) {
+                // EQUALS COPY DATABASE FILE TO DEFAULT DIRECTORY.
+                Alert.alert('¡¡ATENCIÓN', 'Se dispone a instalar una base de datos distinta. ¿está de acuerdo?', [
+                    {
+                        text: 'Cancelar',
+                        onPress: () => alert('Importación de base de datos cancelada por usuario.'),
+                        style: 'cancel',
+                    },
+                    {
+                        text: 'OK', onPress: async () => {
+                            await FileSystem.copyAsync({
+                                from: FileSystem.documentDirectory + 'SQLite/imported/imported.db',
+                                to: FileSystem.documentDirectory + 'SQLite/bobinas.db'
+                            });
+                            setTimeout(() => {
+                                fakeMessage('Instalación completa')
+                            }, 1000);
+                        }
+                    },
+                ]);
+            } else {
+                throw 5;
+            }
+        }
+    } catch (e) {
+        let message = '';
+        switch (e) {
+            case 1:
+                message = 'Importación de base de datos cancelada por ususario.'
+                break;
+            case 2:
+                message = '¡¡ERROR!!, versión de base de datos no compatible. Versión posterior.'
+                break;
+            case 3:
+                message = '¡¡ERROR!!, versión de base de datos no compatible.  Versión anterior.'
+                break;
+            case 4:
+            case 5:
+            default:
+                message = '¡¡ERROR!! Base de datos incompatible';
+        }
+        alert(message);
+    } finally {
+        // CLEAN CACHE FOLDER IF EXIST
+        if ((await FileSystem.getInfoAsync(FileSystem.cacheDirectory + 'DocumentPicker')).exists) {
+            await FileSystem.deleteAsync(FileSystem.cacheDirectory + 'DocumentPicker');
+        }
+    }
+}

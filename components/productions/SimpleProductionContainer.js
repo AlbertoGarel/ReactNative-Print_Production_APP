@@ -1,10 +1,7 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text, StyleSheet, TouchableOpacity, Alert, Dimensions, ScrollView, Animated, Easing} from 'react-native';
+import {View, Text, StyleSheet, TouchableOpacity, Dimensions, ScrollView, Animated} from 'react-native';
 import {Fontisto as Icon} from "@expo/vector-icons";
 import {COLORS} from "../../assets/defaults/settingStyles";
-import CustomTextInput from "../FormComponents/CustomTextInput";
-import {editSVG} from "../../assets/svg/svgContents";
-import {getDatas, removeValue} from "../../data/AsyncStorageFunctions";
 import Extrainfo from "./Extrainfo";
 import CardsProduction from "./CardsProduction";
 
@@ -14,13 +11,14 @@ const SimpleProductionContainer = ({
                                        setSeeData,
                                        seeData,
                                        updateGetStorage,
-                                       setVisibleCreateCards,
                                        setInitAnimation,
                                        initAnimation,
                                        pulseAnim,
                                        handlerEditCard,
                                        handlerFullCalcModal,
-                                       warningText
+                                       warningText,
+                                       moveArrow,
+                                       animatedArrow
                                    }) => {
 
     const [productToRender, getProductToRender] = useState({});
@@ -28,11 +26,12 @@ const SimpleProductionContainer = ({
     const [floatTitle, setFloatTitle] = useState(false)
 
     useEffect(() => {
+        animatedArrow()
         //interval for absolute title
-           let intervalID = setInterval(function(){
-                setFloatTitle(false);
-                clearInterval(this)
-            }, 3000)
+        let intervalID = setInterval(function () {
+            setFloatTitle(false);
+            clearInterval(this)
+        }, 3000)
 
         const getProduct = objsaved.filter(item => item.id === renderNowItem)
         getProductToRender(...getProduct);
@@ -53,10 +52,6 @@ const SimpleProductionContainer = ({
         }
         return () => clearInterval(intervalID)
     }, [renderNowItem, objsaved]);
-
-    const handlerFloatTitle = () => {
-        setFloatTitle(true);
-    };
 
     return (
         <>
@@ -118,11 +113,6 @@ const SimpleProductionContainer = ({
                                           size={15}
                                           color={'#adff2f'}
                                           style={{
-                                              // width: 250,
-                                              // height: 50,
-                                              // backgroundColor: '#a6eeec',
-                                              // borderRadius: 40,
-                                              // borderWidth: 2,
                                               borderColor: 'white',
                                               textAlign: 'center',
                                               textAlignVertical: 'center',
@@ -217,7 +207,6 @@ const SimpleProductionContainer = ({
                         </>
                     }
                     <ScrollView horizontal={false}>
-                        {/*{objsaved ? <Text>{JSON.stringify(objsaved)}</Text> : <Text>No hay objeto guardado</Text>}*/}
                         {
                             warningText.length !== 0 &&
                             <View style={{
@@ -236,7 +225,7 @@ const SimpleProductionContainer = ({
                                     textAlign: 'left',
                                     color: '#ff6961',
                                     paddingLeft: 10
-                                }}>{warningText.length > 0 ? `Faltan bobinas en autopasters: ${warningText}` : !warningText ? 'Regitra bobinas en todos los autopasters' :`Falta bobina en autopaster: ${warningText}`}</Text>
+                                }}>{warningText.length > 0 ? `Faltan bobinas en autopasters: ${warningText}` : !warningText ? 'Regitra bobinas en todos los autopasters' : `Falta bobina en autopaster: ${warningText}`}</Text>
                             </View>
                         }
                         <View style={styles.secc2}>
@@ -291,30 +280,35 @@ const SimpleProductionContainer = ({
                 //posible función para efecto en botón PRINCIPAL crear
                 <View style={{
                     flex: 1,
+                    flexDirection: 'column',
                     backgroundColor: 'white',
-                    justifyContent: 'center',
+                    justifyContent: 'space-evenly',
                     alignItems: 'center',
                     marginTop: 30
                 }}>
-                    <Icon name={'plus-a'}
-                          size={30}
-                          color={'red'}
-                          style={{
-                              width: 70,
-                              height: 70,
-                              color: 'white',
-                              backgroundColor: 'black',
-                              borderRadius: 100,
-                              textAlign: 'center',
-                              textAlignVertical: 'center'
-                          }}
-                    />
                     <Text style={{fontSize: 20, fontFamily: 'Anton'}}>Configura tu primer producto</Text>
+                    <Animated.View style={{ transform: [{translateY: moveArrow}]}}>
+                        <Icon name={'angle-dobule-down'}
+                              size={30}
+                              color={'red'}
+                              style={{
+                                  width: 70,
+                                  height: 70,
+                                  color: '#C2C2C2',
+                                  borderWidth: 2,
+                                  borderColor:  '#C2C2C2',
+                                  backgroundColor: COLORS.whitesmoke,
+                                  borderRadius: 100,
+                                  textAlign: 'center',
+                                  textAlignVertical: 'center'
+                              }}
+                        />
+                    </Animated.View>
                 </View>
             }
         </>
     )
-}
+};
 
 const styles = StyleSheet.create(
     {

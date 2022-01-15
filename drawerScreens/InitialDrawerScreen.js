@@ -41,7 +41,7 @@ const InitialDrawerScreen = ({navigation}) => {
                 imageBg={COLORS.white}
                 titleColor={COLORS.white}
                 titleSecction={'BASE DE DATOS'}
-                text={'Modifica los datos de las tablas para realizar operaciones y define autopasters, gramajes, valores varios y maś....'}
+                text={'Modifica los datos de las tablas para realizar operaciones y define autopasters, gramajes, valores varios y más....'}
             />
             <View style={styles.parentCont}>
                 <TouchableOpacity style={[styles.contExplain,{elevation: 12}]} onPress={()=>navigation.dispatch(DrawerActions.toggleDrawer())}>

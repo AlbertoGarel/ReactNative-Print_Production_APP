@@ -1,6 +1,8 @@
 import React from 'react';
-import {Image, StyleSheet, Text, View} from 'react-native';
+import {Image, StyleSheet, Text, View, Dimensions} from 'react-native';
 import {COLORS} from "../../assets/defaults/settingStyles";
+
+const {width} = Dimensions.get('window');
 
 const HomeHeader = ({
                         textprops,
@@ -14,7 +16,7 @@ const HomeHeader = ({
         <View style={styles.parent}>
             <View style={styles.subcont}>
                 <Text style={[styles.title, {color: titleColor}]}>
-                    #APPBobinas
+                    PrintingAPP<Text style={styles.minifText}>production manager</Text>
                 </Text>
                 <Image
                     style={[styles.image, {backgroundColor: imageBg}]}
@@ -56,7 +58,14 @@ const styles = StyleSheet.create({
     },
     title: {
         fontFamily: 'Anton',
-        fontSize: 30,
+        fontSize: width > 400 ? 50 : 30,
+        textShadowColor: COLORS.black,
+        textShadowOffset: {width: 2, height: 2},
+        textShadowRadius: 1
+    },
+    minifText: {
+        color: COLORS.whitesmoke,
+        fontSize: width > 400 ? 15 : 12
     },
     image: {
         width: 50,

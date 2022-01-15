@@ -1,17 +1,13 @@
-import React, {useRef, useState, useEffect} from 'react';
+import React, {useRef, useState} from 'react';
 import {
     StyleSheet,
     ScrollView,
     View,
-    Text,
     TextInput,
-    Alert,
     TouchableOpacity,
     SafeAreaView,
-    KeyboardAvoidingView,
     Dimensions,
 } from 'react-native';
-import CustomTextInput from "../components/FormComponents/CustomTextInput";
 import {search, deleteThin, searchCode, semicircle2} from "../assets/svg/svgContents";
 import SvgComponent from "../components/SvgComponent";
 import {COLORS} from "../assets/defaults/settingStyles";
@@ -100,7 +96,7 @@ const SearchScreen = () => {
     const cellMargin = 16;
 
     function numCell(data) {
-        let arr = [cellWidth + (cellMargin * 2)];
+        let arr = [120 + (cellMargin * 2)];
         for (let i = 0; i < data.length - 1; i++) {
             arr.push(cellWidth + (cellMargin * 2));
         }
@@ -201,15 +197,6 @@ const SearchScreen = () => {
                         />
                     </TouchableOpacity>
                 </View>
-                {/*<Text>{*/}
-                {/*    JSON.stringify(valueForSearch)*/}
-                {/*}</Text>*/}
-                {/*{*/}
-                {/*    valuesDB.length > 0 ?*/}
-                {/*        valuesDB.map((item, index) => <Text key={index}>{JSON.stringify(item)}</Text>)*/}
-                {/*        :*/}
-                {/*        null*/}
-                {/*}*/}
             </View>
             {
                 valuesDB.length > 0 ?
@@ -234,7 +221,10 @@ const SearchScreen = () => {
                                                         rowData.map((cellData, cellIndex) => (
                                                             <Cell key={cellIndex}
                                                                   data={cellData}
-                                                                  textStyle={[styles.text, {width: cellWidth}]}/>
+                                                                  textStyle={[styles.text, cellIndex === 0 ? {
+                                                                      width: 120,
+                                                                      textAlign: 'left'
+                                                                  } : {width: cellWidth}]}/>
                                                         ))
                                                     }
                                                 </TableWrapper>
@@ -296,7 +286,8 @@ const styles = StyleSheet.create(
             backgroundColor: COLORS.primary
         },
         text: {
-            margin: 16,
+            marginHorizontal: 16,
+            paddingVertical: 10,
             textAlign: 'center'
         },
         row: {
@@ -306,7 +297,7 @@ const styles = StyleSheet.create(
         ,
         row2: {
             flexDirection: 'row',
-            backgroundColor: COLORS.primary + '20'
+            backgroundColor: '#FFAF59'
         },
         btn: {
             padding: 5,

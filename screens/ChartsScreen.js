@@ -1,105 +1,83 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {SafeAreaView, Dimensions, FlatList, StyleSheet, Text, TouchableOpacity, View, ScrollView} from 'react-native';
-import SpinnerSquares from "../components/SpinnerSquares";
+import {
+    SafeAreaView,
+    Dimensions,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+    ScrollView,
+    PanResponder,
+    ActivityIndicator
+} from 'react-native';
 import {COLORS} from "../assets/defaults/settingStyles";
+import {LinearGradient} from "expo-linear-gradient";
+import * as SQLite from "expo-sqlite";
+import LineChartComponent from "../components/LineChartComponent";
+import PieChartComponent from "../components/PieChartComponent";
+import StackedBartChartComponent from "../components/StackedBartChartComponent";
+import SpinnerSquares from "../components/SpinnerSquares";
 
-const {width, height} = Dimensions.get('window');
+const productresult_table =
+    `SELECT a.productresult_id,
+    a.tiradabruta, a.kilostirada, a.kilosconsumidos,
+    a.fechaproduccion, a.ejemplares, a.paginacion,
+    a.ediciones, e.producto_name AS 'nombre_producto'
+    FROM productresults_table a, producto_table e
+    WHERE a.nombre_producto = e.producto_id;`;
 
-const DATA = [
-    {
-        produccresult_id: 1,
-        tiradabruta: 2000,
-        kilostirada: 500,
-        kilosConsumidos: 600,
-        fechaproduccion: '2021-12-23',
-        ejemplares: 11500,
-        paginacion: 56,
-        nombre_producto: 'levante'
-    },
-    {
-        produccresult_id: 2,
-        tiradabruta: 2000,
-        kilostirada: 500,
-        kilosConsumidos: 600,
-        fechaproduccion: '2021-12-23',
-        ejemplares: 11500,
-        paginacion: 56,
-        nombre_producto: 'provincias'
-    },
-    {
-        produccresult_id: 3,
-        tiradabruta: 2000,
-        kilostirada: 500,
-        kilosConsumidos: 600,
-        fechaproduccion: '2021-12-23',
-        ejemplares: 11500,
-        paginacion: 56,
-        nombre_producto: 'levante'
-    },
-    {
-        produccresult_id: 4,
-        tiradabruta: 2000,
-        kilostirada: 500,
-        kilosConsumidos: 600,
-        fechaproduccion: '2021-12-23',
-        ejemplares: 11500,
-        paginacion: 56,
-        nombre_producto: 'provincias'
-    },
-    {
-        produccresult_id: 5,
-        tiradabruta: 2000,
-        kilostirada: 500,
-        kilosConsumidos: 600,
-        fechaproduccion: '2021-12-23',
-        ejemplares: 11500,
-        paginacion: 56,
-        nombre_producto: 'levante'
-    },
-    {
-        produccresult_id: 6,
-        tiradabruta: 2000,
-        kilostirada: 500,
-        kilosConsumidos: 600,
-        fechaproduccion: '2021-12-23',
-        ejemplares: 11500,
-        paginacion: 56,
-        nombre_producto: 'paraula'
-    },
-    {
-        produccresult_id: 7,
-        tiradabruta: 2000,
-        kilostirada: 500,
-        kilosConsumidos: 600,
-        fechaproduccion: '2021-12-23',
-        ejemplares: 11500,
-        paginacion: 56,
-        nombre_producto: 'la voz de tu comarca'
-    },
-]
-
-const headers = ['Provincias', 'La voz de tu comarca', 'Levante', 'header header4', 'header5', 'header header6', 'header7', 'header header8', 'header9', 'header10']
-
+const {width} = Dimensions.get('window');
 let animationActive = true;
 let animationActiveRef;
-let index = 1
+
 const ChartsScreen = () => {
-    const [active, setActive] = useState(0)
+
+    const db = SQLite.openDatabase('bobinas.db');
+
     const headerScrollView = useRef({});
     const itemScrollView = useRef();
+    const [active, setActive] = useState(0);
+    const [dataSourceCords, setDataSourceCords] = useState([])
     //states data
-    const [groupedItems, getGroupedItems] = useState([{'1': {data: []}}]);
-    const [itemTitles, getItemTitles] = useState(['outer']);
+    const [groupedItems, getGroupedItems] = useState(['']);
+    const [itemTitles, getItemTitles] = useState([]);
 
     useEffect(() => {
-        headerScrollView.current.scrollToIndex({index: active, viewPosition: 0.5})
+        headerScrollView.current.scrollTo({x: dataSourceCords[active], y: 0, animated: true})
+        clearTimeout(animationActiveRef)
     }, [active]);
 
     useEffect(() => {
-        getItemTitles(Object.keys(toGroup(DATA)))
-        getGroupedItems(toGroup(DATA))
-        console.log('groupedItems', Object.values(groupedItems))
+        db.transaction(tx => {
+            tx.executeSql(
+                productresult_table,
+                [],
+                (_, {rows: {_array}}) => {
+                    if (_array.length > 0) {
+                        const groupedData = toGroup(_array);
+                        getItemTitles(Object.keys(groupedData).sort());
+                        getGroupedItems(groupedData);
+                    }
+                }
+            );
+        }, err => console.log(err));
     }, []);
+
+    const panResponderOFF = useRef(
+        PanResponder.create({
+            onStartShouldSetPanResponder: () => {
+                itemScrollView.current.setNativeProps({scrollEnabled: false})
+            },
+        })
+    ).current;
+
+    const panResponderON = useRef(
+        PanResponder.create({
+            onStartShouldSetPanResponder: () => {
+                itemScrollView.current.setNativeProps({scrollEnabled: true})
+            },
+        })
+    ).current;
 
     // group items
     const toGroup = (arr) => {
@@ -111,33 +89,50 @@ const ChartsScreen = () => {
                 acc[title] = {title: title, data: [item]}
             return acc;
         }, {});
-    }
-    //Render item component
-    const Item = ({item, index}) => {
-        return <View style={styles.mainItem}>
-            <ScrollView>
-                {/*<Text>card {index + 1}</Text>*/}
-                {/*{item.data ?*/}
-                {/*    item.data.map((item, index) => {*/}
-                {/*        return (*/}
-                {/*            <View key={item.produccresult_id} style={{margin: 2,  backgroundColor: '#e2e2e2',width: index === 0 ? '97%' : '48%'}}>*/}
-                {/*                <Text>Animation happens while scrolling itself</Text>*/}
-                {/*                <Text>{item.produccresult_id}</Text>*/}
-                {/*                <Text>{item.nombre_producto}</Text>*/}
-                {/*            </View>*/}
-                {/*        )*/}
-                {/*    })*/}
-                {/*    :*/}
-                {/*    null*/}
-                {/*}*/}
-                <View style={styles.cont1}><Text>Nulls vs goods: Pie chart</Text></View>
-                <View style={styles.cont2}><Text>Number of newspapers: Bezier Line Chart</Text></View>
-                <View style={styles.cont3}><Text>Consumption: StackedBar chart</Text></View>
-                <View style={styles.cont4}><Text>Date's production: Contribution graph (heatmap)</Text></View>
-            </ScrollView>
-        </View>
-
     };
+
+    const HandlerStateCoordenateHeaderItems = (event, index) => {
+        const layout = event.nativeEvent.layout;
+        dataSourceCords[index] = layout.x;
+        setDataSourceCords(dataSourceCords);
+    };
+
+    const RenderHeader = ({item}) => {
+        return item.map((item, index) => {
+            return (
+                <View key={index}
+                      onLayout={(event) => HandlerStateCoordenateHeaderItems(event, index)}>
+                    <TouchableOpacity
+                        onPress={() => onPressHeader(index)}
+                        key={item}
+                        style={[styles.headerItem, {backgroundColor: active === index ? COLORS.buttonEdit + '50' : COLORS.primary + '50'}]}
+                    >
+                        <Text style={{
+                            textTransform: 'capitalize',
+                            fontFamily: 'Anton',
+                            color: active === index ? COLORS.primary : '#000'
+                        }}>{item}</Text>
+                    </TouchableOpacity>
+                    {active === index && <View style={styles.headerBar}/>}
+                </View>
+            )
+        });
+    };
+
+    const onMomentumScrollEnd = () => {
+        animationActive = true;
+    };
+
+    const onScroll = (e) => {
+        const x = e.nativeEvent.contentOffset.x;
+        let newIndex = Math.floor((x / width) + 0.5)
+        if (active === newIndex) {
+            animationActive = true;
+        }
+        if (active != newIndex && animationActive) {
+            setActive(newIndex)
+        }
+    }
 
     const onPressHeader = (index = 1) => {
         if (animationActiveRef) {
@@ -147,64 +142,90 @@ const ChartsScreen = () => {
             animationActive = false
             animationActiveRef = setTimeout(() => {
                 animationActive = true
-            }, 400);
-            itemScrollView.current.scrollToIndex({index})
+            }, 200);
+            itemScrollView.current.scrollTo({x: width * index, y: 0, animated: true})
             setActive(index);
         }
-    }
+    };
 
-    const onScroll = (e) => {
-        const x = e.nativeEvent.contentOffset.x;
-        let newIndex = Math.floor((x / width) + 0.5)
-        if (active != newIndex && animationActive) {
-            setActive(newIndex)
-        }
-    }
 
-    const onMomentumScrollEnd = () => {
-        animationActive = true;
+    if (groupedItems.length === 0) {
+        return <Text>Is Empty</Text>
     }
 
     return (
         <SafeAreaView style={{flex: 1}}>
-            <View style={styles.container}>
-                <FlatList
-                    data={Object.keys(groupedItems)}
-                    ref={headerScrollView}
-                    keyExtractor={(item) => item}
-                    horizontal
-                    style={styles.headerScroll}
-                    showsHorizontalScrollIndicator={false}
-                    renderItem={({item, index}) => (
-                        <View>
-                            <TouchableOpacity
-                                onPress={() => onPressHeader(index)}
-                                key={item}
-                                style={[styles.headerItem, {backgroundColor: active === index ? COLORS.buttonEdit + '50' : COLORS.primary + '50'}]}
-                            >
-                                <Text style={{
-                                    textTransform: 'capitalize',
-                                    fontFamily: 'Anton',
-                                    color: active === index ? COLORS.primary : '#000'
-                                }}>{item}</Text>
-                            </TouchableOpacity>
-                            {active === index && <View style={styles.headerBar}/>}
-                        </View>
-                    )}
-                />
-                <FlatList
-                    data={Object.values(groupedItems)}
-                    ref={itemScrollView}
-                    keyExtractor={(item, index) => item.title + index}
-                    horizontal
-                    pagingEnabled
-                    decelerationRate='fast'
-                    showsHorizontalScrollIndicator={false}
-                    onScroll={onScroll}
-                    onMomentumScrollEnd={onMomentumScrollEnd}
-                    renderItem={({item, index}) => <Item item={item} index={index}/>}
-                />
+            <View style={{minHeight: 40}}>
+                <ScrollView nestedScrollEnabled horizontal snapToEnd={false} ref={headerScrollView}
+                            automaticallyAdjustContentInsets={false}
+                            showsHorizontalScrollIndicator={false}
+                            decelerationRate={0}
+                            scrollEventThrottle={21}>
+                    {itemTitles.length > 0 ? <RenderHeader item={itemTitles}/> :
+                        <View style={{
+                            backgroundColor: COLORS.primary + '50',
+                            width: width,
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center'
+                        }}><ActivityIndicator size="small" color="#0000ff"/></View>}
+                </ScrollView>
             </View>
+            <ScrollView pagingEnabled horizontal alwaysBounceHorizontal={false}
+                        automaticallyAdjustContentInsets={false}
+                        onMomentumScrollEnd={onMomentumScrollEnd}
+                        ref={itemScrollView}
+                        onScroll={onScroll}>
+                {groupedItems ?
+                    Object.values(groupedItems).sort((a, b) => (a.title < b.title) ? -1 : ((a.title > b.title) ? 1 : 0)).map((item, index) => {
+                        return (
+                            <ScrollView nestedScrollEnabled key={index}
+                                        contentContainerStyle={{width: width}}
+                                        showsVerticalScrollIndicator={false}
+                                        directionalLockEnabled={true}
+                            >
+                                <View style={styles.mainItem}>
+                                    <View style={styles.cont1} {...panResponderON.panHandlers}>
+                                        <LinearGradient colors={['#fb8c00', '#ffa726']} style={{
+                                            position: 'absolute',
+                                            left: 0,
+                                            right: 0,
+                                            top: 0,
+                                            bottom: 0,
+                                            borderRadius: 16,
+                                        }}/>
+                                        <PieChartComponent data={item.data} title={item.title} textStyle={styles.titlegraf} width={width}/>
+                                    </View>
+                                    <View style={styles.cont2} {...panResponderON.panHandlers}>
+                                        <LinearGradient colors={['#fb8c00', '#ffa726']} style={{
+                                            position: 'absolute',
+                                            left: 0,
+                                            right: 0,
+                                            top: 0,
+                                            bottom: 0,
+                                            borderRadius: 16,
+                                        }}/>
+                                        <StackedBartChartComponent data={item.data} width={width} textStyle={styles.titlegraf}/>
+                                    </View>
+                                    <View style={styles.cont3} {...panResponderOFF.panHandlers}>
+                                        <LinearGradient colors={['#ffa726', '#fb8c00']} style={{
+                                            position: 'absolute',
+                                            left: 0,
+                                            right: 0,
+                                            top: 0,
+                                            bottom: 0,
+                                            borderRadius: 16,
+                                        }}/>
+                                        <LineChartComponent data={item.data} textStyle={styles.titlegraf}/>
+                                    </View>
+                                </View>
+                            </ScrollView>
+                        )
+                    })
+                    :
+                    <SpinnerSquares/>
+                }
+            </ScrollView>
         </SafeAreaView>
     )
 }
@@ -228,13 +249,6 @@ const styles = StyleSheet.create({
         borderWidth: 5,
         borderColor: '#FFF',
         backgroundColor: '#FFF',
-        // alignItems: 'center',
-        // flexDirection: 'row',
-        // flexWrap: 'wrap',
-        // justifyContent: 'space-evenly',
-        // alignContent: 'stretch'
-        // justifyContent: 'flex-start',
-
     },
     headerBar: {
         height: 3,
@@ -245,21 +259,89 @@ const styles = StyleSheet.create({
         bottom: 0
     },
     cont1: {
-        backgroundColor: 'transparent',
-        width: width <= 768 ? '100%' : '50%',
-        height: 200,
+        height: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 16,
+        marginVertical: 3,
+        overflow: 'hidden'
     },
     cont2: {
-        backgroundColor: 'blue',
-        height: 200,
+        height: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 16,
+        marginVertical: 3,
+        overflow: 'hidden'
     },
     cont3: {
-        backgroundColor: 'violet',
-        height: 200,
+        height: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        borderRadius: 16,
+        marginVertical: 3,
+        overflow: 'hidden',
     },
     cont4: {
-        backgroundColor: 'greenyellow',
-        height: 200,
+        height: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        borderRadius: 16,
+        marginVertical: 3,
+        overflow: 'hidden',
+    },
+    titlegraf: {
+        fontFamily: 'Anton',
+        color: COLORS.white,
+        textAlign: 'center'
     }
 })
 export default ChartsScreen;
+
+//                 <ScrollView horizontal={true}>
+//                     <ContributionGraph
+//                         squareSize={20}
+//                         gutterSize={5}
+//                         showMonthLabels={true}
+//                         // showOutOfRangeDays={false}
+//                         onDayPress={(value) => console.log(value)}
+//                         values={[
+//                             {date: "2017-01-02", count: 1},
+//                             {date: "2017-01-03", count: 2},
+//                             {date: "2017-01-04", count: 3},
+//                             {date: "2017-01-05", count: 4},
+//                             {date: "2017-01-06", count: 5},
+//                             {date: "2017-01-30", count: 2},
+//                             {date: "2017-01-31", count: 3},
+//                             {date: "2017-03-01", count: 2},
+//                             {date: "2017-04-02", count: 4},
+//                             {date: "2017-03-05", count: 2},
+//                             {date: "2017-02-30", count: 4},
+//                             {date: "2017-04-30", count: 4},
+//                             {date: "2017-05-30", count: 4},
+//                             {date: "2017-06-30", count: 4},
+//                             {date: "2017-07-30", count: 4},
+//                             {date: "2017-08-30", count: 4},
+//                             {date: "2017-09-30", count: 4},
+//                             {date: "2017-10-30", count: 4},
+//                             {date: "2017-11-30", count: 4},
+//                             {date: "2017-12-30", count: 4},
+//                         ]}
+//                         endDate={new Date("2017-12-31")}
+//                         numDays={365}
+//                         width={115 * 12}
+//                         height={250}
+//                         chartConfig={{
+//                             backgroundColor: "#e26a00",
+//                             backgroundGradientFrom: "#fb8c00",
+//                             backgroundGradientTo: "#ffa726",
+//                             color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+//                         }}
+//                     />
+//                 </ScrollView>

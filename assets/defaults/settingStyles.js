@@ -14,7 +14,7 @@ const shadowPlatform =
             shadowRadius: 2.62,
         }
         :
-        {elevation: 6}
+        {elevation: 9}
 
 
 /*
@@ -61,8 +61,12 @@ const GRADIENT_COLORS = {
     primary: ["#FFF", "#BBDFF8"]
 }
 
+// (7.0 pulgadas): 600
+const minWidthScreenTablet = 600;
+
 export {
     COLORS,
     GRADIENT_COLORS,
-    shadowPlatform
+    shadowPlatform,
+    minWidthScreenTablet
 };

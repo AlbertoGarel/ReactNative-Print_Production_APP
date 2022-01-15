@@ -20,6 +20,8 @@ import {COLORS, shadowPlatform} from "../assets/defaults/settingStyles";
 import HRtag from "../components/HRtag";
 import TouchableIcon from "../components/TouchableIcon";
 import {WebView} from 'react-native-webview';
+import CapacityInfoDraggable from "../components/CapacityInfoDraggable";
+import {setValueForInput} from "../utils";
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -58,15 +60,18 @@ const DocumentsViewerScreen = ({navigation, route}) => {
 
     // GROUP FILES FOR DATE.
     const group = (arrayToGroup) => {
-        const groupedForSectionList = arrayToGroup.reduce((acc, item) => {
+        const groupedForSectionList = arrayToGroup.sort((a, b) => b.slice(0, 8) - a.slice(0, 8)).reduce((acc, item) => {
             const title = item.split('_')[0];
             acc[title] ?
                 acc[title]['data'].push(item)
                 :
-                acc[title] = {title: title, data: [item]};
+                acc[title] = {
+                    title: title.slice(title.length - 2, title.length) + ' de ' + setValueForInput(title) + ', ' + title.slice(0, 4),
+                    data: [item]
+                };
             return acc;
         }, {});
-        return Object.values(groupedForSectionList);
+        return Object.values(groupedForSectionList).sort((a, b) => b.data[0].slice(0, 8) - a.data[0].slice(0, 8));
     };
 
     const handlerDelete = (title) => {
@@ -115,13 +120,7 @@ const DocumentsViewerScreen = ({navigation, route}) => {
 
     return (
         <SafeAreaView style={styles.container}>
-            {Object.keys(totalCapacity).length > 0 && <View style={styles.absolutePos}>
-                <Text
-                    style={[styles.textDiskCap, {color: COLORS.buttonEdit}]}>{(totalCapacity.freeDisk * 0.0000000010).toFixed(2)} Gb</Text>
-                <View style={{borderWidth: .5, borderColor: COLORS.primary, width: '60%'}}/>
-                <Text
-                    style={[styles.textDiskCap, {color: COLORS.primary}]}>{Math.floor(totalCapacity.totalDisk * 0.0000000010)} Gb</Text>
-            </View>}
+            {Object.keys(totalCapacity).length > 0 && <CapacityInfoDraggable totalCapacity={totalCapacity}/>}
             <SectionList
                 extraData={reload}
                 stickySectionHeadersEnabled
@@ -163,13 +162,16 @@ const styles = StyleSheet.create({
     },
     header: {
         fontSize: 20,
-        backgroundColor: '#fff',
-        padding: 10
+        backgroundColor: '#FFF',
+        padding: 10,
+        color: '#555459',
+        fontFamily: 'Anton',
     },
     title: {
         fontSize: 18,
         marginLeft: 5,
-        textTransform: 'capitalize'
+        color: '#5b5b5f',
+        fontWeight: 'bold'
     },
     textEmpty: {
         fontFamily: 'Anton', fontSize: 24, color: COLORS.primary
@@ -183,26 +185,6 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         padding: 1,
         marginRight: 5,
-    },
-    absolutePos: {
-        fontSize: 10,
-        zIndex: 99,
-        position: 'absolute',
-        bottom: 10,
-        left: 10,
-        width: 60,
-        height: 60,
-        borderWidth: 1,
-        borderColor: COLORS.primary,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#FFF9B9',
-        borderRadius: 35,
-        ...shadowPlatform
-    },
-    textDiskCap: {
-        fontSize: 10,
-        fontWeight: 'bold'
     },
     contwebView: {
         position: 'absolute',

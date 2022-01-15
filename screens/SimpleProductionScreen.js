@@ -3,34 +3,22 @@ import {
     StyleSheet,
     View,
     SafeAreaView,
-    Alert,
-    Button,
-    ToastAndroid,
-    ScrollView,
     Text,
     TouchableOpacity,
     FlatList,
-    TextInput, Animated
+    Animated
 } from "react-native";
 import {useFocusEffect} from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {Dimensions} from 'react-native';
 import {COLORS} from "../assets/defaults/settingStyles";
 import HRtag from "../components/HRtag";
 import {Fontisto as Icon} from "@expo/vector-icons";
-import {Feather as IconFeather} from "@expo/vector-icons";
-import {editSVG} from "../assets/svg/svgContents";
-import CustomTextInput from "../components/FormComponents/CustomTextInput";
-import {getDatas, removeValue, storeData} from "../data/AsyncStorageFunctions";
+import {getDatas, storeData} from "../data/AsyncStorageFunctions";
 import FloatOpacityModal from "../components/FloatOpacityModal";
 import SimpleProductionContainer from "../components/productions/SimpleProductionContainer";
 import CreateCardProduction from "./productionScreens/CreateCardProduction";
-import CardsProduction from "../components/productions/CardsProduction";
 import FormTotalCalculationProduction from "../components/productions/FormTotalCalculationProduction";
 
-const paddingScreen = 5;
-
-const simpleProductionScreen = ({route, setChangeButtonFunc}) => {
+const simpleProductionScreen = ({setChangeButtonFunc}) => {
 
     const [visiblemenu, setVisibleMenu] = useState(false);
     const [isFocus, setIsFocus] = useState(false);
@@ -56,6 +44,7 @@ const simpleProductionScreen = ({route, setChangeButtonFunc}) => {
         useCallback(() => {
             setIsFocus(true);
             setChangeButtonFunc(true);
+            // animatedArrow()
             updateGetStorage();
             // removeValue('@simpleProdData').then(r => console.log('gjgj'))
             return () => {
@@ -68,10 +57,14 @@ const simpleProductionScreen = ({route, setChangeButtonFunc}) => {
     );
 
     useEffect(() => {
+        let isMounted = true;
         if (initAnimation) {
             pulse()
         }
+        // animatedArrow()
         updateGetStorage();
+
+        return () => isMounted = false;
     }, [initAnimation]);
 
     const orderItems = (dataItems) => {
@@ -125,24 +118,10 @@ const simpleProductionScreen = ({route, setChangeButtonFunc}) => {
         }
         setCalcButtonOpacity(success);
         setWarningNoContainPaper(validateContainPaperRoll)
-    }
-
-    // const stateForFinalCalc = (obj, itemid) => {
-    //     if (objsaved && itemid) {
-    //         const thisProduct = obj.filter(item => item.id === itemid)[0].cards;
-    //         const consumoFinal = thisProduct.reduce((accum, item) => {
-    //             if (parseInt(item.consumo)) {
-    //                 return accum + parseInt(item.consumo);
-    //             }
-    //         }, 0);
-    //         setCalcButtonOpacity(!isNaN(consumoFinal))
-    //         console.log('stateForFinale', consumoFinal + ' --- ' + !isNaN(consumoFinal))
-    //     } else {
-    //         setCalcButtonOpacity(false);
-    //     }
-    // }
+    };
 
     const pulseAnim = React.useRef(new Animated.Value(1)).current;
+    const moveArrow = React.useRef(new Animated.Value(0)).current;
 
     const pulse = () => {
         Animated.loop(Animated.timing(pulseAnim, {
@@ -152,12 +131,37 @@ const simpleProductionScreen = ({route, setChangeButtonFunc}) => {
         })).start(() => pulse());
     };
 
+    const animatedArrow = () => {
+        Animated.loop(Animated.sequence([
+            Animated.timing(moveArrow, {
+                toValue: 100,
+                duration: 500,
+                useNativeDriver: true
+            }),
+            Animated.timing(moveArrow, {
+                toValue: 0,
+                duration: 500,
+                useNativeDriver: true
+            })
+        ])).start()
+    }
+    // Animated.sequence([
+    //     Animated.timing(moveArrow, {
+    //         toValue: 100,
+    //         duration: 500
+    //     }),
+    //     Animated.timing(moveArrow, {
+    //         toValue: 0,
+    //         duration: 200
+    //     })
+    // ]).start()
+
     const updateGetStorage = () => {
         getDatas('@simpleProdData')
             .then(r => {
-                // getObjSaved([...r].sort((a,b)=> a.orderID - b.orderID));
-                orderItems(r)
-                if (renderNowItem.length === 0) {
+                if (r) orderItems(r)
+
+                if (renderNowItem.length === 0 && r) {
                     const order = r.sort((a, b) => a.orderID - b.orderID);
                     setRenderNowItem(order[0].id);
                 }
@@ -165,22 +169,7 @@ const simpleProductionScreen = ({route, setChangeButtonFunc}) => {
                 // stateForFinalCalc(r, renderNowItem)
             })
             .catch(err => console.log(err))
-    }
-
-    const bottomToast = (message) => {
-        ToastAndroid.showWithGravity(
-            message,
-            ToastAndroid.LONG,
-            ToastAndroid.BOTTOM
-        );
     };
-
-//Content extrainfo of infoButton
-    const changeViewDelete = (id) => {
-        if (id === renderNowItem) {
-            setRenderNowItem('')
-        }
-    }
 
     // flatList and handlers
     const deleteHandler = (id) => {
@@ -192,7 +181,7 @@ const simpleProductionScreen = ({route, setChangeButtonFunc}) => {
         } else {
             setRenderNowItem(result[0].id);
         }
-        storeData('@simpleProdData', result).then(r => orderItems(result));
+        storeData('@simpleProdData', result).then(() => orderItems(result));
         updateGetStorage();
     };
 
@@ -233,21 +222,7 @@ const simpleProductionScreen = ({route, setChangeButtonFunc}) => {
                     keyExtractor={item => item.id}/>
             </>
         )
-    }
-
-    const value = '1';
-    const storeDatas = async (value) => {
-        try {
-            await AsyncStorage.setItem('@storage_Key', value)
-            bottomToast('Guardando...');
-        } catch (e) {
-            bottomToast('Error al guardar.');
-        }
-    }
-
-    const objectReneredData = (renderNowItem) => {
-        const selectData = objsaved.filter(item => item.id === renderNowItem)
-    }
+    };
 
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
@@ -281,6 +256,8 @@ const simpleProductionScreen = ({route, setChangeButtonFunc}) => {
                                        handlerEditCard={handlerEditCard}
                                        handlerFullCalcModal={handlerFullCalcModal}
                                        warningText={warningText}
+                                       moveArrow={moveArrow}
+                                       animatedArrow={animatedArrow}
             />
             {
                 visiblemenu && <FloatOpacityModal

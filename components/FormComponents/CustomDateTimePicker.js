@@ -1,10 +1,12 @@
 import React, {useState} from 'react';
-import {View, Alert, Button, Platform, StyleSheet, Text, TextInput, TouchableOpacity} from 'react-native';
+import {View, StyleSheet, Text, TextInput, TouchableOpacity, Modal, Dimensions} from 'react-native';
 import DatePicker from 'react-native-modern-datepicker';
-import CustomTextInput from "./CustomTextInput";
-import {addDateSVG, tirada2SVG} from "../../assets/svg/svgContents";
-import {COLORS} from "../../assets/defaults/settingStyles";
+import {COLORS, shadowPlatform} from "../../assets/defaults/settingStyles";
 import SvgComponent from "../SvgComponent";
+import {formatDateYYMMDD} from "../../utils";
+
+const date = formatDateYYMMDD();
+const {width} = Dimensions.get('window');
 
 const CustomDateTimePicker = ({
                                   text,
@@ -14,32 +16,18 @@ const CustomDateTimePicker = ({
                                   svgWidth,
                                   svgHeight,
                                   _name,
-                                  _onChangeText,
-                                  _onBlur,
                                   placeholder,
                                   _ref,
                                   _value,
-                                  getSelectedDate
+                                  getSelectedDate,
                               }) => {
 
-    const [selectedDateState, setSelectedDateState] = useState('');
     const [calendarVisible, setCalendarVisible] = useState(false);
-
-    const dateNow = () => {
-        let now = new Date();
-        let _year = now.getFullYear();
-        let _month = now.getMonth() + 1;
-        let comleteMonth = _month.length > 1 ? _month : `0${_month}`;
-        let _day = now.getDate();
-        let comleteDay = _day.length > 1 ? _day : `0${_day}`;
-
-        return `${_year}-${comleteMonth}-${comleteDay}`
-    };
 
     return (
         <View>
             <View style={styles.contInput}>
-                <TouchableOpacity onPress={() => setCalendarVisible(true)} style={styles.contButton}>
+                <TouchableOpacity onPress={() => setCalendarVisible(!calendarVisible)} style={styles.contButton}>
                     <SvgComponent
                         svgData={svgData}
                         svgWidth={svgWidth}
@@ -52,27 +40,38 @@ const CustomDateTimePicker = ({
                            key={_name}
                            editable={false}
                            placeholder={placeholder}
-                           defaultValue={selectedDateState}
-                           value={selectedDateState}
+                           defaultValue={_value}
+                           value={_value}
                 />
             </View>
-            {calendarVisible && <DatePicker
-                current={dateNow()}
-                name={_name}
-                options={styleOptions}
-                onSelectedChange={date => {
-                    setSelectedDateState(date);
-                    getSelectedDate(date);
-                    setTimeout(() => {
-                        setCalendarVisible(false)
-                    }, 500)
-                }}
-                mode={modeType}
-            />
-            }
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={calendarVisible}
+            >
+                <View style={styles.centered}>
+                    <View style={styles.wrap}>
+                        <DatePicker
+                            current={date}
+                            selected={date}
+                            name={_name}
+                            options={styleOptions}
+                            onDateChange={date => {
+                                // setSelectedDateState(date);
+                                getSelectedDate(date);
+                                setTimeout(() => {
+                                    setCalendarVisible(!calendarVisible)
+                                }, 500);
+                            }}
+                            mode={modeType}
+                            style={{borderRadius: 10, ...shadowPlatform, borderWidth: 1, borderColor: '#b2b2b2'}}
+                        />
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
-};
+}
 const styles = StyleSheet.create({
     parent: {
         borderWidth: 2,
@@ -105,6 +104,15 @@ const styles = StyleSheet.create({
         resizeMode: 'stretch',
         alignItems: 'center',
         backgroundColor: COLORS.primary
+    },
+    centered: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    wrap: {
+        width: width - 100,
+        justifyContent: 'center',
     }
 });
 export default CustomDateTimePicker;

@@ -1,9 +1,9 @@
 import React, {useEffect, useState, useRef} from 'react';
-import {StyleSheet, View, Text, Dimensions, TouchableOpacity, Alert} from 'react-native';
+import {StyleSheet, View, Text, Dimensions, TouchableOpacity} from 'react-native';
 import {Formik} from "formik";
-import {getDatas, removeValue, storeData} from "../data/AsyncStorageFunctions";
+import {getDatas, storeData} from "../data/AsyncStorageFunctions";
 import CustomTextInput from "./FormComponents/CustomTextInput";
-import {userSVG} from "../assets/svg/svgContents";
+import {edicionesSVG, tirada2SVG} from "../assets/svg/svgContents";
 import {COLORS} from "../assets/defaults/settingStyles";
 import * as Yup from "yup";
 import {FormYupSchemas} from "./FormComponents/YupSchemas";
@@ -16,7 +16,6 @@ const NullCopiesComponent = ({props}) => {
 
     useEffect(() => {
         let _isActive = true;
-        // removeValue('@NullCopiesData').then(r => r)
         getDatas('@NullCopiesData')
             .then(response => {
                 setNullCopiesByEdition(response.nullcopiesbyedition);
@@ -95,15 +94,10 @@ const NullCopiesComponent = ({props}) => {
                                 }>
                                 {(errors.nullcopiesbyedition && touched.nullcopiesbyedition) &&
                                 <Text
-                                    style={{
-                                        fontSize: 10,
-                                        color: 'red',
-                                        marginLeft: 10,
-                                        paddingLeft: 5,
-                                    }}>{errors.nullcopiesbyedition}</Text>
+                                    style={styles.stylErrors}>{errors.nullcopiesbyedition}</Text>
                                 }
                                 <CustomTextInput
-                                    svgData={userSVG}
+                                    svgData={edicionesSVG}
                                     svgWidth={50}
                                     svgHeight={50}
                                     // placeholder={'Ejemplares bruto...'}
@@ -117,15 +111,10 @@ const NullCopiesComponent = ({props}) => {
                                 />
                                 {(errors.nullcopiesbydefault && touched.nullcopiesbydefault) &&
                                 <Text
-                                    style={{
-                                        fontSize: 10,
-                                        color: 'red',
-                                        marginLeft: 10,
-                                        paddingLeft: 5,
-                                    }}>{errors.nullcopiesbydefault}</Text>
+                                    style={styles.stylErrors}>{errors.nullcopiesbydefault}</Text>
                                 }
                                 <CustomTextInput
-                                    svgData={userSVG}
+                                    svgData={tirada2SVG}
                                     svgWidth={50}
                                     svgHeight={50}
                                     // placeholder={'Ejemplares bruto...'}
@@ -200,6 +189,14 @@ const styles = StyleSheet.create({
         fontStyle: 'italic',
         fontWeight: 'bold',
         fontSize: 12
+    },
+    stylErrors:{
+        alignSelf: 'center',
+        width: '95%',
+        fontSize: 10,
+        backgroundColor: 'white',
+        color: 'red',
+        paddingLeft: 10
     }
 });
 export default NullCopiesComponent;

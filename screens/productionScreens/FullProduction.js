@@ -69,7 +69,7 @@ import DragDropCardsComponent from "../../components/DragDropCardsComponent";
 import TouchableIcon from "../../components/TouchableIcon";
 import SpinnerSquares from "../../components/SpinnerSquares";
 import {htmlDefaultTemplate} from "../../PDFtemplates/defaultTemplateHTML";
-import {createAndSaveHTML, createAndSavePDF} from "../../data/FileSystemFunctions";
+import {createAndSaveHTML, createAndSavePDF, createAndSavePDF_HTML_file} from "../../data/FileSystemFunctions";
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -462,7 +462,7 @@ const FullProduction = ({route}) => {
     };
 
     //GET VALUE MEDITION OF PRODUCT.
-    const getValuesDataMeditionSelected = React.useCallback((item) => {
+    const getValuesDataMeditionSelected =  (item) => {
         //GET TYPE OF MEDITION SELECTED FOR GET VALUE IN BBDD( MEDIA <> ENTERA )
         const typeMedition = item["Tipo de medicion"];
         const typeMeditionSelected = typeMedition.split(' ')[0];
@@ -483,7 +483,7 @@ const FullProduction = ({route}) => {
                 )
             }, err => console.log('error getValuesDataMeditionSelected on fullProduction', err)
         )
-    }, []);
+    };
 
     // SHOW PRODUCTION INFO
     const ShowData = () => {
@@ -512,9 +512,9 @@ const FullProduction = ({route}) => {
         bottomSheetRef.current.open();
     };
 
-    const bottomSheetHandler = React.useCallback(() => SetIsVisible(!isVisible), []);
-    const bottomSheetHandlerRollUsed = React.useCallback(() => SetIsVisibleRollUsedForm(!isVisible), []);
-    const handlerSetVibleDropMenu = React.useCallback(() => setIsVisibleDropMenu(!isVisibleDropMenu), []);
+    const bottomSheetHandler = () => SetIsVisible(!isVisible);
+    const bottomSheetHandlerRollUsed = () => SetIsVisibleRollUsedForm(!isVisible);
+    const handlerSetVibleDropMenu = () => setIsVisibleDropMenu(!isVisibleDropMenu);
 
     //CHECK IF THERE IS A ROLL IN THE PRODUCTION TABLE AND THE REEL TABLE TO ADD IN THIS PRODUCTION.
     const getScannedCode = (scanned) => {
@@ -757,7 +757,7 @@ const FullProduction = ({route}) => {
 
     //HANDLER ONCHANGETEXT FOR EVALUATE AND DELETE BAD CHARACTERS.
     //CLEAN ERRORS ON THE NEXT CHANGE
-    const handlerOnchangeTirBruta = React.useCallback((param) => {
+    const handlerOnchangeTirBruta = (param) => {
         setErrors({inputTirBruta: ''});
         let char = param.charAt(param.length - 1);
         let deleteBadChar = param.split(char, param.length - 1)[0];
@@ -785,7 +785,7 @@ const FullProduction = ({route}) => {
             setCalculationProductionButton(false)
         }
         getSelectedTiradaBruta(defValue);
-    }, []);
+    };
 
     //HANDLER ONBLUR FOR VALIDATE INPUT. 'IS REQUIRED' IS EVALUATED. SET VISIBLE BUTTON FOR CREATE PDF.
     const ValidateTirBruta = () => {
@@ -866,9 +866,9 @@ const FullProduction = ({route}) => {
             .catch(err => console.log(err))
     };
 
-    const setItemForSpinnerCard = React.useCallback((bobinaForRemoveID) => {
+    const setItemForSpinnerCard = (bobinaForRemoveID) => {
         setBobinaCodeForSpinner(bobinaForRemoveID);
-    }, []);
+    };
 
     const handlerMoveItem = (param) => {
         //true for view drag&drop container
@@ -902,9 +902,10 @@ const FullProduction = ({route}) => {
 
         getDatas('@UserDataForm')
             .then(resp => htmlDefaultTemplate(dataProd, resp, finalCalc, rollsDataProduction, autopasterNumLine))
-            .then(resp => {
-                createAndSavePDF(`${dataProd.date}_${dataProd.product}`, resp)
-                createAndSaveHTML(`${dataProd.date}_${dataProd.product}`, resp)
+            .then(async resp => {
+                const formatedName = dataProd.date.replace(/[\-]/g, "")
+                await createAndSavePDF_HTML_file(`${formatedName}_${dataProd.product}`, resp)
+                // await createAndSaveHTML(`${formatedName}_${dataProd.product}`, resp)
             })
             .catch(err => {
                 alert('Complete DATOS DE ENCABEZADO.')
@@ -1096,9 +1097,9 @@ const FullProduction = ({route}) => {
                             _value={selectedTiradaBruta}
                         />
                     </View>
-                    {/*<CustomTextArea toState={getContentTextArea}/>*/}
-                    <Text>{JSON.stringify(inputRadioForRollRadius)}</Text>
-                    <Text>{JSON.stringify(kilosNeeded)}</Text>
+                    <CustomTextArea toState={getContentTextArea}/>
+                    {/*<Text>{JSON.stringify(inputRadioForRollRadius)}</Text>*/}
+                    {/*<Text>{JSON.stringify(kilosNeeded)}</Text>*/}
                     {/*<Text>{JSON.stringify(individualAutopasterDataForSectionList.map(t => t.title))}</Text>*/}
                 </View>
             </TouchableWithoutFeedback>

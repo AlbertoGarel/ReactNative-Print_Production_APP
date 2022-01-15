@@ -1,4 +1,4 @@
-import React from 'react';
+import React,{memo} from 'react';
 import {View, StyleSheet, Text, TouchableHighlight} from 'react-native';
 import HRtag from "../../components/HRtag";
 import {COLORS} from "../../assets/defaults/settingStyles";
@@ -51,4 +51,4 @@ const styles = StyleSheet.create({
         textShadowRadius: 1
     }
 });
-export default HeaderCommonDrawer;
+export default memo(HeaderCommonDrawer);

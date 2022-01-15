@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {StyleSheet, SafeAreaView, View, Text, SectionList, Dimensions} from "react-native";
+import {StyleSheet, SafeAreaView, View, Text, SectionList, Dimensions, ActivityIndicator} from "react-native";
 import {COLORS} from "../assets/defaults/settingStyles";
 import {semicircle2} from "../assets/svg/svgContents";
 import BgComponent from "../components/BackgroundComponent/BgComponent";
@@ -10,6 +10,7 @@ import UserDataComponent from "../components/UserDataComponent";
 import ToastMesages from "../components/ToastMessages";
 import NullCopiesComponent from "../components/NullCopiesComponent";
 import {useIsFocused} from "@react-navigation/native";
+import ExportImportComponent from "../components/ExportImportComponent";
 
 //BACKGROUND PROP CONST
 const optionsSVG = {
@@ -56,20 +57,20 @@ const SettingsScreen = ({navigation, setChangeButtonFunc}) => {
 
     const DATA = [
         {
-            title: '\"codebars\" habilitados',
-            data: [<BarcodesTypeSelection props={dataProps.swicthparent}/>],
+            title: 'Datos de encabezado PDF',
+            data: [<UserDataComponent props={dataProps.showToast}/>],
         },
         {
             title: 'descarte de ejemplares',
             data: [<NullCopiesComponent props={dataProps.showToast}/>],
         },
         {
-            title: 'Datos de encabezado PDF',
-            data: [<UserDataComponent props={dataProps.showToast}/>],
+            title: '\"codebars\" habilitados',
+            data: [<BarcodesTypeSelection props={dataProps.swicthparent}/>],
         },
         {
             title: 'importar y exportar',
-            data: ['Cheese Cake', 'Ice Cream'],
+            data: [<ExportImportComponent props={dataProps.showToast}/>],
         },
     ];
 
@@ -89,18 +90,21 @@ const SettingsScreen = ({navigation, setChangeButtonFunc}) => {
                 textprops={{color: COLORS.white, marginTop: 15}}
                 imageBg={COLORS.white}
                 titleColor={COLORS.white}
-                text={'SETTINGS:\n React Native tiene algunos documentos excelentes, así que después de leer esto, pensé que sería pan comido.'}
+                titleSecction={"Configuación & opciones:"}
+                text={'Establece "codebars" activos, datos de encabezado, importar y exportar bases de datos de otros usuarios y más.'}
             />
             <SectionList
                 vertical
                 sections={DATA}
                 keyExtractor={(item, index) => item + index}
                 renderItem={({item}) => <Item title={item}/>}
+                ListFooterComponent={()=> <View style={{paddingVertical: 20}}/>}
                 renderSectionHeader={({section: {title}}) => <Text style={styles.header}>{title}</Text>}
+                ListEmptyComponent={() => <ActivityIndicator size="large" color={COLORS.buttonEdit}/>}
             />
             <ToastMesages
                 _ref={(toast) => toastRef = toast}
-                _style={{backgroundColor: COLORS.whitesmoke}}
+                _style={{backgroundColor: COLORS.whitesmoke, borderWidth: 10, borderColor: COLORS.primary}}
                 _position='bottom'
                 _positionValue={400}
                 _fadeInDuration={150}

@@ -1,9 +1,7 @@
-import React, {useEffect, useState} from 'react';
-import {View, StyleSheet, Text, TouchableOpacity, Vibration, Animated} from 'react-native';
-import {COLORS, GRADIENT_COLORS} from '../assets/defaults/settingStyles';
-import {Fontisto as Icon} from "@expo/vector-icons";
-import {LinearGradient} from 'expo-linear-gradient';
-import * as Font from "expo-font";
+import React from 'react';
+import {View, StyleSheet, Text, TouchableOpacity, Vibration} from 'react-native';
+import {COLORS} from '../assets/defaults/settingStyles';
+import SvgComponent from "./SvgComponent";
 
 
 const HomeCard = ({
@@ -16,18 +14,10 @@ const HomeCard = ({
                       torender
                   }) => {
 
-    const [isFontLoad, setIsfontLoad] = useState(false)
-
     const actionHandler = (goto) => {
         Vibration.vibrate(100)
         navigation.navigate(...goto)
     }
-
-    useEffect(() => {
-        Font.loadAsync({
-            "Anton": require("../assets/fonts/Anton-Regular.ttf"),
-        }).then(response => setIsfontLoad(true));
-    }, []);
 
     return (
         <TouchableOpacity
@@ -44,20 +34,16 @@ const HomeCard = ({
                 flexDirection: 'column',
                 justifyContent: 'center',
                 alignItems: 'center',
-                flex: 1,
-                width: '90%',
-                height: '90%'
-                // minWidth: 140,
-                // minHeight: 140
-
+                width: '100%',
+                height: '100%',
             }}
             onPress={() => actionHandler(torender)}
         >
             <View style={[styles.contIco, {width: iconSize / .8}]}>
-                <Icon name={iconName} size={iconSize} color={iconColor} style={styles.icon}/>
+                <SvgComponent svgData={iconName} svgHeight={iconSize} svgWidth={iconSize} color={iconColor}/>
             </View>
             <View style={styles.conTitle}>
-                <Text style={[styles.title, {fontFamily: isFontLoad ? "Anton" : null}]}>{cardtitle}</Text>
+                <Text style={styles.title}>{cardtitle}</Text>
             </View>
         </TouchableOpacity>
     )
@@ -85,6 +71,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 10,
+        marginBottom: 10
     },
     backgroundIcon: {
         width: '100%',
@@ -105,11 +92,11 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         width: '70%',
-        backgroundColor: 'transparent',
+        backgroundColor: 'transparent'
     },
     title: {
-        fontSize: 17,
-        textAlign: 'center'
+        textAlign: 'center',
+        fontFamily: "Anton"
     },
     content: {
         width: '100%',

@@ -34,6 +34,8 @@ import BgComponent from "../../components/BackgroundComponent/BgComponent";
 import CustomDateTimePicker from "../../components/FormComponents/CustomDateTimePicker";
 import {timeNow} from "../../utils";
 
+const {width, height} = Dimensions.get('window');
+
 const SettingsSimpleProductionScreen = () => {
     const _svgData = settingspaperSVG;
     const _svgWidth = 60;
@@ -61,7 +63,10 @@ const SettingsSimpleProductionScreen = () => {
     const SchemaElementCalTotalproduction = Yup.object().shape({
         // inputTirBruta: FormYupSchemas.inputTirBruta,
         inputProduct: FormYupSchemas.whitespaceandchars,
-        inputPagination: FormYupSchemas.pag,
+        // inputPagination: FormYupSchemas.pag,
+        inputPagination: Yup.number().required('Requerido').test('inputPagination', 'Paginción errónea.',
+            (value) => (value / 16) % 1 === 0 || ((value / 16) - .5) % 1 === 0
+        ),
         inputCoef: FormYupSchemas.medVal,
         inputDate: FormYupSchemas.dateReg
     })
@@ -129,7 +134,6 @@ const SettingsSimpleProductionScreen = () => {
                     initialValues={{
                         inputProduct: selectedValueProduct,
                         inputPagination: selectedValuePaginacion,
-                        // inputTirBruta: selectedTiradaBruta,
                         inputCoef: selectedCoeficiente,
                         inputDate: selectedDate
                     }}
@@ -159,8 +163,6 @@ const SettingsSimpleProductionScreen = () => {
                           errors,
                           touched,
                           isValid,
-                          setFieldTouched,
-                          setFieldValue
                       }) => (
                         <>
                             <View>
@@ -184,17 +186,14 @@ const SettingsSimpleProductionScreen = () => {
                                         mainColor: '#FF8500',
                                         textSecondaryColor: '#000',
                                         borderColor: '#000',
+                                        textFontSize: 12,
+                                        textHeaderFontSize: 20,
+                                        defaultFont: 'Anton',
+                                        headerFont: 'Anton',
                                     }}
                                     placeholder={'Selecciona fecha...'}
                                     _name={'inputDate'}
-                                    _onChangeText={handleChange('inputDate')}
-                                    _onBlur={handleBlur('inputDate')}
-                                    value={values.inputDate}
-                                    onvalueChange={(itemValue) => {
-                                        handleChange('inputDate')
-                                        setFieldTouched('inputDate', true)
-                                        setFieldValue('inputDate', itemValue)
-                                    }}
+                                    _value={selectedDate}
                                 />
                                 <View>
                                     {(errors.inputProduct && touched.inputProduct) &&
@@ -212,7 +211,6 @@ const SettingsSimpleProductionScreen = () => {
                                         svgHeight={50}
                                         placeholder={'Nombre...'}
                                         text={'Producto:'}
-                                        // type={'numeric'}
                                         _name={'inputProduct'}
                                         _onChangeText={handleChange('inputProduct')}
                                         _onBlur={handleBlur('inputProduct')}
@@ -242,25 +240,6 @@ const SettingsSimpleProductionScreen = () => {
                                         value={values.inputPagination}
                                     />
                                 </View>
-                                {/*<View>*/}
-                                {/*    {(errors.inputTirBruta && touched.inputTirBruta) &&*/}
-                                {/*    < Text*/}
-                                {/*        style={{fontSize: 10, color: 'red', marginLeft: 10}}>{errors.inputTirBruta}</Text>*/}
-                                {/*    }*/}
-                                {/*    <CustomTextInput*/}
-                                {/*        // _ref={inputTbrutaRef}*/}
-                                {/*        svgData={tirada2SVG}*/}
-                                {/*        svgWidth={50}*/}
-                                {/*        svgHeight={50}*/}
-                                {/*        placeholder={'Ejemplares bruto...'}*/}
-                                {/*        text={'Tirada bruta:'}*/}
-                                {/*        type={'numeric'}*/}
-                                {/*        _name={'inputTirBruta'}*/}
-                                {/*        _onChangeText={handleChange('inputTirBruta')}*/}
-                                {/*        _onBlur={handleBlur('inputTirBruta')}*/}
-                                {/*        value={values.inputTirBruta}*/}
-                                {/*    />*/}
-                                {/*</View>*/}
                                 <View>
                                     {(errors.inputCoef && touched.inputCoef) &&
                                     < Text
@@ -280,39 +259,6 @@ const SettingsSimpleProductionScreen = () => {
                                         value={values.inputCoef}
                                     />
                                 </View>
-                                {/*<View>*/}
-                                {/*    {(errors.inputDate && touched.inputDate) &&*/}
-                                {/*    < Text*/}
-                                {/*        style={{fontSize: 10, color: 'red', marginLeft: 10}}>{errors.inputDate}</Text>*/}
-                                {/*    }*/}
-                                {/*    <CustomDateTimePicker*/}
-                                {/*        getSelectedDate={getSelectedDate}*/}
-                                {/*        _ref={inputDateRef}*/}
-                                {/*        svgData={addDateSVG}*/}
-                                {/*        svgWidth={35}*/}
-                                {/*        svgHeight={35}*/}
-                                {/*        text={'Fecha: '}*/}
-                                {/*        modeType={'calendar'}*/}
-                                {/*        styleOptions={{*/}
-                                {/*            backgroundColor: '#FFF',*/}
-                                {/*            textHeaderColor: '#FF8500',*/}
-                                {/*            textDefaultColor: '#FF8500',*/}
-                                {/*            selectedTextColor: '#fff',*/}
-                                {/*            mainColor: '#FF8500',*/}
-                                {/*            textSecondaryColor: '#000',*/}
-                                {/*            borderColor: '#000',*/}
-                                {/*        }}*/}
-                                {/*        placeholder={'Selecciona fecha...'}*/}
-                                {/*        _name={'inputDate'}*/}
-                                {/*        _onChangeText={handleChange('inputDate')}*/}
-                                {/*        _onBlur={handleBlur('inputDate')}*/}
-                                {/*        value={values.inputDate}*/}
-                                {/*        onvalueChange={(itemValue) => {*/}
-                                {/*            handleChange('inputDate')*/}
-                                {/*            setFieldTouched('inputDate', true)*/}
-                                {/*            setFieldValue('inputDate', itemValue)*/}
-                                {/*        }}*/}
-                                {/*    />*/}
                             </View>
                             <View style={styles.buttonsCont}>
                                 <TouchableOpacity
@@ -388,8 +334,6 @@ const SettingsSimpleProductionScreen = () => {
                           width: 40,
                           height: 40,
                           color: 'black',
-                          // backgroundColor: 'green',
-                          // borderRadius: 100,
                           textAlign: 'center',
                           textAlignVertical: 'center'
                       }}
@@ -404,7 +348,7 @@ const SettingsSimpleProductionScreen = () => {
                     margin: 0
                 }}>Volver atrás</Text>
             </TouchableOpacity>
-            <ScrollView style={{flex: 1, backgroundColor: '#c2c2c2'}}>
+            <ScrollView style={{flex: 1, backgroundColor: 'white'}}>
                 <KeyboardAvoidingView
                     behavior={Platform.OS === "ios" ? "padding" : "height"}
                     style={styles.container}
@@ -414,9 +358,7 @@ const SettingsSimpleProductionScreen = () => {
                         <View style={styles.contTitle}>
                             <View style={{
                                 alignSelf: 'center',
-                                // width: '30%',
                                 padding: 10,
-                                // backgroundColor: '#FFFFFF20',
                                 borderRadius: 15,
                                 borderWidth: 5,
                                 borderColor: COLORS.black,
@@ -434,10 +376,11 @@ const SettingsSimpleProductionScreen = () => {
                         paddingTop: 20,
                         paddingLeft: 10,
                         paddingRight: 10,
-                        margin: 30,
+                        marginBottom: 40,
+                        marginHorizontal: width > 450 ? 100 : 30,
                         borderRadius: 20,
-                        minHeight: Dimensions.get('window').height / 2,
-                        marginTop: Dimensions.get('window').height / -3.5,
+                        minHeight: height / 2,
+                        marginTop: height / -3,
                         elevation: 12
                     }}>
                         <Text style={styles.subtitle}>Producción Simplificada</Text>
@@ -459,7 +402,7 @@ const styles = StyleSheet.create({
         borderBottomRightRadius: 20,
         flexDirection: 'column',
         justifyContent: 'flex-start',
-        height: Dimensions.get('window').height / 2,
+        height: height / 2,
         borderWidth: 1,
         borderColor: 'grey'
 
@@ -484,7 +427,6 @@ const styles = StyleSheet.create({
     },
     contTitle: {
         borderRadius: 5,
-        margin: 15,
         padding: 15
     },
     touchable: {

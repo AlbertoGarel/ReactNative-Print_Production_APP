@@ -5,12 +5,19 @@ import {
     Text,
     StyleSheet,
     TouchableOpacity,
-    Picker,
     ImageBackground,
     Keyboard
 } from 'react-native';
 import CustomTextInput from "../components/FormComponents/CustomTextInput";
-import {paginationSVG, meditionSVG, radio, peso, tirada2SVG, edicionesSVG, productoSVG} from '../assets/svg/svgContents';
+import {
+    paginationSVG,
+    meditionSVG,
+    radio,
+    peso,
+    tirada2SVG,
+    edicionesSVG,
+    productoSVG
+} from '../assets/svg/svgContents';
 import SvgComponent from "../components/SvgComponent";
 import {COLORS} from "../assets/defaults/settingStyles";
 import MultipleSwitchSelector from "../components/MultipleSwitchSelector";
@@ -22,6 +29,7 @@ import ToastMesages from "../components/ToastMessages";
 import {FormYupSchemas} from '../components/FormComponents/YupSchemas';
 import * as Yup from "yup";
 import CustomPicker from "../components/FormComponents/CustomPicker";
+import {Picker} from '@react-native-picker/picker';
 
 
 const IndividualCalculation = () => {
@@ -62,15 +70,10 @@ const IndividualCalculation = () => {
 
     let renderedfunction = '';
 
-    const result = 0;
-    const brutoResult = 0;
-    const productResult = 500;
     const [measuramentDataDB, getMeasurementDataDB] = useState([]);
 
     // VALUES OF elementPrevProdction()
     const [selectedTirada, getselectedTirada] = useState('');
-    const [selectedEditions, getselectedEditions] = useState('');
-    // const [selectedMeasurementMetodID, setMeasurementMetodID] = useState('');
     const [selectedValueMeasurementMetod, getValueMeasurementMetod] = useState(0);
 
     //VALUES of elementCalcBobina()
@@ -97,10 +100,8 @@ const IndividualCalculation = () => {
     };
     //elementCalTotalproduction()
     const [paginacionDataDB, getPaginationDataDB] = useState([]);
-    // const [selectedPaginationID, getSelectedPaginationID] = useState('');
     const [selectedValuePaginacion, getSelectedPagination] = useState(0);
     const [productoDataDB, getProductoDataDB] = useState([]);
-    // const [selectedProductoID, getSelectedProductoID] = useState('');
     const [selectedValueProduct, getSelectedvalueProduct] = useState(0);
     const [selectedTiradaBruta, getSelectedTiradaBruta] = useState('');
     const [resultElementCalTotalproduction, setResultElementCalTotalproduction] = useState(0);
@@ -173,17 +174,10 @@ const IndividualCalculation = () => {
             case 1://elementPrevProdction()
                 //reset states
                 getselectedTirada('');
-                getselectedEditions('');
-                // getValueMeasurementMetod(0);
                 //reset to initial values
                 elementPrevProdctionformikRef.current?.resetForm();
                 //clear ref inputs
                 tiradaRef.current.clear();
-                EdicionesRef.current.clear();
-                // setMeasurementMetodID(0)//empty for error display
-                // getValueMeasurementMetod(0)
-                // meditionStyleRef.current.value = 0;
-                // console.log(meditionStyleRef.current.value)
                 break;
             case 2:
                 getSelectedInputWeigth('');
@@ -194,8 +188,6 @@ const IndividualCalculation = () => {
                 inputRadioRef.current.clear();
                 break;
             case 3:
-                // getSelectedPaginationID(0);
-                // getSelectedProductoID(0);
                 getSelectedTiradaBruta('');
                 setResultElementCalTotalproduction(0);
                 elementCalTotalproductionFormikRef.current?.resetForm();
@@ -208,7 +200,6 @@ const IndividualCalculation = () => {
 
     const SchemaElementPrevProduction = Yup.object().shape({
         tirada: FormYupSchemas.tirada,
-        editions: FormYupSchemas.editions,
         meditionType: FormYupSchemas.meditionType
     });
 
@@ -238,13 +229,11 @@ const IndividualCalculation = () => {
                     innerRef={elementPrevProdctionformikRef}
                     initialValues={{
                         tirada: selectedTirada,
-                        editions: selectedEditions,
                         meditionType: selectedValueMeasurementMetod,
                     }}
                     validationSchema={SchemaElementPrevProduction}
                     onSubmit={values => {
                         getselectedTirada(parseInt(values.tirada));
-                        getselectedEditions(parseInt(values.editions));
                         const measurementval = measuramentDataDB.filter(item => item.medition_id === values.meditionType);
                         getValueMeasurementMetod(measurementval);
                     }}
@@ -312,43 +301,6 @@ const IndividualCalculation = () => {
                                             })}
                                             defaultItemLabel={'Escoge estilo de medición'}
                                         />
-                                        {/*<Picker*/}
-                                        {/*    ref={meditionStyleRef}*/}
-                                        {/*    style={{*/}
-                                        {/*        borderWidth: .5,*/}
-                                        {/*        borderColor: COLORS.black,*/}
-                                        {/*    }}*/}
-                                        {/*    name={'meditionType'}*/}
-                                        {/*    itemStyle={{fontFamily: 'Anton'}}*/}
-                                        {/*    mode={'dropdown'}*/}
-                                        {/*    value={values.meditionType}*/}
-                                        {/*    selectedValue={values.meditionType}*/}
-                                        {/*    onValueChange={(itemValue) => {*/}
-                                        {/*        if (itemValue > 0) {*/}
-                                        {/*            handleChange('meditionType')*/}
-                                        {/*            setFieldTouched('meditionType', true)*/}
-                                        {/*            setFieldValue('meditionType', itemValue)*/}
-                                        {/*        } else {*/}
-                                        {/*            showToast("Debes escoger una opción válida...")*/}
-                                        {/*        }*/}
-                                        {/*    }}*/}
-                                        {/*>*/}
-                                        {/*    <Picker.Item label="Elige un tipo de medición" value={0}*/}
-                                        {/*                 selected*/}
-                                        {/*                 fontFamily={'Anton'}*/}
-                                        {/*                 color={COLORS.primary}*/}
-                                        {/*    />*/}
-                                        {/*    {*/}
-                                        {/*        measuramentDataDB.length > 0 ?*/}
-                                        {/*            measuramentDataDB.map((item, index) => {*/}
-                                        {/*                return <Picker.Item key={index}*/}
-                                        {/*                                    label={'medición ' + item.medition_type + ' / ' + item.gramaje_value + 'g.'}*/}
-                                        {/*                                    value={item.medition_id}/>*/}
-                                        {/*            })*/}
-                                        {/*            :*/}
-                                        {/*            <Picker.Item label="No existen datos" value={null}/>*/}
-                                        {/*    }*/}
-                                        {/*</Picker>*/}
                                     </View>
                                 </View>
                             </View>
@@ -368,25 +320,9 @@ const IndividualCalculation = () => {
                                 _onBlur={handleBlur('tirada')}
                                 value={values.tirada}
                             />
-                            {(errors.editions && touched.editions) &&
-                            <Text style={{fontSize: 10, color: 'red', marginLeft: 10}}>{errors.editions}</Text>
-                            }
-                            <CustomTextInput
-                                _ref={EdicionesRef}
-                                svgData={edicionesSVG}
-                                svgWidth={50}
-                                svgHeight={50}
-                                placeholder={'Número de ediciones...'}
-                                text={'Ediciones'}
-                                type={'numeric'}
-                                styled={{marginBottom: 0}}
-                                _name={'editions'}
-                                _onChangeText={handleChange('editions')}
-                                _onBlur={handleBlur('editions')}
-                                value={values.editions}
-                            />
-                            <Text style={{fontSize: 12, color: 'red', marginLeft: 20, margin: 0}}>* +500 ejemplares por
-                                tirada</Text>
+                            <Text style={{fontSize: 12, color: 'red', marginLeft: 20, margin: 0}}>
+                                * No se incluyen nulos
+                            </Text>
                             <TouchableOpacity
                                 style={[styles.touchable, {alignSelf: 'center', margin: 5, opacity: !isValid ? .1 : 1}]}
                                 color="#841584"
@@ -415,9 +351,9 @@ const IndividualCalculation = () => {
                                     </Text>
                                     <Text style={{fontSize: 16}}>
                                         {selectedTirada &&
-                                        selectedEditions &&
+                                        // selectedEditions &&
                                         selectedValueMeasurementMetod ?
-                                            Math.round((selectedTirada + (500 * selectedEditions)) * selectedValueMeasurementMetod[0].full_value)
+                                            Math.round(selectedTirada * selectedValueMeasurementMetod[0].full_value)
                                             :
                                             0} Kg
                                     </Text>
@@ -439,9 +375,9 @@ const IndividualCalculation = () => {
                                     </Text>
                                     <Text style={{fontSize: 16}}>
                                         {selectedTirada &&
-                                        selectedEditions &&
+                                        // selectedEditions &&
                                         selectedValueMeasurementMetod ?
-                                            Math.round((selectedTirada + (500 * selectedEditions)) * selectedValueMeasurementMetod[0].media_value)
+                                            Math.round(selectedTirada * selectedValueMeasurementMetod[0].media_value)
                                             :
                                             0} Kg
                                     </Text>
@@ -656,41 +592,6 @@ const IndividualCalculation = () => {
                                             }
                                             defaultItemLabel={'Escoge una paginación'}
                                         />
-                                        {/*<Picker*/}
-                                        {/*    ref={paginationRef}*/}
-                                        {/*    style={{*/}
-                                        {/*        borderWidth: .5,*/}
-                                        {/*        borderColor: COLORS.black,*/}
-                                        {/*    }}*/}
-                                        {/*    name={'pickerPagination'}*/}
-                                        {/*    itemStyle={{fontFamily: 'Anton'}}*/}
-                                        {/*    mode={'dropdown'}*/}
-                                        {/*    selectedValue={values.pickerPagination}*/}
-                                        {/*    onValueChange={(itemValue) => {*/}
-                                        {/*        if (itemValue > 0) {*/}
-                                        {/*            handleChange('pickerPagination')*/}
-                                        {/*            setFieldTouched('pickerPagination', true)*/}
-                                        {/*            setFieldValue('pickerPagination', itemValue)*/}
-                                        {/*        } else {*/}
-                                        {/*            showToast("Debes escoger una opción válida...")*/}
-                                        {/*        }*/}
-                                        {/*    }}*/}
-
-                                        {/*>*/}
-                                        {/*    <Picker.Item label="Elige valor de paginación..." value={0}*/}
-                                        {/*                 style={{fontFamily: 'Anton'}}*/}
-                                        {/*                 selected*/}
-                                        {/*    />*/}
-                                        {/*    {paginacionDataDB.length > 0 ?*/}
-                                        {/*        paginacionDataDB.map((item, index) => {*/}
-                                        {/*            return <Picker.Item key={index}*/}
-                                        {/*                                label={' ' + item.paginacion_value}*/}
-                                        {/*                                value={item.paginacion_id}/>*/}
-                                        {/*        })*/}
-                                        {/*        :*/}
-                                        {/*        <Picker.Item label="No existen datos" value={null}/>*/}
-                                        {/*    }*/}
-                                        {/*</Picker>*/}
                                     </View>
                                 </View>
                             </View>
@@ -748,41 +649,6 @@ const IndividualCalculation = () => {
                                             }
                                             defaultItemLabel={'Escoge un producto'}
                                         />
-                                        {/*<Picker*/}
-                                        {/*    ref={ProductoRef}*/}
-                                        {/*    style={{*/}
-                                        {/*        borderWidth: .5,*/}
-                                        {/*        borderColor: COLORS.black,*/}
-                                        {/*    }}*/}
-                                        {/*    name={'pickerProducto'}*/}
-                                        {/*    itemStyle={{fontFamily: 'Anton'}}*/}
-                                        {/*    mode={'dropdown'}*/}
-                                        {/*    selectedValue={values.pickerProducto}*/}
-                                        {/*    // selectedValue={selectedMeasurementMetod}*/}
-                                        {/*    onValueChange={(itemValue) => {*/}
-                                        {/*        if (itemValue > 0) {*/}
-                                        {/*            handleChange('pickerProducto')*/}
-                                        {/*            setFieldTouched('pickerProducto', true)*/}
-                                        {/*            setFieldValue('pickerProducto', itemValue)*/}
-                                        {/*        } else {*/}
-                                        {/*            showToast("Debes escoger una opción válida...")*/}
-                                        {/*        }*/}
-                                        {/*    }}*/}
-                                        {/*>*/}
-                                        {/*    <Picker.Item label="Elige un producto..." value={0}*/}
-                                        {/*                 style={{fontFamily: 'Anton'}}*/}
-                                        {/*                 selected*/}
-                                        {/*    />*/}
-                                        {/*    {productoDataDB.length > 0 ?*/}
-                                        {/*        productoDataDB.map((item, index) => {*/}
-                                        {/*            return <Picker.Item key={index}*/}
-                                        {/*                                label={' ' + item.producto_name}*/}
-                                        {/*                                value={item.producto_id}/>*/}
-                                        {/*        })*/}
-                                        {/*        :*/}
-                                        {/*        <Picker.Item label="No existen datos" value={null}/>*/}
-                                        {/*    }*/}
-                                        {/*</Picker>*/}
                                     </View>
                                 </View>
                             </View>

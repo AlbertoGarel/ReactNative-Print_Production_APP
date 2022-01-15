@@ -1,27 +1,32 @@
 import React, {useState, useEffect, useCallback} from 'react';
 import {
-    Text,
     View,
     StyleSheet,
     SafeAreaView,
-    Image
+    Dimensions
 } from 'react-native';
-import Constants from 'expo-constants';// paddingTop: Constants.statusBarHeight
 import {COLORS} from '../assets/defaults/settingStyles';
 import HomeCard from "../components/HomeCard";
 import BgComponent from "../components/BackgroundComponent/BgComponent";
-import {semicircle2} from "../assets/svg/svgContents";
+import {
+    barcharFontistotSVG,
+    calculatorFontistoSVG,
+    fileFontistoSVG,
+    listFontistoSVG,
+    semicircle2
+} from "../assets/svg/svgContents";
 import HomeHeader from "../components/headers/HomeHeader";
 import Caroussel from "../components/Caroussel";
 import * as SQLite from "expo-sqlite";
 import {produccion_table_ALL} from "../dbCRUD/actionsSQL";
 import {useFocusEffect} from "@react-navigation/native";
 
+const {width, height} = Dimensions.get('window');
 
 const HomeScreen = ({navigation, route}) => {
     const db = SQLite.openDatabase('bobinas.db');
     //ICON SIZE
-    const iconSize = 40;
+    const iconSize = 50;
     //BACKGROUND PROP CONST
     const optionsSVG = {
         svgData: semicircle2, svgWidth: '120%', svgHeight: '110%'
@@ -44,9 +49,10 @@ const HomeScreen = ({navigation, route}) => {
                     (_, {rows: {_array}}) => {
                         if (_array.length > 0) {
                             getProductions(_array);
-                        } else {
-                            console.log('(produccion_table_ALL) Sin producciones en HomeScreen Component to call productions_table');
                         }
+                        // else {
+                        //     console.log('(produccion_table_ALL) Sin producciones en HomeScreen Component to call productions_table');
+                        // }
                     }, () => err => console.log(err)
                 );
             });
@@ -73,65 +79,70 @@ const HomeScreen = ({navigation, route}) => {
                 imageBg={COLORS.white}
                 titleColor={COLORS.white}
                 titleSecction={"#HOME"}
-                text={'React Native tiene algunos documentos excelentes, así que después de leer esto, pensé que sería pan comido.'}
+                text={'Acceso a las herramientas para producción de la aplicación: producción simple (sin apoyo de base de datos), producción completa, herramientas de cálculo, etc.'}
             />
-            <Caroussel
-                // items={productions}
-                items={productions}
-            />
-            <View style={{
-                flex: 1,
-                flexDirection: 'row',
-                justifyContent: 'center',
-                alignItems: 'center',
-                flexWrap: 'wrap',
-                padding: 40,
-                backgroundColor: 'transparent',
-            }}>
-                <View style={styles.subcont}>
-                    <HomeCard
-                        iconName={"calculator"}
-                        iconSize={iconSize}
-                        iconColor={COLORS.quinary}
-                        cardtitle={"Cálculo individual"}
-                        title="Go to Onboard"
-                        navigation={navigation}
-                        torender={["Cálculo Individual"]}
-                    />
-                </View>
-                <View style={styles.subcont}>
-                    <HomeCard
-                        iconName={"list-1"}
-                        iconSize={iconSize}
-                        iconColor={COLORS.quinary}
-                        cardtitle={"producción simple"}
-                        content={"Calcula el resto final de la bobina según su radio o kg necesarios según los ejemplares."}
-                        title="Go to Onboard"
-                        navigation={navigation}
-                        torender={['Producción Simplificada']}
-                    />
-                </View>
-                <View style={styles.subcont}>
-                    <HomeCard
-                        iconName={"bar-chart"}
-                        iconSize={iconSize}
-                        iconColor={COLORS.quinary}
-                        cardtitle={"Gráficas"}
-                        title="Go to Onboard"
-                        navigation={navigation}
-                        torender={['charts', {name: 'Elena'}]}
-                    />
-                </View>
-                <View style={styles.subcont}>
-                    <HomeCard
-                        iconName={"file-1"}
-                        iconSize={iconSize}
-                        iconColor={COLORS.quinary}
-                        cardtitle={"Documentos"}
-                        title="Go to Onboard"
-                        navigation={navigation}
-                        torender={['pdf documents', {name: 'Elena'}]}
-                    />
+            <View style={{flex: 1, justifyContent: 'space-evenly'}}>
+                <Caroussel
+                    items={productions}
+                />
+                <View style={{
+                    maxWidth: width < 400 ? width : 400,
+                    maxHeight: height / 2.2 ,
+                    alignSelf: 'center',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    marginTop: 20,
+                    paddingVertical: 40,
+                    paddingHorizontal: 50,
+                    backgroundColor: 'transparent',
+                }}>
+                    <View style={styles.subcont}>
+                        <HomeCard
+                            iconName={calculatorFontistoSVG}
+                            iconSize={iconSize}
+                            iconColor={COLORS.quinary}
+                            cardtitle={"Cálculo individual"}
+                            title="Go to Onboard"
+                            navigation={navigation}
+                            torender={["Cálculo Individual"]}
+                        />
+                    </View>
+                    <View style={styles.subcont}>
+                        <HomeCard
+                            iconName={listFontistoSVG}
+                            iconSize={iconSize}
+                            iconColor={COLORS.quinary}
+                            cardtitle={"producción simple"}
+                            content={"Calcula el resto final de la bobina según su radio o kg necesarios según los ejemplares."}
+                            title="Go to Onboard"
+                            navigation={navigation}
+                            torender={['Producción Simplificada']}
+                        />
+                    </View>
+                    <View style={styles.subcont}>
+                        <HomeCard
+                            iconName={barcharFontistotSVG}
+                            iconSize={iconSize}
+                            iconColor={COLORS.quinary}
+                            cardtitle={"Gráficas"}
+                            title="Go to Onboard"
+                            navigation={navigation}
+                            torender={['charts', {name: 'Elena'}]}
+                        />
+                    </View>
+                    <View style={styles.subcont}>
+                        <HomeCard
+                            iconName={fileFontistoSVG}
+                            iconSize={iconSize}
+                            iconColor={COLORS.quinary}
+                            cardtitle={"Documentos"}
+                            title="Go to Onboard"
+                            navigation={navigation}
+                            torender={['pdf documents', {name: 'Elena'}]}
+                        />
+                    </View>
                 </View>
             </View>
         </SafeAreaView>

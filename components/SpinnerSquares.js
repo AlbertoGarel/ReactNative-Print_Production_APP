@@ -6,6 +6,14 @@ const size = 30;
 const dim = 90;
 
 export default class SpinnerSquares extends Component {
+    constructor(props) {
+        super();
+        this.state = {
+            size: props.width || 30,
+            dim: props.height || 90
+        }
+    }
+
     animation = new Animated.Value(0);
     componentDidMount = () => {
         Animated.loop(Animated.timing(this.animation, {
@@ -17,6 +25,7 @@ export default class SpinnerSquares extends Component {
     }
 
     render() {
+        let {size, dim} = this.state;
         const inputRange = [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1];
         const left1 = this.animation.interpolate({
             inputRange, outputRange: [0, dim - size, dim - size, 0, 0, 0, dim - size, dim - size, 0]
@@ -45,7 +54,7 @@ export default class SpinnerSquares extends Component {
         const angleValue = this.animation.interpolate({
             inputRange: [0, 1], outputRange: ['0deg', '720deg']
         })
-        const backgroundColor =COLORS.primary;
+        const backgroundColor = COLORS.primary;
         return (
             <View style={styles.container}>
                 <View style={{width: dim, height: dim}}>

@@ -1,14 +1,12 @@
 import React, {useRef, useEffect, useState} from 'react';
-import {View, Text, StyleSheet, TouchableOpacity, Alert, Dimensions} from 'react-native';
+import {View, Text, StyleSheet, TouchableOpacity, Dimensions} from 'react-native';
 import {Formik} from "formik";
 import CustomTextInput from "./FormComponents/CustomTextInput";
-import {userSVG} from "../assets/svg/svgContents";
+import {emailSVG, enterpriseSVG, userSVG} from "../assets/svg/svgContents";
 import * as Yup from "yup";
 import {FormYupSchemas} from "./FormComponents/YupSchemas";
 import {COLORS} from "../assets/defaults/settingStyles";
 import {getDatas, storeData} from "../data/AsyncStorageFunctions";
-import ResetButtonForm from "./FormComponents/ResetButtonForm";
-import ToastMesages from "./ToastMessages";
 
 const UserDataComponent = ({props}) => {
 
@@ -17,10 +15,12 @@ const UserDataComponent = ({props}) => {
 
     const [userNameState, setUserNameState] = useState('');
     const [enterpriseNameState, setEnterpriseNameState] = useState('');
+    const [emailState, setEmailState] = useState('');
 
     const SchemaDataUser = Yup.object().shape({
         username: FormYupSchemas.onlyLeters,
-        enterprisename: FormYupSchemas.onlyLeters
+        enterprisename: FormYupSchemas.onlyLeters,
+        email: FormYupSchemas.email
     });
 
     useEffect(() => {
@@ -29,13 +29,15 @@ const UserDataComponent = ({props}) => {
             if (!obj) {
                 setUserNameState('');
                 setEnterpriseNameState('')
+                setEmailState('')
             }
             if (obj) {
                 setUserNameState(obj.name);
                 setEnterpriseNameState(obj.enterprise)
+                setEmailState(obj.email)
             }
         })
-            .catch(err => Alert.alert(err))
+            .catch(err => console.log(err))
         return () => isMounted = false;
     }, []);
 
@@ -46,11 +48,16 @@ const UserDataComponent = ({props}) => {
                 innerRef={UserDataFormRef}
                 initialValues={{
                     username: userNameState,
-                    enterprisename: enterpriseNameState
+                    enterprisename: enterpriseNameState,
+                    email: emailState
                 }}
                 validationSchema={SchemaDataUser}
                 onSubmit={values => {
-                    storeData('@UserDataForm', {name: values.username, enterprise: values.enterprisename})
+                    storeData('@UserDataForm', {
+                        name: values.username,
+                        enterprise: values.enterprisename,
+                        email: values.email
+                    })
                         .then(store => {
                             props.showToast('guardando...');
                         })
@@ -77,7 +84,7 @@ const UserDataComponent = ({props}) => {
                         }}>
                             {(errors.username && touched.username) &&
                             < Text
-                                style={{fontSize: 10, color: 'red', marginLeft: 10}}>{errors.username}</Text>
+                                style={styles.stylErrors}>{errors.username}</Text>
                             }
                             <CustomTextInput
                                 // _ref={UserNameRef}
@@ -94,11 +101,11 @@ const UserDataComponent = ({props}) => {
                             />
                             {(errors.enterprisename && touched.enterprisename) &&
                             < Text
-                                style={{fontSize: 10, color: 'red', marginLeft: 10}}>{errors.enterprisename}</Text>
+                                style={styles.stylErrors}>{errors.enterprisename}</Text>
                             }
                             <CustomTextInput
                                 // _ref={UserNameRef}
-                                svgData={userSVG}
+                                svgData={enterpriseSVG}
                                 svgWidth={50}
                                 svgHeight={50}
                                 placeholder={'Nombre de empresa...'}
@@ -108,6 +115,23 @@ const UserDataComponent = ({props}) => {
                                 _onBlur={handleBlur('enterprisename')}
                                 value={values.enterprisename}
                                 _defaultValue={values.enterprisename}
+                            />
+                            {(errors.email && touched.email) &&
+                            <Text
+                                style={styles.stylErrors}>{errors.email}</Text>
+                            }
+                            <CustomTextInput
+                                // _ref={UserNameRef}
+                                svgData={emailSVG}
+                                svgWidth={45}
+                                svgHeight={45}
+                                placeholder={'email...'}
+                                text={'Email:'}
+                                _name={'email'}
+                                _onChangeText={handleChange('email')}
+                                _onBlur={handleBlur('email')}
+                                value={values.email}
+                                _defaultValue={values.email}
                             />
                             <TouchableOpacity
                                 style={{
@@ -148,11 +172,20 @@ const UserDataComponent = ({props}) => {
             </Formik>
         </View>
     )
-};
+}
 
 const styles = StyleSheet.create({
     text: {
         color: 'green'
+    },
+    stylErrors:{
+        alignSelf: 'center',
+        // borderRadius: 5,
+        width: '95%',
+        fontSize: 10,
+        backgroundColor: 'white',
+        color: 'red',
+        paddingLeft: 10
     }
 });
 

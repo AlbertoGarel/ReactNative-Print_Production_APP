@@ -1,13 +1,21 @@
 import React, {useRef, useEffect} from 'react';
 import {Animated, View, StyleSheet, Pressable} from "react-native";
 
-let contheight = 200;
+// let contheight = 200;
 
-function FlipCard({ContentFront, ContentBack, enabled}) {
+function FlipCard({flipnow = '',ContentFront, ContentBack, enabled, contheight = 200, contweight= '100%', parentStyle={}}) {
+
     const flipAnimation = useRef(new Animated.Value(0)).current;
     useEffect(() => {
         if (enabled) flipToFront()
     }, [enabled])
+
+    useEffect(() => {
+        if(!isNaN(flipnow)){
+            if (flipnow) flipToFront()
+            if (!flipnow) flipToBack()
+        }
+    }, [flipnow])
 
     let flipRotation = 0;
     flipAnimation.addListener(({value}) => flipRotation = value);
@@ -49,13 +57,13 @@ function FlipCard({ContentFront, ContentBack, enabled}) {
 
 
     return (
-        <View style={style.cardWrapper}>
+        <View style={{width: contweight, height: contheight, ...parentStyle}}>
             <Pressable
-                style={[style.cardWrapper]}
+                style={{height: contheight}}
                 onPress={() => enabled ? !!flipRotation ? flipToBack() : flipToFront() : null}
             >
                 <Animated.View
-                    style={{...style.cardFront, ...flipToFrontStyle, ...style.commonStyles}}
+                    style={{...style.cardFront, ...flipToFrontStyle, ...style.commonStyles, height: contheight, width: contweight}}
 
                 >
                     <ContentFront/>
@@ -64,7 +72,7 @@ function FlipCard({ContentFront, ContentBack, enabled}) {
                     {/*/>*/}
                 </Animated.View>
                 <Animated.View
-                    style={{...style.cardBack, ...flipToBackStyle, ...style.commonStyles}}
+                    style={{...style.cardBack, ...flipToBackStyle, ...style.commonStyles, height: contheight, width: contweight}}
 
                 >
                     <ContentBack/>
@@ -79,18 +87,13 @@ function FlipCard({ContentFront, ContentBack, enabled}) {
 }
 
 const style = StyleSheet.create({
-    cardWrapper: {width: '100%', height: contheight},
     cardFront: {
         backfaceVisibility: "hidden",
         position: "absolute",
-        height: contheight,
-        width: '100%',
         backgroundColor: '#49b6b630'
     },
     cardBack: {
         backfaceVisibility: "hidden",
-        height: contheight,
-        width: '100%',
         backgroundColor: '#49b6b630'
     },
     commonStyles: {

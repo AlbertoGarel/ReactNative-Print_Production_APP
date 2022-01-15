@@ -227,3 +227,78 @@ export const typeBarcodeFiter = (type) => {
             return 'CODE128';
     }
 }
+
+export const setValueForInput = (date) => {
+    let sub ='';
+    if(date.includes('-')){
+         sub = date.slice(5, 7);
+    }else{
+        sub = date.slice(4,6);
+    }
+
+    switch (parseInt(sub)) {
+        case 1:
+            return 'Enero';
+        case 2:
+            return 'Febrero';
+        case 3:
+            return 'Marzo';
+        case 4:
+            return 'Abril';
+        case 5:
+            return 'Mayo';
+        case 6:
+            return 'Junio';
+        case 7:
+            return 'Julio';
+        case 8:
+            return 'Agosto';
+        case 9:
+            return 'Septiembre';
+        case 10:
+            return 'octubre';
+        case 11:
+            return 'Noviembre';
+        case 12:
+            return 'Diciembre';
+        default:
+            return '';
+
+    }
+}
+
+export const setFormatDAta = async (arr) => {
+    try {
+        const newData = await arr.reduce((acc, item) => {
+            let mes = setValueForInput(item.fechaproduccion);
+            let title = mes + ' ' + item.fechaproduccion.slice(0, 4)
+            acc[title] ?
+                acc[title].value = item.fechaproduccion.slice(0, 7)
+                :
+                acc[title] = {
+                    label: mes + ' ' + item.fechaproduccion.slice(0, 4),
+                    value: item.fechaproduccion.slice(0, 7)
+                }
+            return acc
+        }, {});
+        return Object.values(newData)
+    } catch (e) {
+        alert('fallo en getLabels')
+    }
+};
+/**
+ *  Compare two arrays.
+ *
+ * @param a type: Array
+ * @param b type: Array
+ *
+ * @return true/false type: boolean
+ *
+ * */
+export const arrayEquals = (a, b) => {
+    return Array.isArray(a) &&
+        Array.isArray(b) &&
+        a.length === b.length &&
+        a.length > 0 && b.length > 0 &&
+        a.every((val, index) => val === b[index]);
+}

@@ -22,10 +22,13 @@ export async function openDatabase(pathToDatabaseFile: fileDB2): SQLite.WebSQLDa
     if (!(await FileSystem.getInfoAsync(FileSystem.documentDirectory + 'SQLite')).exists) {
         await FileSystem.makeDirectoryAsync(FileSystem.documentDirectory + 'SQLite');
     }
+    //descomentar para no pisar bbdd n cada inicio.
+    // if (!(await FileSystem.getInfoAsync(FileSystem.documentDirectory + 'SQLite/bobinas.db')).exists) {
     await FileSystem.downloadAsync(
         Asset.fromModule(fileDB2).uri,
         FileSystem.documentDirectory + 'SQLite/bobinas.db'
     );
+    // }
     return SQLite.openDatabase('bobinas.db');// READ ONLY (copy)
     // return SQLite.openDatabase(FileSystem.documentDirectory + 'SQLite/bobinas.db');//READ AND WRITE
 }
@@ -306,14 +309,16 @@ ON gramaje_table.gramaje_id = bobina_table.gramaje_fk;`
 ;
 export const search_bobina =
     "SELECT bobina_table.codigo_bobina AS 'código bobina'," +
+    "papel_comun_table.papel_comun_name AS 'Propietario'," +
     "autopaster_table.name_autopaster AS 'Autopaster'," +
     "linea_produccion_table.linea_name AS 'línea'," +
-    "producto_table.producto_name 'Propietario'," +
     "gramaje_table.gramaje_value AS 'Gramaje'," +
     "bobina_table.peso_ini AS 'Peso inicial'," +
     "bobina_table.peso_actual AS 'Peso actual'," +
     "bobina_table.radio_actual AS 'Radio actual' " +
     "FROM bobina_table " +
+    "LEFT JOIN papel_comun_table " +
+    "ON papel_comun_table.papel_comun_id = bobina_table.papel_comun_fk " +
     "LEFT JOIN autopaster_table " +
     "ON autopaster_table.autopaster_id = bobina_table.autopaster_fk " +
     "LEFT JOIN linea_produccion_table " +
@@ -326,33 +331,34 @@ export const search_bobina =
     "bobina_table.codigo_bobina LIKE ? OR " +
     "autopaster_table.name_autopaster LIKE ? OR " +
     "linea_produccion_table.linea_name LIKE ? OR " +
-    "producto_table.producto_name LIKE ? OR " +
+    "papel_comun_table.papel_comun_name LIKE ? OR " +
     "gramaje_table.gramaje_value LIKE ? OR " +
     "bobina_table.peso_ini LIKE ? OR " +
     "bobina_table.peso_actual LIKE ? OR " +
     "bobina_table.radio_actual LIKE ?;"
-
 ;
 export const search_bobina_fullWeight =
-    "SELECT bobina_table.codigo_bobina AS 'código bobina'," +
-    "autopaster_table.name_autopaster AS 'Autopaster'," +
-    "linea_produccion_table.linea_name AS 'línea'," +
-    "producto_table.producto_name 'Propietario'," +
-    "gramaje_table.gramaje_value AS 'Gramaje'," +
-    "bobina_table.peso_ini AS 'Peso inicial'," +
-    "bobina_table.peso_actual AS 'Peso actual'," +
-    "bobina_table.radio_actual AS 'Radio actual' " +
-    "FROM bobina_table " +
-    "LEFT JOIN autopaster_table " +
-    "ON autopaster_table.autopaster_id = bobina_table.autopaster_fk " +
-    "LEFT JOIN linea_produccion_table " +
-    "ON linea_produccion_table.linea_id = autopaster_table.linea_fk " +
-    "LEFT JOIN producto_table " +
-    "ON producto_table.producto_id = linea_produccion_table.linea_id " +
-    "LEFT JOIN gramaje_table " +
-    "ON gramaje_table.gramaje_id = bobina_table.gramaje_fk " +
-    "WHERE bobina_table.peso_actual IS NULL " +
-    "OR bobina_table.radio_actual IS NULL";
+    `SELECT bobina_table.codigo_bobina AS 'código bobina',
+    papel_comun_table.papel_comun_name AS 'Propietario',
+    autopaster_table.name_autopaster AS 'Autopaster',
+    linea_produccion_table.linea_name AS 'línea',
+    gramaje_table.gramaje_value AS 'Gramaje',
+    bobina_table.peso_ini AS 'Peso inicial',
+    bobina_table.peso_actual AS 'Peso actual',
+    bobina_table.radio_actual AS 'Radio actual'
+    FROM bobina_table 
+    LEFT JOIN papel_comun_table 
+    ON papel_comun_table.papel_comun_id = bobina_table.papel_comun_fk 
+    LEFT JOIN autopaster_table 
+    ON autopaster_table.autopaster_id = bobina_table.autopaster_fk
+    LEFT JOIN linea_produccion_table 
+    ON linea_produccion_table.linea_id = autopaster_table.linea_fk 
+    LEFT JOIN producto_table 
+    ON producto_table.producto_id = linea_produccion_table.linea_id
+    LEFT JOIN gramaje_table
+    ON gramaje_table.gramaje_id = bobina_table.gramaje_fk 
+    WHERE bobina_table.peso_actual IS NULL
+    OR bobina_table.radio_actual IS NULL;`
 export const insertBobina =
     `INSERT INTO bobina_table (codigo_bobina, peso_ini, peso_actual, radio_actual, papel_comun_fk, autopaster_fk, gramaje_fk, media)
      VALUES (?,?,?,?,?,?,?,?)`;

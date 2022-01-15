@@ -1,5 +1,5 @@
 import React from 'react';
-import {StyleSheet, View, TextInput, Platform, Text, Keyboard} from 'react-native';
+import {StyleSheet, View, TextInput, Text} from 'react-native';
 import {COLORS} from "../../assets/defaults/settingStyles";
 
 const CustomTextArea = ({toState}) => {
