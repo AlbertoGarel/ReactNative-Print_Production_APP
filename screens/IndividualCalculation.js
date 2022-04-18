@@ -282,7 +282,7 @@ const IndividualCalculation = () => {
                                             }}
                                             name={'meditionType'}
                                             itemStyle={{fontFamily: 'Anton'}}
-                                            mode={'dropdown'}
+                                            mode={'dialog'}
                                             value={values.meditionType}
                                             selectedValue={values.meditionType}
                                             onValueChange={(itemValue) => {
@@ -572,7 +572,7 @@ const IndividualCalculation = () => {
                                             }}
                                             name={'pickerPagination'}
                                             itemStyle={{fontFamily: 'Anton'}}
-                                            mode={'dropdown'}
+                                            mode={'dialog'}
                                             selectedValue={values.pickerPagination}
                                             onValueChange={(itemValue) => {
                                                 if (itemValue > 0) {
@@ -628,7 +628,7 @@ const IndividualCalculation = () => {
                                             }}
                                             name={'pickerProducto'}
                                             itemStyle={{fontFamily: 'Anton'}}
-                                            mode={'dropdown'}
+                                            mode={'dialog'}
                                             selectedValue={values.pickerProducto}
                                             // selectedValue={selectedMeasurementMetod}
                                             onValueChange={(itemValue) => {

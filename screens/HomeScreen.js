@@ -20,6 +20,7 @@ import Caroussel from "../components/Caroussel";
 import * as SQLite from "expo-sqlite";
 import {produccion_table_ALL} from "../dbCRUD/actionsSQL";
 import {useFocusEffect} from "@react-navigation/native";
+import {genericTransaction} from "../dbCRUD/actionsFunctionsCrud";
 
 const {width, height} = Dimensions.get('window');
 
@@ -42,31 +43,38 @@ const HomeScreen = ({navigation, route}) => {
         useCallback(() => {
             setIsFocus(true);
             //Production
-            db.transaction(tx => {
-                tx.executeSql(
-                    produccion_table_ALL,
-                    [],
-                    (_, {rows: {_array}}) => {
-                        if (_array.length > 0) {
-                            getProductions(_array);
-                        }
-                        // else {
-                        //     console.log('(produccion_table_ALL) Sin producciones en HomeScreen Component to call productions_table');
-                        // }
-                    }, () => err => console.log(err)
-                );
-            });
+            genericTransaction(produccion_table_ALL, [])
+                .then(response => {
+                    console.log('respoonseeee', response)
+                    getProductions(response);
+                })
+                .catch(err => console.log(err))
+
+            // db.transaction(tx => {
+            //     tx.executeSql(
+            //         produccion_table_ALL,
+            //         [],
+            //         (_, {rows: {_array}}) => {
+            //             if (_array.length > 0) {
+            //                 getProductions(_array);
+            //             }
+            //             // else {
+            //             //     console.log('(produccion_table_ALL) Sin producciones en HomeScreen Component to call productions_table');
+            //             // }
+            //         }, () => err => console.log(err)
+            //     );
+            // });
             return () => {
                 setIsFocus(false);
             };
-        }, [])
+        }, [itemID])
     );
-    useEffect(() => {
-        if (itemID) {
-            const productionsSetState = productions.filter(item => item.id !== itemID);
-            getProductions(productionsSetState);
-        }
-    }, [itemID])
+    // useEffect(() => {
+    //     if (itemID) {
+    //         const productionsSetState = productions.filter(item => item.id !== itemID);
+    //         getProductions(productionsSetState);
+    //     }
+    // }, [itemID])
 
     return (
         <SafeAreaView style={{flex: 1}}>

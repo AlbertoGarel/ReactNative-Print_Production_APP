@@ -1,9 +1,9 @@
-const htmlDefaultTemplate = (dataProduction, dataUserAndEnterprise, prodResult, cardsData, numAutopastersLine) => {
-    const {name, enterprise} = dataUserAndEnterprise
+const htmlDefaultTemplate = (dataProduction, dataUserAndEnterprise, prodResult, cardsData, numAutopastersLine, contentTextArea) => {
+    const {name, enterprise} = dataUserAndEnterprise;
+    const dataTextArea = contentTextArea;
     const {date, prodLine, pagination, product, editions} = dataProduction;
     const {kilosConsumidos, kilosTirada, tiradaBruta} = prodResult;
     cardsData.sort((a, b) => a.autopaster - b.autopaster);
-    console.log('oooo', cardsData)
     const repeatNum = cardsData.reduce((acc, item) => {
         acc[item.autopaster] = (acc[item.autopaster] || 0) + 1;
         return acc;
@@ -13,10 +13,10 @@ const htmlDefaultTemplate = (dataProduction, dataUserAndEnterprise, prodResult, 
 
     //falta: trabajador, empresa
     const restos = (data, autopasters, secondInd, firstInd) => {
-        const d = data.filter(item => item.autopaster == autopasters[secondInd])[firstInd];
+        const d = data.filter(item => item.autopaster_fk == autopasters[secondInd])[firstInd];
         if (!d) {
             return ''
-        } else if (d.weightIni === d.weightAct) {
+        } else if (d.peso_ini === d.peso_actual) {
             return 'X'
         } else {
             return 'R'
@@ -45,22 +45,22 @@ const htmlDefaultTemplate = (dataProduction, dataUserAndEnterprise, prodResult, 
     // FILL DATA CARDS
     const createCards = () => {
         let cardsToString = ``
-            cardsData.forEach(e => {
+        cardsData.forEach(e => {
             // let comsumption = e.weightIni - e.weightEnd;
-                cardsToString += `<article  class="border">
+            cardsToString += `<article  class="border">
         <div class="twoRowBetween">
           <div id="cardLeftRow" class="twoRowBetween" style=" align-self: stretch">
             <div class="startColumn" style="height:100%">
               <p style="text-align: center; margin: 1mm;">cuerpo</p>
               <div id="numauto" class="border height20 width20 centerCenter margin2all">
-                <p>${e.autopaster}</p>
+                <p>${e.autopaster_fk}</p>
               </div>
             </div>
             <div class="centerColumn" style="padding: 3mm">
               <div class="centerRight">
                 <p>resto inicio</p>
                 <div class="border marginL width20 height9 centerCenter">
-                  <p>${e.weightIni}</p>
+                  <p>${e.peso_actual}</p>
                 </div>
               </div>
               <div class="centerRight">
@@ -74,19 +74,19 @@ const htmlDefaultTemplate = (dataProduction, dataUserAndEnterprise, prodResult, 
           <div id="cardRightRow" class="column">
             <div id="cardCode" class="centerCenter border pad3">`
 
-                e.codepathSVG.length > 0 ?
-                    cardsToString += `<div class="centerColumn" style="overflow: hidden"><svg style="width: 100%; height: 40px" viewBox="0 0 200 20" fill="#000000">
+            e.codepathSVG.length > 0 ?
+                cardsToString += `<div class="centerColumn" style="overflow: hidden"><svg style="width: 100%; height: 40px" viewBox="0 0 200 20" fill="#000000">
                     <path d="${e.codepathSVG}" />
                 </svg>
-                <p style="text-align: center; font-size: 20px">${e.bobinaID}</p></div>`
-                    :
-                    cardsToString += `<p style="font-size: 20px">${e.bobinaID}</p>`
+                <p style="text-align: center; font-size: 20px">${e.codigo_bobina}</p></div>`
+                :
+                cardsToString += `<p style="font-size: 20px">${e.codigo_bobina}</p>`
 
-                cardsToString += `</div>
+            cardsToString += `</div>
             <div id="cardFinally" class="centerRight pad3">
               <p>consumido</p>
               <div class="marginL border height9 width30 centerCenter">
-                ${e.weightAct - e.weightEnd} kg.
+                ${e.peso_actual - e.weightEnd} kg.
               </div>
             </div>
           </div>
@@ -328,6 +328,11 @@ table>tr>td{
 #main>article.border{
   margin: 2mm 0;
   break-inside: avoid;
+span#spanObser{
+  text-decoration: underline!important;
+  font-style: italic!important;
+  color: grey!important;
+  }
 }
   </Style>
 </head>
@@ -410,7 +415,8 @@ table>tr>td{
         </aside>
       </div>
       <div class="border height20" style="margin-top: 1mm">
-        <p class="textInBox">observaciones:</p>
+        <p style="text-decoration: underline!important;font-style: italic!important;">observaciones:
+        <p class="textInBox">${dataTextArea}</p>
       </div>
       <hr class="hr" />
       ${createCards()}

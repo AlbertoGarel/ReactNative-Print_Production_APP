@@ -71,7 +71,8 @@ const PaperCoilWeightDataCard = ({stylesPeperCoilWeight, restoInicioData, restoF
         </View>
     )
 }
-export default React.memo(PaperCoilWeightDataCard, (prevProps, nextProps) => {
-    return (prevProps.restoInicioData === nextProps.restoInicioData &&
-        prevProps.restoFinalData === nextProps.restoFinalData)
-});
+// export default React.memo(PaperCoilWeightDataCard, (prevProps, nextProps) => {
+//     return (prevProps.restoInicioData === nextProps.restoInicioData &&
+//         prevProps.restoFinalData === nextProps.restoFinalData)
+// });
+export default PaperCoilWeightDataCard;

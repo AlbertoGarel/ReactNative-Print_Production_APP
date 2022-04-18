@@ -182,5 +182,16 @@ const FormUsedRoll = ({props}) => {
         </View>
     )
 };
-const styles = StyleSheet.create({});
-export default FormUsedRoll
+const styles = StyleSheet.create({
+    touchable: {
+        width: 120,
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: COLORS.colorSupportfiv,
+        borderRadius: 5,
+        borderWidth: 2,
+        borderColor: COLORS.white,
+    }
+});
+export default FormUsedRoll;

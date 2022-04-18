@@ -19,7 +19,7 @@ const CustomTextInput = ({
                              _defaultValue,
                              inputStyled,
                              _onEndEditing,
-                             _value
+                             _value,
                          }) => {
 
     return (

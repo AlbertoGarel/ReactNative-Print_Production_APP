@@ -6,16 +6,17 @@ import {
     SafeAreaView,
     Text,
     TouchableOpacity,
-    Picker,
     Switch,
     Alert, Dimensions
 } from 'react-native';
-import ViewPager from '@react-native-community/viewpager';
+import {Picker} from '@react-native-picker/picker';
+import PagerView from 'react-native-pager-view';
 import Footer from '../../components/onboardingComponents/FooterOnboarding';
 import {useNavigation} from '@react-navigation/native';
 import SettingsProductionHeader from "../../components/headers/SettingsProductionHeader";
 import BgComponent from "../../components/BackgroundComponent/BgComponent";
 import {
+    addDateSVG,
     edicionesSVG,
     lineaprodSVG,
     logo,
@@ -42,8 +43,15 @@ import * as SQLite from "expo-sqlite";
 import ToastMesages from "../../components/ToastMessages";
 import {getDatas} from "../../data/AsyncStorageFunctions";
 import RadioButtonComponent from "../../components/FormComponents/RadioButtonComponent";
-import {identifyAutopasters, individualProvidedWeightRollProduction, searchCoefTypeRoll} from "../../utils";
-import {genericInsertFunction} from "../../dbCRUD/actionsFunctionsCrud";
+import {
+    autopastersAutomaticSelection,
+    identifyAutopasters,
+    individualProvidedWeightRollProduction,
+    rangeCopies,
+    searchCoefTypeRoll
+} from "../../utils";
+import {genericInsertFunction, genericTransaction} from "../../dbCRUD/actionsFunctionsCrud";
+import CustomDateTimePicker from "../../components/FormComponents/CustomDateTimePicker";
 
 //SEARCH AND SELECT MINOR WEIGHT ROLL IN OTHER PRODUCTION
 const searchStatementAutoProdData_Table =
@@ -55,15 +63,15 @@ const searchStatementAutoProdData_Table =
      autopasters_prod_data.resto_previsto = (SELECT MIN(autopasters_prod_data.resto_previsto) FROM autopasters_prod_data) AND
      autopasters_prod_data.media_defined = ?;`;
 
-;const searchStatementRoll =
+const searchStatementRoll =
     `SELECT * FROM bobina_table
      WHERE NOT EXISTS(SELECT 1 FROM autopasters_prod_data WHERE (autopasters_prod_data.bobina_fk = bobina_table.codigo_bobina))
-     AND bobina_table.autopaster_fk = ? 
+     AND bobina_table.autopaster_fk = ?
      AND bobina_table.gramaje_fk = ?
      AND bobina_table.papel_comun_fk = ?
-     AND bobina_table.media = ? 
+     AND bobina_table.media = ?
      AND (SELECT MIN(bobina_table.peso_actual) FROM bobina_table)
-     AND bobina_table.peso_actual > 0;`;
+     AND bobina_table.peso_actual > 0;`
 
 // [productionID, autopasterFK, bobinaFK, restoPrevisto(calc), mediaDefined(ismedia)]
 const insertAutopastCode =
@@ -84,9 +92,6 @@ const SettingsProductionScreen = () => {
     const showToast = (message) => {
         toastRef.show(message);
     }
-    // REFS
-    const pagerRef = useRef(null);
-    const fullproduction = useRef();
 
     //BASEDATA STATES
     const [papelComun, getPapelComun] = useState([]);
@@ -101,6 +106,7 @@ const SettingsProductionScreen = () => {
     const [numEnteras, setNumEnteras] = useState(0);
 
     //INPUT VALUES STATES
+    const [selectedDates, getSelectedDate] = useState('');
     const [selectedTirada, getselectedTirada] = useState('');
     const [selectedProduct, getselectedProduct] = useState(0);
     const [selectedPagination, getselectedPagination] = useState(0);
@@ -121,10 +127,17 @@ const SettingsProductionScreen = () => {
     const [isCheckedAutomaticEditions, setCheckedAutomaticEditions] = useState(false);
     const [isCheckedAutomaticAutopasters, setCheckedAutomaticAutopasters] = useState(false);
 
-    const [pagenumber, setPagenumber] = useState('1');
-    const handlePageChange = pageNumber => {
-        pagerRef.current.setPage(pageNumber);
-        setPagenumber(pageNumber + 1);
+    const [pagenumber, setPagenumber] = useState(1);
+    // REFS
+    const pagerRef = useRef(null);
+    const inputDateRef = useRef();
+    const fullproduction = useRef();
+
+    function handlePageChange(pageNumber) {
+        //Method .setPage() re-render component. use setPageWithoutAnimation()
+        pagerRef.current?.setPageWithoutAnimation(pageNumber);
+        // pagerRef.current?.setPage(pageNumber);
+        // setPagenumber(pageNumber + 1);
     };
     //BACKGROUND PROP CONST
     const optionsSVG = {
@@ -139,7 +152,7 @@ const SettingsProductionScreen = () => {
     useEffect(() => {
         const unsubscribe = navigation.addListener('focus', () => {
             //CODE FOR REFRESH BASEDATA HERE AND PAGES OF PAGEVIEWER
-            handlePageChange(0);
+            // handlePageChange(0);
             //PRODUCT ALL
             db.transaction(tx => {
                 tx.executeSql(
@@ -224,43 +237,52 @@ const SettingsProductionScreen = () => {
         });
 
         //GET AND SET VALUES FOR AUTOMATICSETTINGSDATA, AUTOMATICSTADISTICS AND ENTER VALUE MANUALLY FOR NULLS.
-        if (isCheckedAutomaticSettingsConf) {
-            if (!nullCopiesByTiradaPercentage || !nullCopiesByEdition) {
-                showToast("Completa la configuracions de descartes en \"SETTINGS\"...")
-            } else {
-                let nullsByTir = ((parseInt(selectedTirada) * parseInt(nullCopiesByTiradaPercentage)) / 100);
-                let nullsByEd = parseInt(nullCopiesByEdition) * parseInt(selectedEditions);
-                let totalCalcSettingsNulls = nullsByTir + nullsByEd;
-
-                if (isNaN(nullsByTir)) {
-                    if (isNaN(nullsByEd)) nullsByEd = '';
-                    getselectedNulls(nullsByEd)
-                    setNullCopiesByTirada('¿ ?')
-                }
-                if (isNaN(nullsByEd)) {
-                    getselectedNulls(nullsByTir);
-                    setNullCopiesByTirada(nullsByTir)
-                }
-                if (!isNaN(nullsByTir) && !isNaN(nullsByEd)) {
-                    getselectedNulls(totalCalcSettingsNulls)
-                    setNullCopiesByTirada(nullsByTir)
-                }
-            }
-        }
+        // if (isCheckedAutomaticSettingsConf) {
+        //     console.log('dentro')
+        //     if (!nullCopiesByTiradaPercentage || !nullCopiesByEdition) {
+        //         showToast("Completa la configuracions de descartes en \"SETTINGS\"...")
+        //         setTimeout(() => navigation.navigate('Settings'), 2000);
+        //     } else {
+        //         let nullsByTir = ((parseInt(selectedTirada) * parseInt(nullCopiesByTiradaPercentage)) / 100);
+        //         let nullsByEd = parseInt(nullCopiesByEdition) * parseInt(selectedEditions);
+        //         let totalCalcSettingsNulls = nullsByTir + nullsByEd;
+        //         console.log(nullsByTir)
+        //         if (isNaN(nullsByTir)) {
+        //
+        //             if (isNaN(nullsByEd)) nullsByEd = '';
+        //             getselectedNulls(nullsByEd)
+        //             setNullCopiesByTirada(nullsByTir)
+        //         }else{
+        //             setNullCopiesByTirada(nullsByTir)
+        //         }
+        //         if (isNaN(nullsByEd)) {
+        //             getselectedNulls(nullsByTir);
+        //             setNullCopiesByTirada(nullsByTir)
+        //         }
+        //         if (!isNaN(nullsByTir) && !isNaN(nullsByEd)) {
+        //             getselectedNulls(totalCalcSettingsNulls)
+        //             setNullCopiesByTirada(nullsByTir)
+        //         }
+        //         // setCheckedAutomaticNulls(10000)
+        //     }
+        // }else{
+        //     //reset values
+        //     getselectedNulls('')
+        // }
 
         /**
          * WHEN PRODUCTION STATISTICS DATA EXISTS, CREATE LOGIC TO TAKE DATA FOR SELECT AUTOPASTERS AND NULLS. IMPORTANT!!!!
          **/
         //CODE HERE
-        console.log('ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt')
+
 
         return unsubscribe;
     }, [
-        navigation,
-        isCheckedAutomaticSettingsConf,
+        // navigation,
+        // isCheckedAutomaticSettingsConf,
         // selectedTirada,
-        nullCopiesByEdition,
-        nullCopiesByTiradaPercentage,
+        // nullCopiesByEdition,
+        // nullCopiesByTiradaPercentage,
         // selectedEditions,
         // selectedLinProd,
     ]);
@@ -308,7 +330,6 @@ const SettingsProductionScreen = () => {
     }, [maxPaginationOptionPickerLineSelected, selectedPagination]);
 
     const groupAuto = (obj, prodData) => {
-        console.log('----------------------------------------------------estamos dentro')
         let getSelectedAutopasterswithrolls = [];
         const id = obj.id;
         // const _enteras = obj['entera'].map(item => [id, item, 0]);
@@ -320,42 +341,40 @@ const SettingsProductionScreen = () => {
             getSelectedAutopasterswithrolls = [...getSelectedAutopasterswithrolls, ..._enteras, _media];
         }
         db.transaction(tx => {
-            getSelectedAutopasterswithrolls.forEach(item => {
+            getSelectedAutopasterswithrolls.forEach(async item => {
                 let coefRoll = 0;
                 let nowRollWeight = 0;
                 let positionRoll = 1;
                 let calcWeigth = {};
                 let dataRollInsert = [];
-                let queryParams = [item[1], selectedMedition, papelComun.filter(i=> i.producto_id === selectedProduct)[0].papel_comun_fk, item[2]]
+                let queryParams = [item[1], selectedMedition, papelComun.filter(i => i.producto_id === selectedProduct)[0].papel_comun_fk, item[2]]
                 //alert(selectedProduct) CHANGE SELECTED PRODUCT FOR ID PAPEL COMÚN
                 // db.transaction(tx => {
-                tx.executeSql(
+                await tx.executeSql(
                     searchStatementAutoProdData_Table,
                     //params [autopasterID, gramajeFK, papelComunFK, isMedia]
                     queryParams,
                     (_, {rows: {_array}}) => {
                         const meditionVal = meditionDataDB.filter(item => item.medition_id === selectedMedition);
-                        const SumTotalCopies = prodData.nulls + prodData.tirada;
-
+                        const SumTotalCopies = parseInt(prodData.nulls) + parseInt(prodData.tirada);
                         if (_array.length > 0) {
                             // OK. INSERT 'CODIGO_BOBINA' ROLL IN autopasters_prod_data.
                             coefRoll = searchCoefTypeRoll(...meditionVal, ..._array);
                             nowRollWeight = _array[0].resto_previsto;
                             calcWeigth = individualProvidedWeightRollProduction(SumTotalCopies, nowRollWeight, coefRoll);
                             dataRollInsert = [item[0], item[1], _array[0].codigo_bobina, calcWeigth.rollweight, item[2], positionRoll]
-
+                            // console.log('dataRollInsert', dataRollInsert)
                             // INSERT DATA.
                             genericInsertFunction(insertAutopastCode, dataRollInsert)
-                                .then(response => console.log('response', response))
+                                .then(response => console.log('response POSITIVE COIL', response))
                                 .catch(err => console.log('err', err))
-
-
                         } else {
                             // NO OK. NEGATIVE COIL SEARCH IN PRODUCTION TABLE. SEARCH LAST ROLL IN SELECTED AUTOPASTER.
                             db.transaction(tx => {
                                 tx.executeSql(
                                     searchStatementRoll,
                                     //params [autopasterID, gramajeFK, papelComunFK, isMedia]
+                                    // [item[0], ...queryParams],
                                     queryParams,
                                     (_, {rows: {_array}}) => {
                                         if (_array.length > 0) {
@@ -367,13 +386,13 @@ const SettingsProductionScreen = () => {
 
                                             // INSERT DATA.
                                             genericInsertFunction(insertAutopastCode, dataRollInsert)
-                                                .then(response => console.log('response', response))
+                                                .then(response => console.log('response NEGATIVE COIL', response))
                                                 .catch(err => console.log('err', err))
                                         } else {
                                             // NO ROLL FOUND.
                                             const insertAutopastWithoutRoll = [...item, positionRoll];
                                             genericInsertFunction(insertWithoutRoll, insertAutopastWithoutRoll)
-                                                .then(response => console.log('response', response))
+                                                .then(response => console.log('response NO EXIST ROLLS', response))
                                                 .catch(err => console.log('err', err))
                                         }
                                     }
@@ -388,17 +407,17 @@ const SettingsProductionScreen = () => {
     };
 
     const handlerSendOptionsSelected = (toSendAutopastProd, toSendProd) => {
-        const insert_production = "INSERT INTO produccion_table (produccion_id, editions, linea_fk, medition_fk, pagination_fk, producto_fk, tirada, nulls, fecha_produccion) VALUES (?,?,?,?,?,?,?,?,date('now'));"
+        const insert_production = "INSERT INTO produccion_table (produccion_id, editions, linea_fk, medition_fk, pagination_fk, producto_fk, tirada, nulls, fecha_produccion) VALUES (?,?,?,?,?,?,?,?,?);"
         const prod_data = Object.values(toSendProd);
-
         //SEARCH BOBINAS FUNCTION
         genericInsertFunction(insert_production, prod_data)
             .then(result => {
                 if (result.rowsAffected > 0) {
                     //LOOP INSERT DATA
                     groupAuto(toSendAutopastProd, toSendProd);
-                    // showToast('Guardado con éxito.');
-                    // resetForm();
+                    showToast('Guardado con éxito.');
+                    setTimeout(() => navigation.navigate('HomeStack'), 3000);
+                    resetForm();
                 } else {
                     showToast('Error al guardar.')
                 }
@@ -448,6 +467,7 @@ const SettingsProductionScreen = () => {
     }
 
     const fullProductionSchema = Yup.object().shape({
+        inputDate: FormYupSchemas.dateReg,
         tirada: FormYupSchemas.tirada,
         pickerProduct: FormYupSchemas.pickerProducto,
         pickerPagination: FormYupSchemas.pickerProducto,
@@ -472,26 +492,83 @@ const SettingsProductionScreen = () => {
         }),
     });
 
-    const BoxError = () => {
-        return (
-            <View style={{
-                margin: 5,
-                width: Dimensions.get('window').width - 10,// margin * 2
-                padding: 10,
-                borderRadius: 5,
-                backgroundColor: '#FF000020',
-                position: 'absolute',
-                bottom: 0,
-                borderWidth: 2,
-                borderColor: '#FF000070'
-
-            }}>
-                <Text style={{color: COLORS.supportBackg1, fontFamily: 'Anton'}}>ERROR:</Text>
-                <Text style={{textAlign: 'center', color: COLORS.supportBackg1, fontFamily: 'Anton'}}>Revise errores o
-                    entradas vacías.</Text>
-            </View>
-        )
+    function handlerCheckAutopasterAutoSelected() {
+        if (selectedProduct && selectedPagination) {
+            if (isCheckedAutomaticAutopasters) {
+                setEnteras([]);
+                setCheckedAutomaticAutopasters(false);
+                return
+            }
+            setCheckedAutomaticAutopasters(!isCheckedAutomaticAutopasters)
+            autopastersAutomaticSelection(selectedProduct, selectedPagination, maxPaginationOptionPickerLineSelected)
+                .then(response => {
+                    let autopasters = [...response];
+                    if (isMedia !== 0) {
+                        autopasters = response.filter(i => parseInt(i) !== isMedia)
+                    }
+                    setEnteras(autopasters)
+                })
+        } else {
+            // alert('selecciona producto y paginación')
+        }
     }
+
+    const [switchTirada, setSwitchTirada] = useState(false);
+    const [switchEditions, setSwitchEditions] = useState(false);
+
+    function handlerCalcAutomaticNulls() {
+        const selectAveragePreviousProductions =
+            `SELECT tiradabruta, ejemplares FROM productresults_table
+            WHERE ejemplares BETWEEN ? AND ? AND paginacion = ? AND nombre_producto = ? AND ediciones = ?;
+            `;
+        if (!maxPaginationOptionPickerLineSelected || !selectedPagination || !selectedTirada || !selectedEditions || !selectedProduct) {
+            showToast('Completa los campos necesarios.')
+            return;
+        }
+        const pagValue = maxPaginationOptionPickerLineSelected.filter(i => i.paginacion_id === selectedPagination)[0].paginacion_value;
+        const {min, max} = rangeCopies(selectedTirada);
+        if (!isCheckedAutomaticNulls) {
+            genericTransaction(selectAveragePreviousProductions, [
+                min, max, pagValue, selectedProduct, selectedEditions
+            ])
+                .then(response => {
+                    if (!response.length > 0) {
+                        console.log(
+                            min, max, pagValue, selectedProduct, selectedEditions
+                        )
+                        console.log(response)
+                        showToast('No existen datos para calcular.');
+                    } else {
+                        const dif = response.reduce((acc, item) => {
+                            return acc + (item.tiradabruta - item.ejemplares)
+                        }, 0);
+                        // return dif / response.length
+                        getselectedNulls(dif / response.length)
+                    }
+                })
+                // .then(response => getselectedNulls(response))
+                .catch(err => console.log(err))
+        }
+        setCheckedAutomaticNulls(!isCheckedAutomaticNulls)
+    }
+
+    useEffect(() => {
+        getselectedNulls('');
+        let nullsByTir = ((parseInt(selectedTirada) * parseInt(nullCopiesByTiradaPercentage)) / 100);
+        let nullsByEd = parseInt(nullCopiesByEdition) * parseInt(selectedEditions);
+
+        if (switchTirada) {
+            if (isNaN(nullsByEd)) nullsByTir = '';
+            getselectedNulls(nullsByTir + parseInt(selectedTirada))
+            setNullCopiesByTirada(nullsByTir);
+        }
+        if (switchEditions) {
+            if (isNaN(nullsByEd)) nullsByEd = '';
+            getselectedNulls(nullsByEd + parseInt(selectedTirada));
+
+        }
+    }, [selectedTirada, selectedEditions, switchTirada, switchEditions, isCheckedAutomaticNulls])
+
 
     return (
         // SafeAreView don't accept padding.
@@ -500,13 +577,17 @@ const SettingsProductionScreen = () => {
                 enableReinitialize
                 innerRef={fullproduction}
                 initialValues={{
-                    tirada: selectedTirada === '' ? selectedTirada : parseInt(selectedTirada),
+                    inputDate: selectedDates,
+                    // tirada: selectedTirada === '' ? selectedTirada : parseInt(selectedTirada),
+                    tirada: selectedTirada,
                     pickerProduct: selectedProduct,
                     pickerPagination: selectedPagination,
                     pickerlinProd: selectedLinProd,
                     pickerMedition: selectedMedition,
-                    inputEditions: selectedEditions === '' ? selectedEditions : parseInt(selectedEditions),
-                    inputNulls: selectedNulls === '' ? selectedNulls : parseInt(selectedNulls),
+                    // inputEditions: selectedEditions === '' ? selectedEditions : parseInt(selectedEditions),
+                    inputEditions: selectedEditions,
+                    // inputNulls: selectedNulls === '' ? selectedNulls : parseInt(selectedNulls),
+                    inputNulls: selectedNulls,
                     customEntera: areEnteras,
                     customMedia: isMedia
                 }}
@@ -531,8 +612,8 @@ const SettingsProductionScreen = () => {
                         producto: values.pickerProduct,
                         tirada: values.tirada,
                         nulls: values.inputNulls,
+                        date: values.inputDate.replace(/\//g, '-')
                     };
-
                     handlerSendOptionsSelected(objectAutopast, objectProd)
                 }}
             >
@@ -556,289 +637,332 @@ const SettingsProductionScreen = () => {
                                 showHideTransition={'slide'}
                                 hidden={true}
                             />
-                            <ViewPager style={{flex: 1}}
+                            <PagerView style={{flex: 1}}
                                        initialPage={0}
                                        ref={pagerRef}
-                                       scrollEnabled={true}
-                                       orientation={"horizontal"}
-                                       keyboardDismissMode={'none'}
-                                       showPageIndicator={true}
+                                // scrollEnabled={true}
+                                // orientation={"horizontal"}
+                                // keyboardDismissMode={'none'}
+                                // showPageIndicator={true}
                             >
-                                <View key="1">
+                                <View>
                                     <View style={styles.contPrinc}>
                                         <BgComponent
                                             svgOptions={optionsSVG}
                                             styleOptions={optionsStyleContSVG}
                                         />
                                         <SettingsProductionHeader
-                                            pagenumber={pagenumber}
+                                            pagenumber={1}
                                             explanation={'Escoge opciones relacionadas con el producto.'}
                                         />
                                         <View style={styles.subCont}>
-                                            <View style={{padding: 10}}>
-                                                {(errors.pickerlinProd && touched.pickerlinProd) &&
-                                                < Text
-                                                    style={{
-                                                        fontSize: 10,
-                                                        color: 'red'
-                                                    }}>{errors.pickerlinProd}</Text>
-                                                }
-                                                <View style={{
-                                                    backgroundColor: COLORS.white,
-                                                    width: '100%',
-                                                    height: 60,
-                                                    padding: 5,
-                                                    borderRadius: 5,
-                                                    flexDirection: 'row',
-                                                    justifyContent: 'center',
-                                                    alignItems: 'center',
-                                                    borderWidth: .5,
-                                                    borderColor: COLORS.black,
-                                                }}>
-                                                    <View style={styles.IconStyle}>
-                                                        <SvgComponent
-                                                            svgData={lineaprodSVG}
-                                                            svgWidth={45}
-                                                            svgHeight={45}
-                                                        />
-                                                    </View>
-                                                    <View style={{flex: 1, paddingLeft: 10}}>
-                                                        <CustomPicker
-                                                            // ref={ProductoRef}
-                                                            style={{
-                                                                borderWidth: .5,
-                                                                borderColor: COLORS.black,
-                                                            }}
-                                                            name={'pickerlinProd'}
-                                                            itemStyle={{fontFamily: 'Anton'}}
-                                                            mode={'dropdown'}
-                                                            selectedValue={values.pickerlinProd}
-                                                            // selectedValue={selectedMeasurementMetod}
-                                                            onValueChange={(itemValue) => {
-                                                                //RESET PAGE STATUS ON CHANGE LINE PRODUCTION VALUES.
-                                                                // getselectedPagination(0);
-                                                                if (itemValue > 0) {
-                                                                    handlerChangeLineProd(itemValue);
-                                                                    handleChange('pickerlinProd')
-                                                                    setFieldTouched('pickerlinProd', true)
-                                                                    setFieldValue('pickerlinProd', itemValue)
-                                                                    getselectedLinProd(itemValue)
-                                                                } else {
-                                                                    showToast("Debes escoger una opción válida...")
-                                                                }
-                                                            }}
-                                                            dataOptionsPicker={
-                                                                lineProdDataDB.map((item, index) => {
-                                                                    return <Picker.Item key={index}
-                                                                                        label={' ' + item.linea_name}
-                                                                                        value={item.linea_id}/>
-                                                                })
-                                                            }
-                                                            defaultItemLabel={'Escoge Línea de producción...'}
-                                                        />
-                                                    </View>
-                                                </View>
-                                            </View>
-                                            <View style={{padding: 10}}>
-                                                {(errors.pickerPagination && touched.pickerPagination) &&
+                                            <View>
+                                                {(errors.inputDate && touched.inputDate) &&
                                                 <Text
                                                     style={{
                                                         fontSize: 10,
-                                                        color: 'red'
-                                                    }}>{errors.pickerPagination}</Text>
+                                                        color: 'red',
+                                                        marginLeft: 10
+                                                    }}>{errors.inputDate}</Text>
                                                 }
-                                                <View style={{
-                                                    backgroundColor: COLORS.white,
-                                                    width: '100%',
-                                                    height: 60,
-                                                    padding: 5,
-                                                    borderRadius: 5,
-                                                    flexDirection: 'row',
-                                                    justifyContent: 'center',
-                                                    alignItems: 'center',
-                                                    borderWidth: .5,
-                                                    borderColor: COLORS.black,
-                                                }}>
-                                                    <View style={styles.IconStyle}>
-                                                        <SvgComponent
-                                                            svgData={paginationSVG}
-                                                            svgWidth={45}
-                                                            svgHeight={45}
-                                                        />
-                                                    </View>
-                                                    <View style={{flex: 1, paddingLeft: 10}}>
-                                                        <CustomPicker
-                                                            // ref={ProductoRef}
-                                                            style={{
-                                                                borderWidth: .5,
-                                                                borderColor: COLORS.black,
-                                                            }}
-                                                            name={'pickerPagination'}
-                                                            itemStyle={{fontFamily: 'Anton'}}
-                                                            mode={'dropdown'}
-                                                            selectedValue={values.pickerPagination}
-                                                            // selectedValue={selectedMeasurementMetod}
-                                                            onValueChange={(itemValue) => {
-                                                                if (itemValue > 0) {
-                                                                    handleChange('pickerPagination')
-                                                                    setFieldTouched('pickerPagination', true)
-                                                                    setFieldValue('pickerPagination', itemValue)
-                                                                    //get Value for calc active autopasters before submit
-                                                                    getselectedPagination(itemValue)
-                                                                } else {
-                                                                    showToast("Debes escoger una opción válida...")
-                                                                }
-                                                            }}
-                                                            dataOptionsPicker={
-                                                                selectedLinProd ?
-                                                                    maxPaginationOptionPickerLineSelected.map((item, index) => {
+                                                <CustomDateTimePicker
+                                                    getSelectedDate={getSelectedDate}
+                                                    _ref={inputDateRef}
+                                                    svgData={addDateSVG}
+                                                    svgWidth={35}
+                                                    svgHeight={35}
+                                                    text={'Fecha: '}
+                                                    modeType={'calendar'}
+                                                    styleOptions={{
+                                                        backgroundColor: '#FFF',
+                                                        textHeaderColor: '#FF8500',
+                                                        textDefaultColor: '#FF8500',
+                                                        selectedTextColor: '#fff',
+                                                        mainColor: '#FF8500',
+                                                        textSecondaryColor: '#000',
+                                                        borderColor: '#000',
+                                                        textFontSize: 12,
+                                                        textHeaderFontSize: 20,
+                                                        defaultFont: 'Anton',
+                                                        headerFont: 'Anton',
+                                                    }}
+                                                    placeholder={'Selecciona fecha...'}
+                                                    _name={'inputDate'}
+                                                    _value={selectedDates}
+                                                />
+                                            </View>
+                                            <View>
+                                                <View style={{padding: 10}}>
+                                                    {(errors.pickerlinProd && touched.pickerlinProd) &&
+                                                    <Text
+                                                        style={{
+                                                            fontSize: 10,
+                                                            color: 'red'
+                                                        }}>{errors.pickerlinProd}</Text>
+                                                    }
+                                                    <View style={{
+                                                        backgroundColor: COLORS.white,
+                                                        width: '100%',
+                                                        height: 60,
+                                                        padding: 5,
+                                                        borderRadius: 5,
+                                                        flexDirection: 'row',
+                                                        justifyContent: 'center',
+                                                        alignItems: 'center',
+                                                        borderWidth: .5,
+                                                        borderColor: COLORS.black,
+                                                    }}>
+                                                        <View style={styles.IconStyle}>
+                                                            <SvgComponent
+                                                                svgData={lineaprodSVG}
+                                                                svgWidth={45}
+                                                                svgHeight={45}
+                                                            />
+                                                        </View>
+                                                        <View style={{flex: 1, paddingLeft: 10}}>
+                                                            <CustomPicker
+                                                                // ref={ProductoRef}
+                                                                style={{
+                                                                    borderWidth: .5,
+                                                                    borderColor: COLORS.black,
+                                                                }}
+                                                                name={'pickerlinProd'}
+                                                                itemStyle={{fontFamily: 'Anton'}}
+                                                                mode={'dialog'}
+                                                                selectedValue={values.pickerlinProd}
+                                                                // selectedValue={selectedMeasurementMetod}
+                                                                onValueChange={(itemValue) => {
+                                                                    //RESET PAGE STATUS ON CHANGE LINE PRODUCTION VALUES.
+                                                                    // getselectedPagination(0);
+                                                                    if (itemValue > 0) {
+                                                                        handlerChangeLineProd(itemValue);
+                                                                        handleChange('pickerlinProd')
+                                                                        setFieldTouched('pickerlinProd', true)
+                                                                        setFieldValue('pickerlinProd', itemValue)
+                                                                        getselectedLinProd(itemValue)
+                                                                    } else {
+                                                                        showToast("Debes escoger una opción válida...")
+                                                                    }
+                                                                }}
+                                                                dataOptionsPicker={
+                                                                    lineProdDataDB.map((item, index) => {
                                                                         return <Picker.Item key={index}
-                                                                                            label={' ' + item.paginacion_value}
-                                                                                            value={item.paginacion_id}/>
+                                                                                            label={' ' + item.linea_name}
+                                                                                            value={item.linea_id}/>
                                                                     })
-                                                                    :
-                                                                    []
-                                                            }
-                                                            enabled={maxPaginationOptionPickerLineSelected.length > 0}
-                                                            defaultItemLabel={maxPaginationOptionPickerLineSelected.length === 0 ? 'Paginación deshabilitada...' : 'Escoge paginación...'}
-                                                        />
+                                                                }
+                                                                defaultItemLabel={'Escoge Línea de producción...'}
+                                                            />
+                                                        </View>
                                                     </View>
                                                 </View>
-                                            </View>
-                                            <View style={{padding: 10}}>
-                                                {(errors.pickerProduct && touched.pickerProduct) &&
-                                                < Text
-                                                    style={{fontSize: 10, color: 'red'}}>{errors.pickerProduct}</Text>
-                                                }
-                                                <View style={{
-                                                    backgroundColor: COLORS.white,
-                                                    width: '100%',
-                                                    height: 60,
-                                                    padding: 5,
-                                                    borderRadius: 5,
-                                                    flexDirection: 'row',
-                                                    justifyContent: 'center',
-                                                    alignItems: 'center',
-                                                    borderWidth: .5,
-                                                    borderColor: COLORS.black,
-                                                }}>
-                                                    <View style={styles.IconStyle}>
-                                                        <SvgComponent
-                                                            svgData={productoSVG}
-                                                            svgWidth={45}
-                                                            svgHeight={45}
-                                                        />
-                                                    </View>
-                                                    <View style={{flex: 1, paddingLeft: 10}}>
-                                                        <CustomPicker
-                                                            // ref={ProductoRef}
-                                                            style={{
-                                                                borderWidth: .5,
-                                                                borderColor: COLORS.black,
-                                                            }}
-                                                            name={'pickerProduct'}
-                                                            itemStyle={{fontFamily: 'Anton'}}
-                                                            mode={'dropdown'}
-                                                            selectedValue={values.pickerProduct}
-                                                            // selectedValue={selectedMeasurementMetod}
-                                                            onValueChange={(itemValue) => {
-                                                                if (itemValue > 0) {
-                                                                    handleChange('pickerProduct')
-                                                                    setFieldTouched('pickerProduct', true)
-                                                                    setFieldValue('pickerProduct', itemValue)
-                                                                    getselectedProduct(itemValue)
-                                                                } else {
-                                                                    showToast("Debes escoger una opción válida...")
+                                                <View style={{padding: 10}}>
+                                                    {(errors.pickerPagination && touched.pickerPagination) &&
+                                                    <Text
+                                                        style={{
+                                                            fontSize: 10,
+                                                            color: 'red'
+                                                        }}>{errors.pickerPagination}</Text>
+                                                    }
+                                                    <View style={{
+                                                        backgroundColor: COLORS.white,
+                                                        width: '100%',
+                                                        height: 60,
+                                                        padding: 5,
+                                                        borderRadius: 5,
+                                                        flexDirection: 'row',
+                                                        justifyContent: 'center',
+                                                        alignItems: 'center',
+                                                        borderWidth: .5,
+                                                        borderColor: COLORS.black,
+                                                    }}>
+                                                        <View style={styles.IconStyle}>
+                                                            <SvgComponent
+                                                                svgData={paginationSVG}
+                                                                svgWidth={45}
+                                                                svgHeight={45}
+                                                            />
+                                                        </View>
+                                                        <View style={{flex: 1, paddingLeft: 10}}>
+                                                            <CustomPicker
+                                                                // ref={ProductoRef}
+                                                                style={{
+                                                                    borderWidth: .5,
+                                                                    borderColor: COLORS.black,
+                                                                }}
+                                                                name={'pickerPagination'}
+                                                                itemStyle={{fontFamily: 'Anton'}}
+                                                                mode={'dialog'}
+                                                                selectedValue={values.pickerPagination}
+                                                                // selectedValue={selectedMeasurementMetod}
+                                                                onValueChange={(itemValue) => {
+                                                                    if (itemValue > 0) {
+                                                                        handleChange('pickerPagination')
+                                                                        setFieldTouched('pickerPagination', true)
+                                                                        setFieldValue('pickerPagination', itemValue)
+                                                                        //get Value for calc active autopasters before submit
+                                                                        getselectedPagination(itemValue)
+                                                                    } else {
+                                                                        showToast("Debes escoger una opción válida...")
+                                                                    }
+                                                                }}
+                                                                dataOptionsPicker={
+                                                                    selectedLinProd ?
+                                                                        maxPaginationOptionPickerLineSelected.map((item, index) => {
+                                                                            return <Picker.Item key={index}
+                                                                                                label={' ' + item.paginacion_value}
+                                                                                                value={item.paginacion_id}/>
+                                                                        })
+                                                                        :
+                                                                        []
                                                                 }
-                                                            }}
-                                                            dataOptionsPicker={
-                                                                productoDataDB.map((item, index) => {
-                                                                    return <Picker.Item key={index}
-                                                                                        label={' ' + item.producto_name}
-                                                                                        value={item.producto_id}/>
-                                                                })
-                                                            }
-                                                            defaultItemLabel={'Escoge un producto...'}
-                                                        />
+                                                                enabled={maxPaginationOptionPickerLineSelected.length > 0}
+                                                                defaultItemLabel={maxPaginationOptionPickerLineSelected.length === 0 ? 'Paginación deshabilitada...' : 'Escoge paginación...'}
+                                                            />
+                                                        </View>
                                                     </View>
                                                 </View>
-                                            </View>
-                                            <View style={{padding: 10}}>
-                                                {(errors.pickerMedition && touched.pickerMedition) &&
-                                                < Text
-                                                    style={{fontSize: 10, color: 'red'}}>{errors.pickerMedition}</Text>
-                                                }
-                                                <View style={{
-                                                    backgroundColor: COLORS.white,
-                                                    width: '100%',
-                                                    height: 60,
-                                                    padding: 5,
-                                                    borderRadius: 5,
-                                                    flexDirection: 'row',
-                                                    justifyContent: 'center',
-                                                    alignItems: 'center',
-                                                    borderWidth: .5,
-                                                    borderColor: COLORS.black,
-                                                }}>
-                                                    <View style={styles.IconStyle}>
-                                                        <SvgComponent
-                                                            svgData={meditionSVG}
-                                                            svgWidth={45}
-                                                            svgHeight={45}
-                                                        />
-                                                    </View>
-                                                    <View style={{flex: 1, paddingLeft: 10}}>
-                                                        <CustomPicker
-                                                            // ref={ProductoRef}
-                                                            style={{
-                                                                borderWidth: .5,
-                                                                borderColor: COLORS.black,
-                                                            }}
-                                                            name={'pickerMedition'}
-                                                            itemStyle={{fontFamily: 'Anton'}}
-                                                            mode={'dropdown'}
-                                                            selectedValue={values.pickerMedition}
-                                                            // selectedValue={selectedMeasurementMetod}
-                                                            onValueChange={(itemValue) => {
-                                                                if (itemValue > 0) {
-                                                                    handleChange('pickerMedition')
-                                                                    setFieldTouched('pickerMedition', true)
-                                                                    setFieldValue('pickerMedition', itemValue)
-                                                                    getselectedMedition(itemValue)
-                                                                } else {
-                                                                    showToast("Debes escoger una opción válida...")
+                                                <View style={{padding: 10}}>
+                                                    {(errors.pickerProduct && touched.pickerProduct) &&
+                                                    < Text
+                                                        style={{
+                                                            fontSize: 10,
+                                                            color: 'red'
+                                                        }}>{errors.pickerProduct}</Text>
+                                                    }
+                                                    <View style={{
+                                                        backgroundColor: COLORS.white,
+                                                        width: '100%',
+                                                        height: 60,
+                                                        padding: 5,
+                                                        borderRadius: 5,
+                                                        flexDirection: 'row',
+                                                        justifyContent: 'center',
+                                                        alignItems: 'center',
+                                                        borderWidth: .5,
+                                                        borderColor: COLORS.black,
+                                                    }}>
+                                                        <View style={styles.IconStyle}>
+                                                            <SvgComponent
+                                                                svgData={productoSVG}
+                                                                svgWidth={45}
+                                                                svgHeight={45}
+                                                            />
+                                                        </View>
+                                                        <View style={{flex: 1, paddingLeft: 10}}>
+                                                            <CustomPicker
+                                                                // ref={ProductoRef}
+                                                                style={{
+                                                                    borderWidth: .5,
+                                                                    borderColor: COLORS.black,
+                                                                }}
+                                                                name={'pickerProduct'}
+                                                                itemStyle={{fontFamily: 'Anton'}}
+                                                                mode={'dialog'}
+                                                                selectedValue={values.pickerProduct}
+                                                                // selectedValue={selectedMeasurementMetod}
+                                                                onValueChange={(itemValue) => {
+                                                                    if (itemValue > 0) {
+                                                                        handleChange('pickerProduct')
+                                                                        setFieldTouched('pickerProduct', true)
+                                                                        setFieldValue('pickerProduct', itemValue)
+                                                                        getselectedProduct(itemValue)
+                                                                    } else {
+                                                                        showToast("Debes escoger una opción válida...")
+                                                                    }
+                                                                }}
+                                                                dataOptionsPicker={
+                                                                    productoDataDB.map((item, index) => {
+                                                                        return <Picker.Item key={index}
+                                                                                            label={' ' + item.producto_name}
+                                                                                            value={item.producto_id}/>
+                                                                    })
                                                                 }
-                                                            }}
-                                                            dataOptionsPicker={
-                                                                meditionDataDB.map((item, index) => {
-                                                                    return <Picker.Item key={index}
-                                                                                        label={'medición ' + item.medition_type + ' / ' + item.gramaje_value + 'g.'}
-                                                                                        value={item.medition_id}/>
-                                                                })
-                                                            }
-                                                            defaultItemLabel={'Escoge tipo de medición...'}
-                                                        />
+                                                                defaultItemLabel={'Escoge un producto...'}
+                                                            />
+                                                        </View>
+                                                    </View>
+                                                </View>
+                                                <View style={{padding: 10}}>
+                                                    {(errors.pickerMedition && touched.pickerMedition) &&
+                                                    < Text
+                                                        style={{
+                                                            fontSize: 10,
+                                                            color: 'red'
+                                                        }}>{errors.pickerMedition}</Text>
+                                                    }
+                                                    <View style={{
+                                                        backgroundColor: COLORS.white,
+                                                        width: '100%',
+                                                        height: 60,
+                                                        padding: 5,
+                                                        borderRadius: 5,
+                                                        flexDirection: 'row',
+                                                        justifyContent: 'center',
+                                                        alignItems: 'center',
+                                                        borderWidth: .5,
+                                                        borderColor: COLORS.black,
+                                                    }}>
+                                                        <View style={styles.IconStyle}>
+                                                            <SvgComponent
+                                                                svgData={meditionSVG}
+                                                                svgWidth={45}
+                                                                svgHeight={45}
+                                                            />
+                                                        </View>
+                                                        <View style={{flex: 1, paddingLeft: 10}}>
+                                                            <CustomPicker
+                                                                // ref={ProductoRef}
+                                                                style={{
+                                                                    borderWidth: .5,
+                                                                    borderColor: COLORS.black,
+                                                                }}
+                                                                name={'pickerMedition'}
+                                                                itemStyle={{fontFamily: 'Anton'}}
+                                                                mode={'dialog'}
+                                                                selectedValue={values.pickerMedition}
+                                                                // selectedValue={selectedMeasurementMetod}
+                                                                onValueChange={(itemValue) => {
+                                                                    if (itemValue > 0) {
+                                                                        handleChange('pickerMedition')
+                                                                        setFieldTouched('pickerMedition', true)
+                                                                        setFieldValue('pickerMedition', itemValue)
+                                                                        getselectedMedition(itemValue)
+                                                                    } else {
+                                                                        showToast("Debes escoger una opción válida...")
+                                                                    }
+                                                                }}
+                                                                dataOptionsPicker={
+                                                                    meditionDataDB.map((item, index) => {
+                                                                        return <Picker.Item key={index}
+                                                                                            label={'medición ' + item.medition_type + ' / ' + item.gramaje_value + 'g.'}
+                                                                                            value={item.medition_id}/>
+                                                                    })
+                                                                }
+                                                                defaultItemLabel={'Escoge tipo de medición...'}
+                                                            />
+                                                        </View>
                                                     </View>
                                                 </View>
                                             </View>
                                         </View>
+                                        <Footer
+                                            backgroundColor={COLORS.primary}
+                                            rightButtonLabel="Next"
+                                            rightButtonPress={() => {
+                                                handlePageChange(1);
+                                            }}
+                                        />
                                     </View>
-                                    <Footer
-                                        backgroundColor={COLORS.primary}
-                                        rightButtonLabel="Next"
-                                        rightButtonPress={() => {
-                                            handlePageChange(1);
-                                        }}
-                                    />
                                 </View>
-                                <View key="2">
+                                <View>
                                     <View style={styles.contPrinc}>
                                         <BgComponent
                                             svgOptions={optionsSVG}
                                             styleOptions={optionsStyleContSVG}
                                         />
                                         <SettingsProductionHeader
-                                            pagenumber={pagenumber}
+                                            pagenumber={2}
                                             explanation={'Introduce manualmente el número de ejemplares nulos, "descarte de ejemplares (SETTINGS)" o por estadísticas de producción'}
                                         />
                                         <View style={styles.subCont}>
@@ -868,19 +992,21 @@ const SettingsProductionScreen = () => {
                                                 />
                                             </View>
                                             <View
-                                                style={[styles.swicthparent, {opacity: isCheckedAutomaticNulls ? .2 : 1}]}
+                                                style={[styles.swicthparent, {opacity: switchEditions || isCheckedAutomaticNulls ? .2 : 1}]}
                                                 // key={item.checkName + '/' + index}
                                             >
                                                 <Switch
                                                     style={{width: '10%'}}
                                                     // key={item.checkName}
                                                     trackColor={{false: '#767577', true: '#ffff0080'}}
-                                                    thumbColor={isCheckedAutomaticNulls && !isCheckedAutomaticSettingsConf ? '#f4f3f4' : isCheckedAutomaticNulls || isCheckedAutomaticSettingsConf ? '#f5dd4b' : '#f4f3f4'}
+                                                    thumbColor={!switchTirada && !isCheckedAutomaticSettingsConf ? '#f4f3f4' : '#f5dd4b'}
                                                     ios_backgroundColor="#3e3e3e"
-                                                    onValueChange={() => setCheckedAutomaticSettingsConf(!isCheckedAutomaticSettingsConf)}
-                                                    value={isCheckedAutomaticNulls ? 0 : isCheckedAutomaticSettingsConf}
+                                                    // onValueChange={() => setCheckedAutomaticSettingsConf(!isCheckedAutomaticSettingsConf)}
+                                                    onValueChange={() => setSwitchTirada(!switchTirada)}
+                                                    value={switchTirada}
                                                     // chidren={item.checkName}
-                                                    disabled={isCheckedAutomaticNulls}
+                                                    // disabled={isCheckedAutomaticNulls}
+                                                    disabled={switchEditions || isCheckedAutomaticNulls}
                                                 />
                                                 <Text
                                                     style={{
@@ -890,17 +1016,17 @@ const SettingsProductionScreen = () => {
                                                         width: '90%'
                                                     }}
                                                     // key={item.checkName + index}
-                                                >{isCheckedAutomaticSettingsConf ?
+                                                >{switchTirada ?
                                                     // 'Nulos por Tirada: 1000'
                                                     <>Nulos por tirada: <Text
-                                                        style={{color: COLORS.primary}}>{nullCopiesByTirada}</Text> Ejemplares
+                                                        style={{color: COLORS.primary}}>{selectedTirada > 0 ? nullCopiesByTirada : '¿ ?'}</Text> Ejemplares
                                                         ( <Text
                                                             style={{color: COLORS.primary}}>{nullCopiesByTiradaPercentage}%</Text> )</>
                                                     :
                                                     <>Usar valores de descarte de "SETTINGS" para <Text
                                                         style={{color: COLORS.primary}}>tirada</Text></>}
                                                 </Text>
-
+                                                <Text>{nullCopiesByTirada}</Text>
                                             </View>
                                             <View style={{marginTop: 10}}>
                                                 {(errors.inputEditions && touched.inputEditions) &&
@@ -929,19 +1055,20 @@ const SettingsProductionScreen = () => {
                                                 <Text>{values.inputEditions}</Text>
                                             </View>
                                             <View
-                                                style={[styles.swicthparent, {opacity: isCheckedAutomaticNulls ? .2 : 1}]}
+                                                style={[styles.swicthparent, {opacity: switchTirada || isCheckedAutomaticNulls ? .2 : 1}]}
                                                 // key={item.checkName + '/' + index}
                                             >
                                                 <Switch
                                                     style={{width: '10%'}}
                                                     // key={item.checkName}
                                                     trackColor={{false: '#767577', true: '#ffff0080'}}
-                                                    thumbColor={isCheckedAutomaticNulls && !isCheckedAutomaticSettingsConf ? '#f4f3f4' : isCheckedAutomaticNulls || isCheckedAutomaticSettingsConf ? '#f5dd4b' : '#f4f3f4'}
+                                                    thumbColor={!switchEditions && !isCheckedAutomaticSettingsConf ? '#f4f3f4' : '#f5dd4b'}
                                                     ios_backgroundColor="#3e3e3e"
-                                                    onValueChange={() => setCheckedAutomaticSettingsConf(!isCheckedAutomaticSettingsConf)}
-                                                    value={isCheckedAutomaticNulls ? 0 : isCheckedAutomaticSettingsConf}
+                                                    onValueChange={() => setSwitchEditions(!switchEditions)}
+                                                    value={switchEditions}
                                                     // chidren={item.checkName}
-                                                    disabled={isCheckedAutomaticNulls}
+                                                    // disabled={isCheckedAutomaticNulls}
+                                                    disabled={switchTirada || isCheckedAutomaticNulls}
                                                 />
                                                 <Text
                                                     style={{
@@ -951,7 +1078,7 @@ const SettingsProductionScreen = () => {
                                                         width: '90%'
                                                     }}
                                                     // key={item.checkName + index}
-                                                >{isCheckedAutomaticSettingsConf ?
+                                                >{switchEditions ?
                                                     // 'Nulos por Tirada: 1000'
                                                     <>Nulos por edición: <Text
                                                         style={{color: COLORS.primary}}>{nullCopiesByEdition}</Text> Ejemplares
@@ -985,7 +1112,7 @@ const SettingsProductionScreen = () => {
                                                     _onEndEditing={() => getselectedNulls(values.inputNulls)}
                                                     value={values.inputNulls}
                                                     _defaultValue={selectedNulls.toString()}
-                                                    noEditable={isCheckedAutomaticNulls || isCheckedAutomaticSettingsConf}
+                                                    noEditable={isCheckedAutomaticNulls || switchEditions || switchTirada}
                                                     styled={{
                                                         marginBottom: 0,
                                                         backgroundColor: isCheckedAutomaticNulls || isCheckedAutomaticSettingsConf ? COLORS.primary + '50' : COLORS.white
@@ -995,7 +1122,7 @@ const SettingsProductionScreen = () => {
                                                 {/*<Text>{selectedNulls}</Text>*/}
                                             </View>
                                             <View
-                                                style={[styles.swicthparent, {opacity: isCheckedAutomaticSettingsConf ? .2 : 1}]}
+                                                style={[styles.swicthparent, {opacity: switchEditions || switchTirada ? .2 : 1}]}
                                                 // key={item.checkName + '/' + index}
                                             >
                                                 <Switch
@@ -1004,10 +1131,10 @@ const SettingsProductionScreen = () => {
                                                     trackColor={{false: '#767577', true: '#ffff0080'}}
                                                     thumbColor={isCheckedAutomaticNulls ? '#f5dd4b' : '#f4f3f4'}
                                                     ios_backgroundColor="#3e3e3e"
-                                                    onValueChange={() => setCheckedAutomaticNulls(!isCheckedAutomaticNulls)}
+                                                    onValueChange={() => handlerCalcAutomaticNulls()}
                                                     value={isCheckedAutomaticNulls}
                                                     // chidren={item.checkName}
-                                                    disabled={isCheckedAutomaticSettingsConf}
+                                                    disabled={switchEditions || switchTirada}
                                                 />
                                                 <Text
                                                     style={{
@@ -1017,9 +1144,12 @@ const SettingsProductionScreen = () => {
                                                         width: '90%'
                                                     }}
                                                     // key={item.checkName + index}
-                                                >Usar estadísticas de producciones anteriores para calcular ejemplares
+                                                >Usar estadísticas de producciones anteriores para calcular
+                                                    ejemplares
                                                     "nulos" según ediciones y tirada</Text>
                                             </View>
+                                            <Text>a:{JSON.stringify(isCheckedAutomaticNulls)}</Text>
+                                            <Text>b:{selectedNulls}</Text>
                                         </View>
                                     </View>
                                     <Footer
@@ -1034,14 +1164,14 @@ const SettingsProductionScreen = () => {
                                         }}
                                     />
                                 </View>
-                                <View key="3">
+                                <View>
                                     <View style={styles.contPrinc}>
                                         <BgComponent
                                             svgOptions={optionsSVG}
                                             styleOptions={optionsStyleContSVG}
                                         />
                                         <SettingsProductionHeader
-                                            pagenumber={pagenumber}
+                                            pagenumber={3}
                                             explanation={'Selecciona fecha de producción y autopasters de manera automática o manual.'}
                                         />
                                         <View style={[styles.subCont, {justifyContent: 'flex-start'}]}>
@@ -1056,7 +1186,8 @@ const SettingsProductionScreen = () => {
                                                     trackColor={{false: '#767577', true: '#ffff0080'}}
                                                     thumbColor={isCheckedAutomaticAutopasters ? '#f5dd4b' : '#f4f3f4'}
                                                     ios_backgroundColor="#3e3e3e"
-                                                    onValueChange={() => setCheckedAutomaticAutopasters(!isCheckedAutomaticAutopasters)}
+                                                    onValueChange={handlerCheckAutopasterAutoSelected}
+                                                    // onValueChange={() => setCheckedAutomaticAutopasters(!isCheckedAutomaticAutopasters)}
                                                     value={isCheckedAutomaticAutopasters}
                                                     // chidren={item.checkName}
                                                     // disabled={!isCheckedAutomaticAutopasters}
@@ -1147,7 +1278,8 @@ const SettingsProductionScreen = () => {
                                                                 color: COLORS.dimgrey,
                                                                 textAlign: 'center'
                                                             }}
-                                                        >Escoge paginación y línea de producción para seleccionar
+                                                        >Escoge paginación y línea de producción para
+                                                            seleccionar
                                                             autopasters.</Text>
                                                     </View>
                                                 </>
@@ -1191,7 +1323,7 @@ const SettingsProductionScreen = () => {
                                         </TouchableOpacity>}
                                     />
                                 </View>
-                            </ViewPager>
+                            </PagerView>
                         </View>
                     </>
                 )}
@@ -1245,16 +1377,37 @@ const styles = StyleSheet.create({
 
 export default SettingsProductionScreen;
 
+const BoxError = () => {
+    return (
+        <View style={{
+            margin: 5,
+            width: Dimensions.get('window').width - 10,// margin * 2
+            padding: 10,
+            borderRadius: 5,
+            backgroundColor: '#FF000020',
+            position: 'absolute',
+            bottom: 0,
+            borderWidth: 2,
+            borderColor: '#FF000070'
+
+        }}>
+            <Text style={{color: COLORS.supportBackg1, fontFamily: 'Anton'}}>ERROR:</Text>
+            <Text style={{textAlign: 'center', color: COLORS.supportBackg1, fontFamily: 'Anton'}}>Revise errores o
+                entradas vacías.</Text>
+        </View>
+    )
+}
+
 const input = [
-    { "brand": "Dell", "model": "Precision", },
-    { "brand": "Apple", "model": "iMac Pro", },
-    { "brand": "Apple", "model": "MacBook Pro", },
-    { "brand": "HP", "model": "Z840", },
-    { "brand": "Apple", "model": "MacBook Pro", },
-    { "brand": "Apple", "model": "iMac", },
+    {"brand": "Dell", "model": "Precision",},
+    {"brand": "Apple", "model": "iMac Pro",},
+    {"brand": "Apple", "model": "MacBook Pro",},
+    {"brand": "HP", "model": "Z840",},
+    {"brand": "Apple", "model": "MacBook Pro",},
+    {"brand": "Apple", "model": "iMac",},
 ];
 // const autopastersDataProduction =[
-//     {
+// {
 //         "autopaster_fk": 5,
 //         "autopasters_prod_data_id": 1,
 //         "bobina_fk": 3057060377853,

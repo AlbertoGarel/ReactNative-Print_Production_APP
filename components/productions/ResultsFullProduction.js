@@ -14,7 +14,7 @@ const ResultFullProduction = ({finalCalc, item}) => {
         let is_mounted = true;
         if (is_mounted) {
             if (Object.keys(item).length > 0 && finalCalc.tiradaBruta > 0) {
-                const calcprev = Math.round(item['Tirada'] + item['Nulos'])
+                const calcprev = Math.round(item['tirada'] + item['nulls'])
                 const setPerc = Math.round(((calcprev - finalCalc.tiradaBruta) / finalCalc.tiradaBruta) * 100)
                 setPrev(calcprev);
                 setPrevPercentage(setPerc);

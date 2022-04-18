@@ -1,10 +1,10 @@
-import React, {useState, useEffect, memo} from 'react';
-import {StyleSheet, View, Text, Dimensions, TouchableOpacity} from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {StyleSheet, View, Text, Dimensions, TouchableOpacity, Alert} from 'react-native';
 import {COLORS, shadowPlatform} from "../../assets/defaults/settingStyles";
 import PaperCoilWeightDataCard from "./PaperCoilWeightDataCard";
 import TextInputCoilRadius from "../FormComponents/TextInputCoilRadius";
 import ComsumptionResultCard from "./ComsumptionResultCard";
-import {changeSVG, fingerselectOrangeSVG, outStackSVG} from "../../assets/svg/svgContents";
+import {cautionSVG, changeSVG, fingerselectOrangeSVG, outStackSVG} from "../../assets/svg/svgContents";
 import SvgComponent from "../SvgComponent";
 import {paperRollConsummption} from "../../utils";
 import {autopasters_prod_table_by_production} from "../../dbCRUD/actionsSQL";
@@ -12,6 +12,8 @@ import * as SQLite from "expo-sqlite";
 import Barcode from '@kichiyaki/react-native-barcode-generator';
 import SpinnerSquares from "../SpinnerSquares";
 import CustomBarcode from "../CustomBarcode";
+import {genericTransaction} from "../../dbCRUD/actionsFunctionsCrud";
+import TouchableIcon from "../TouchableIcon";
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -27,83 +29,139 @@ const optionsStyleContSVG = {
 };
 
 const FullCardProduction = ({
+                                productionID,
+                                roll_autopaster,
+                                peso_ini,
+                                peso_actual,
+                                bobinaID,
+                                media_defined,
+                                restoPrevisto,
+                                restoPrevistoAnteriorProduccion,
+                                weight_End,
+                                radius,
+                                new_radius,
+                                radio_actual,
+                                handlerRemoveItem,
+                                maxRadius,
+                                updateCodepathSVG,
+                                //-----------------------------------------------------------------
                                 item,
                                 updatedataRollState,
                                 inputRadioForRollRadius,
-                                handlerRemoveItem,
-                                viewCardSpinner,
+                                // viewCardSpinner,
                                 bobinaCodeForSpinner,
                                 // handlerCodePathSVG,
-                                setStateForRadius
+                                setStateForRadius,
+                                pos
                             }) => {
+    const textTypeRoll = !media_defined ? 'Entera' : 'Media';
+
     const db = SQLite.openDatabase('bobinas.db');
     //STATES
-    const [radiusState, setStateRadius] = useState('');
-    const [itemData, setItemData] = useState({});
-    const [restoPrevistoAnteriorProduccion, setRestoPrevistoAnteriorProduccion] = useState('');
-    // const [viewCardSpinner, setViewCardSpinner] = useState(false);
+    // const [radiusState, setStateRadius] = useState(new_radius);
+    // const [itemData, setItemData] = useState({});
+    // const [restoPrevistoAnteriorProduccion, setRestoPrevistoAnteriorProduccion] = useState('');
+    const [viewCardSpinner, setViewCardSpinner] = useState(false);
     const [codePathSVG, setCodePATHSVG] = useState('');
     // const handlerCodePathSVG = () => setCodePATHSVG;
 
     useEffect(() => {
-        let isMounted = true;
-
-        const objToState = {
-            autopaster: item.autopaster_fk,
-            bobinaID: item.bobina_fk || 0,
-            radiusIni: item.radio_actual,
-            radius: '',
-            weightIni: item.peso_ini,
-            weightAct: item.peso_actual,
-            weightEnd: null,
-            ismedia: item.media,
-            toSend: false,
-            position: item.position_roll,
-        };
-        setStateForRadius(objToState, codePathSVG);
-
-        //saber si existe esta bobina en producción anterior para seleccionar resto_prevsto si existe.
-        if (restoPrevistoAnteriorProduccion.length > 0 && codePathSVG.length === 0) {
-            db.transaction(tx => {
-                tx.executeSql(
-                    "SELECT resto_previsto FROM autopasters_prod_data WHERE production_fk < ? AND bobina_fk = ?;",
-                    [item.production_fk, item.codigo_bobina],
-                    (_, {rows: {_array}}) => {
-                        if (_array.length > 0) {
-                            // console.log('resto previsto', _array);
-                            if (isMounted) {
-                                setRestoPrevistoAnteriorProduccion(_array[0].resto_previsto);
-                            }
-                        }
-                        // else {
-                        //     console.log('NO EXISTEN restos previstos FullCardComponent');
-                        // }
-                    }
-                );
-            });
+        if (codePathSVG.length > 0 && peso_ini === peso_actual) {
+            console.log('sdkljfhkdwhvbdwvbbd', roll_autopaster)
+            updateCodepathSVG(codePathSVG, bobinaID, roll_autopaster)
         }
-        // console.log(item)
-        return () => isMounted = false;
-    }, [item, codePathSVG])
+    }, [codePathSVG])
 
-    useEffect(() => {
-        let isMounted = true;
-        if (inputRadioForRollRadius.length > 0) {
-            const bobinaCode = item.codigo_bobina;
-            // //FOR TO STRENGTHEN AUTENTICITY OF ROLL CODE IN CASE IT IS REPEATED.
-            const autopasterId = item.autopaster_fk;
-            const itemToUpdate = inputRadioForRollRadius.filter(item => item.bobinaID === bobinaCode && item.autopaster === autopasterId);
+    // useEffect(() => {
+    //     // if (radiusState !== new_radius) {
+    //     // setViewCardSpinner(true);
+    //     // setViewCardSpinner(true);
+    //     if (maxRadius > new_radius) {
+    //         setStateRadius('');
+    //     } else if (new_radius === '' || new_radius === ' ') {
+    //         setStateRadius(0);
+    //     } else {
+    //         setStateRadius(new_radius);
+    //     }
+    //     // }
+    // }, [new_radius])
+    // useEffect(() => {
+    //     console.log('card Nº ', roll_autopaster + ' ----- ' + bobinaCodeForSpinner)
+    // }, [bobinaCodeForSpinner])
 
-            if (itemToUpdate) {
-                setItemData(...itemToUpdate);
-            }
-            if (Object.keys(itemToUpdate).length > 0) {
-                const getRadius = itemToUpdate[0].radius;
-                setStateRadius(getRadius);
-            }
-        }
-        return () => isMounted = false;
-    }, [inputRadioForRollRadius]);
+    // useEffect(() => {
+    //     let isMounted = true;
+    //
+    //     const objToState = {
+    //         autopaster: item.autopaster_fk,
+    //         bobinaID: item.bobina_fk || 0,
+    //         radiusIni: item.radio_actual,
+    //         radius: '',
+    //         weightIni: item.peso_ini,
+    //         weightAct: item.peso_actual,
+    //         weightEnd: null,
+    //         ismedia: item.media,
+    //         toSend: false,
+    //         position: item.position_roll,
+    //     };
+    //     setStateForRadius(objToState, codePathSVG);
+    //
+    //     //saber si existe esta bobina en producción anterior para seleccionar resto_prevsto si existe.
+    //     if (
+    //         restoPrevistoAnteriorProduccion.length > 0
+    //         // && codePathSVG.length === 0
+    //     ) {
+    //         genericTransaction(
+    //             "SELECT resto_previsto FROM autopasters_prod_data WHERE production_fk < ? AND bobina_fk = ?;",
+    //             [item.production_fk, item.codigo_bobina])
+    //             .then(response => {
+    //                 if (response.length > 0) {
+    //                     // console.log('resto previsto', _array);
+    //                     if (isMounted) {
+    //                         setRestoPrevistoAnteriorProduccion(response[0].resto_previsto);
+    //                     }
+    //                 }
+    //             })
+    //         // db.transaction(tx => {
+    //         //     tx.executeSql(
+    //         //         "SELECT resto_previsto FROM autopasters_prod_data WHERE production_fk < ? AND bobina_fk = ?;",
+    //         //         [item.production_fk, item.codigo_bobina],
+    //         //         (_, {rows: {_array}}) => {
+    //         //             if (_array.length > 0) {
+    //         //                 // console.log('resto previsto', _array);
+    //         //                 if (isMounted) {
+    //         //                     setRestoPrevistoAnteriorProduccion(_array[0].resto_previsto);
+    //         //                 }
+    //         //             }
+    //         //             // else {
+    //         //             //     console.log('NO EXISTEN restos previstos FullCardComponent');
+    //         //             // }
+    //         //         }
+    //         //     );
+    //         // });
+    //     }
+    //     // console.log(item)
+    //     return () => isMounted = false;
+    // }, [item, codePathSVG])
+
+    // useEffect(() => {
+    //     let isMounted = true;
+    //     if (inputRadioForRollRadius.length > 0) {
+    //         const bobinaCode = item.codigo_bobina;
+    //         // //FOR TO STRENGTHEN AUTENTICITY OF ROLL CODE IN CASE IT IS REPEATED.
+    //         const autopasterId = item.autopaster_fk;
+    //         const itemToUpdate = inputRadioForRollRadius.filter(item => item.bobinaID === bobinaCode && item.autopaster === autopasterId);
+    //
+    //         if (itemToUpdate) {
+    //             setItemData(...itemToUpdate);
+    //         }
+    //         if (Object.keys(itemToUpdate).length > 0) {
+    //             const getRadius = itemToUpdate[0].radius;
+    //             setStateRadius(getRadius);
+    //         }
+    //     }
+    //     return () => isMounted = false;
+    // }, [inputRadioForRollRadius]);
 
     // useEffect(() => {
     //     const objToState = {
@@ -121,6 +179,17 @@ const FullCardProduction = ({
     //     };
     //     setStateForRadius(objToState);
     // }, [item])
+    // useEffect(() => {
+    //     setStateRadius(() => {
+    //         if (new_radius > maxRadius) {
+    //             return ''
+    //         } else {
+    //             return new_radius;
+    //         }
+    //     })
+    // }, [new_radius])
+    let changeBackground = new_radius === '' ? '#ff000060' : '#ff850050';
+    let changeColor = new_radius === '' ? '#fff' : '#000';
 
 //PROPS ELEMENTS CARDS
     const stylesPeperCoilWeight = {
@@ -147,46 +216,25 @@ const FullCardProduction = ({
         editable: !restoPrevistoAnteriorProduccion,
         keyboardType: 'numeric',
         styled: {
-            backgroundColor: '#ff850050',
+            backgroundColor: changeBackground,
+            color: changeColor,
             textAlign: 'center',
             fontFamily: 'Anton'
         },
         name: 'id',
-        _onChangeText: text => paperRollConsummption(text, setStateRadius),
-        _onBlur: () => updatedataRollState(radiusState, item),
-        _value: radiusState.toString(),
-        _defaultValue: radiusState.toString()
+        // _onChangeText: text => paperRollConsummption(text, setStateRadius),
+        // _onBlur: () => updatedataRollState(radiusState, bobinaID, roll_autopaster),
+        _onEndEditing: (e) => updatedataRollState(e.nativeEvent.text, bobinaID, roll_autopaster),
+        // _value: new_radius.toString(),
+        _defaultValue: new_radius.toString()
+
     };
+
     const styleCopsumptionComponent = {
         parent: [styles.result, {width: '25%'}],
         textWeightData: styles.textWeightData,
         textTitle: styles.textTitle,
         textWeightUnit: styles.textWeightUnit
-    };
-
-    const ActionsButton = () => {
-        return (
-            <TouchableOpacity onPress={() => handlerRemoveItem(itemData)} style={{width: 50, margin: 3}}>
-                <View style={{
-                    padding: 5,
-                    backgroundColor: COLORS.buttonEdit + '50',
-                    borderRadius: 6,
-                    alignSelf: 'flex-start',
-                    marginLeft: 5,
-                }}>
-                    <SvgComponent
-                        svgData={outStackSVG}
-                        svgWidth={25}
-                        svgHeight={25}
-                    />
-                </View>
-            </TouchableOpacity>
-        )
-    }
-
-    const textTypeRoll = (param) => {
-        let strMessage = param ? 'Media' : 'Entera'
-        return <Text style={{color: COLORS.primary}}>{strMessage}</Text>
     };
 
     const warningConsumption = React.useMemo(() => (kilos) => {
@@ -206,13 +254,69 @@ const FullCardProduction = ({
                 color = '#FFbe61'
                 break;
         }
-        ;
         return color;
-    }, [item.resto_previsto]);
+    }, [restoPrevisto]);
+
+    if (!peso_ini) {
+        return (
+            <View style={styles.contWarning}>
+                <View style={{flex: .5}}>
+                    <SvgComponent svgData={cautionSVG} svgWidth={80} svgHeight={80}/>
+                </View>
+                <View style={{flex: 2}}>
+                    <Text style={styles.textWarning}>
+                        No existen bobinas asignadas.
+                    </Text>
+                </View>
+            </View>
+        )
+    }
+
+    // const DeleteActionsButtonFullP = () => {
+    //     return (
+    //         <TouchableOpacity onPress={() => handlerRemoveItem(bobinaID, roll_autopaster)}
+    //                           style={{width: 50, margin: 3}}>
+    //             <View style={{
+    //                 padding: 5,
+    //                 backgroundColor: COLORS.buttonEdit + '50',
+    //                 borderRadius: 6,
+    //                 alignSelf: 'flex-start',
+    //                 marginLeft: 5,
+    //             }}>
+    //                 <SvgComponent
+    //                     svgData={outStackSVG}
+    //                     svgWidth={25}
+    //                     svgHeight={25}
+    //                 />
+    //             </View>
+    //         </TouchableOpacity>
+    //     )
+    // }
+    function confirmDelete(rollID, autopasterID) {
+        Alert.alert('ELIMINAR BOBINA DE AUTOPASTER.',
+            `Puede añadirla en cualquier otro autopaster más tarde.`,
+            [
+                {
+                    text: 'Cancel',
+                    onPress: () => console.log('Cancel Pressed'),
+                    style: 'cancel',
+                },
+                {
+                    text: 'OK', onPress: () => {
+                        setViewCardSpinner(true)
+                        setTimeout(() => {
+                            handlerRemoveItem(rollID, autopasterID);
+                            setViewCardSpinner(false);
+                        }, 1000)
+                        // handlerRemoveItem(rollID, autopasterID)
+                    }
+                },
+            ]);
+    };
 
     return (
-        <View style={[styles.cardparent, {backgroundColor: item.media_defined ? '#ECFAFA' : COLORS.white}]}>
-            {bobinaCodeForSpinner && viewCardSpinner && <View style={{
+        <View style={[styles.cardparent, {backgroundColor: textTypeRoll === 'Media' ? '#ECFAFA' : COLORS.white}]}>
+            {viewCardSpinner && <View style={{
                 position: 'absolute',
                 height: '100%',
                 width: '100%',
@@ -224,13 +328,27 @@ const FullCardProduction = ({
             }
             <View style={styles.numberandcode}>
                 {/*<View style={styles.numauto}><Text style={{color: COLORS.white}}>1</Text></View>*/}
-                <ActionsButton/>
-                <View style={[styles.contcode, styles.centerCenter, {padding: 5, minHeight: 70}]}>
-                    {item.peso_ini === item.peso_actual ?
+                <View style={{display: 'flex', flexDirection: 'row', backgroundColor: '#FF9999'}}>
+                    <TouchableIcon handlerOnPress={() => confirmDelete(bobinaID, roll_autopaster)} WidthSVG={30}
+                                   heightSVG={50} styleText={{fontSize: 7, fontWeight: 'bold'}} svgName={outStackSVG}
+                                   text={'BORRAR'}
+                                   touchableStyle={{
+                                       paddingHorizontal: 13,
+                                       backgroundColor: '#FFF',
+                                       // borderColor: '#FF9999',
+                                       borderRightWidth: 1,
+                                       // borderRadius: 5,
+                                       justifyContent: 'center',
+                                       alignItems: 'center',
+                                   }}/>
+                </View>
+                <Text>pos: {pos}</Text>
+                <View style={[styles.contcode, styles.centerCenter, {padding: 5, minHeight: 70, borderRadius: 5,}]}>
+                    {peso_ini === peso_actual ?
                         <CustomBarcode
                             format="CODE128"
-                            value={item.bobina_fk.toString()}
-                            text={item.bobina_fk.toString()}
+                            value={bobinaID.toString()}
+                            text={bobinaID.toString()}
                             style={{margin: 10}}
                             textStyle={{fontWeight: 'bold'}}
                             maxWidth={Dimensions.get('window').width / 2}
@@ -240,22 +358,23 @@ const FullCardProduction = ({
                         :
                         <Text
                             style={{textAlign: 'center', fontWeight: 'bold'}}>
-                            {item.bobina_fk}
+                            {bobinaID}
                         </Text>
                     }
                 </View>
             </View>
             <View style={{justifyContent: 'space-between', flexDirection: 'row'}}>
                 <Text style={{fontFamily: 'Anton'}}>Peso original: <Text
-                    style={{color: COLORS.primary}}>{item.peso_ini}</Text> Kg</Text>
-                <Text style={{fontFamily: 'Anton'}}>Tipo de bobina: {textTypeRoll(item.media_defined)}</Text>
+                    style={{color: COLORS.primary}}>{peso_ini}</Text> Kg</Text>
+                <Text style={{fontFamily: 'Anton'}}>Tipo de bobina: {textTypeRoll}</Text>
             </View>
+            {/*<Text>state: {radiusState}</Text>*/}
             <View style={styles.parentWeight}>
                 <PaperCoilWeightDataCard
                     stylesPeperCoilWeight={stylesPeperCoilWeight}
-                    restoInicioData={restoPrevistoAnteriorProduccion > 0 ? restoPrevistoAnteriorProduccion : itemData ? itemData.weightAct : ''}
-                    restoFinalData={itemData ? itemData.weightEnd : ''}
-                    styleRestPrev={restoPrevistoAnteriorProduccion > 0}
+                    restoInicioData={restoPrevistoAnteriorProduccion > 0 ? restoPrevistoAnteriorProduccion : peso_actual}
+                    restoFinalData={weight_End}
+                    styleRestPrev={restoPrevistoAnteriorProduccion}
                 />
                 <TextInputCoilRadius
                     stylesTextInput={stylesTextInput}
@@ -263,14 +382,14 @@ const FullCardProduction = ({
                 />
                 <ComsumptionResultCard
                     styleCopsumptionComponent={styleCopsumptionComponent}
-                    conumptionRes={itemData ? (itemData.radius !== '' ? itemData.weightAct - itemData.weightEnd : '') : ''}
+                    consumptionRes={new_radius.toString().length > 0 ? peso_actual - weight_End : ''}
                 />
             </View>
             {/*((buttons-*/}
             <View style={{
                 width: '100%',
                 height: 30,
-                backgroundColor: warningConsumption(item.resto_previsto),
+                backgroundColor: warningConsumption(restoPrevisto),
                 flexDirection: 'row',
                 justifyContent: 'flex-end',
                 alignItems: 'center',
@@ -281,14 +400,15 @@ const FullCardProduction = ({
                     textShadowColor: COLORS.white,
                     textShadowOffset: {width: 0.5, height: 0.5},
                     textShadowRadius: 1
-                }}>Resto Previsto: {item.resto_previsto} Kg</Text>
+                }}>Resto Previsto: {restoPrevisto} Kg</Text>
             </View>
         </View>
     )
 };
 const styles = StyleSheet.create({
     cardparent: {
-        width: '100%',
+        alignSelf: 'center',
+        width: '98%',
         borderWidth: 2,
         borderColor: COLORS.black,
         padding: 5,
@@ -307,9 +427,13 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap'
     },
     numberandcode: {
+        borderWidth: 2,
+        borderColor: COLORS.black,
+        borderRadius: 5,
         flexDirection: 'row',
-        justifyContent: 'flex-end',
-        alignItems: 'center'
+        justifyContent: 'space-between',
+        alignItems: 'stretch',
+        overflow: 'hidden'
     },
     numauto: {
         width: windowWidth / 2,
@@ -322,9 +446,9 @@ const styles = StyleSheet.create({
         borderColor: COLORS.black,
     },
     contcode: {
-        borderWidth: 2,
-        borderColor: COLORS.black,
-        width: windowWidth / 1.3,
+        // borderWidth: 2,
+        // borderColor: COLORS.black,
+        width: windowWidth / 1.2,
         backgroundColor: 'transparent',
         justifyContent: 'flex-end'
     },
@@ -396,6 +520,48 @@ const styles = StyleSheet.create({
         fontFamily: 'Anton',
         textAlign: 'left',
         paddingLeft: 5
+    },
+    contWarning: {
+        display: 'flex',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: COLORS.white,
+        borderRadius: 5,
+        margin: 10,
+        padding: 5,
+        ...shadowPlatform
+
+    },
+    textWarning: {
+        fontSize: 16,
+        textAlign: 'center',
+        color: COLORS.colorSupportfiv,
+        fontFamily: 'Anton',
+        textShadowColor: COLORS.contraster,
+        textShadowOffset: {width: 0.5, height: 0.5},
+        textShadowRadius: 1,
     }
 })
+// export default React.memo(FullCardProduction, ((prevProps, nextProps) => {
+//     // return prevProps.peso_ini === nextProps.peso_ini &&
+//     //     prevProps.peso_actual === nextProps.peso_actual &&
+//     //     prevProps.bobinaID === nextProps.bobinaID &&
+//     //     prevProps.media_defined === nextProps.media_defined &&
+//     //     prevProps.restoPrevisto === nextProps.restoPrevisto &&
+//     //     prevProps.restoPrevistoAnteriorProduccion === nextProps.restoPrevistoAnteriorProduccion &&
+//     //     prevProps.weight_End === nextProps.weight_End &&
+//     //     prevProps.radius === nextProps.radius &&
+//     console.log('----- bobinaID ------', prevProps.new_radius + ' <<<<< ' + nextProps.new_radius)
+//     // return prevProps.new_radius === nextProps.new_radius && prevProps.new_radius === '' || prevProps.new_radius
+//     // prevProps.radio_actual === nextProps.radio_actual
+//     // prevProps.handlerRemoveItem === nextProps.handlerRemoveItem &&
+//     // prevProps.updatedataRollState === nextProps.updatedataRollState
+//     if (prevProps.new_radius === nextProps.new_radius) {
+//         return true
+//     }
+//     // return false;
+// }));
 export default FullCardProduction;
+

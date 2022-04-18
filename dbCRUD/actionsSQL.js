@@ -222,14 +222,23 @@ export const pickerKBA =
  *  AUTOPASTER_TABLE ALL
  */
 export const autopaster_table_ALL =
-    "SELECT linea_produccion_table.linea_id As 'id'," +
-    "autopaster_table.name_autopaster AS 'Nombre'," +
-    "linea_produccion_table.linea_name AS 'Nombre de Línea'," +
-    "Case autopaster_table.media When 0 Then 'Entera' Else 'Media' End AS 'Tipo de Bobina' " +
-    "FROM autopaster_table " +
-    "LEFT JOIN linea_produccion_table " +
-    "ON linea_produccion_table.linea_id = autopaster_table.linea_fk " +
-    "ORDER BY autopaster_table.linea_fk ASC"
+    // "SELECT linea_produccion_table.linea_id As 'id'," +
+    // "autopaster_table.name_autopaster AS 'Nombre'," +
+    // "linea_produccion_table.linea_name AS 'Nombre de Línea'," +
+    // "Case autopaster_table.media When 0 Then 'Entera' Else 'Media' End AS 'Tipo de Bobina' " +
+    // "FROM autopaster_table " +
+    // "LEFT JOIN linea_produccion_table " +
+    // "ON linea_produccion_table.linea_id = autopaster_table.linea_fk " +
+    // "ORDER BY autopaster_table.linea_fk ASC"
+    `SELECT autopaster_table.autopaster_id As 'id',
+    autopaster_table.name_autopaster AS 'Nombre',
+    linea_produccion_table.linea_name AS 'Nombre de Línea',
+    Case autopaster_table.media When 0 Then 'Entera' Else 'Media' End AS 'Tipo de Bobina' 
+    FROM autopaster_table 
+    LEFT JOIN linea_produccion_table 
+    ON linea_produccion_table.linea_id = autopaster_table.linea_fk 
+    ORDER BY autopaster_table.linea_fk ASC
+    `
 ;
 export const pickerLineaProd =
     "SELECT * FROM linea_produccion_table;"
@@ -296,7 +305,8 @@ papel_comun_table.papel_comun_name 'Propietario',
 gramaje_table.gramaje_value AS 'Gramaje',
 bobina_table.peso_ini AS 'Pesoinicial',
 bobina_table.peso_actual AS 'peso Actual',
-bobina_table.radio_actual AS 'Radio'
+bobina_table.radio_actual AS 'Radio',
+bobina_table.codeType AS 'Código name'
 FROM bobina_table 
 LEFT JOIN autopaster_table 
 ON autopaster_table.autopaster_id = bobina_table.autopaster_fk 

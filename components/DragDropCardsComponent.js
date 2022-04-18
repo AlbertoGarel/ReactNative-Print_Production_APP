@@ -28,21 +28,23 @@ const DragDropCardsComponent = ({props}) => {
 
     useEffect(() => {
         let isMounted = true;
+        console.log('props for move', props)
         if (isMounted) {
-            getRolls(inputRadioForRollRadius.filter(roll => roll.autopaster === autopasterNum)
-                .sort((a, b) => a.position - b.position)
-            );
+            // getRolls(inputRadioForRollRadius.filter(roll => roll.autopaster === autopasterNum)
+            //     .sort((a, b) => a.position - b.position)
+            // );
+            getRolls(inputRadioForRollRadius.sort((a, b) => a.position - b.position));
         }
         return () => isMounted = false;
     }, [autopasterNum, inputRadioForRollRadius]);
 
-    const wait = (dataForState) => setTimeout(()=>{
+    const wait = (dataForState) => setTimeout(() => {
         setStateForRadiusChangedPosition(dataForState);
     }, 300);
 
-    useEffect(()=>{
-        return ()=> clearTimeout(wait)
-    },[])
+    useEffect(() => {
+        return () => clearTimeout(wait)
+    }, [])
 
     const alphabet = 'ABCD'.split('');
     const [alphaData, setAlphaData] = React.useState(alphabet);
@@ -132,18 +134,18 @@ const DragDropCardsComponent = ({props}) => {
                                                 padding: 3,
                                                 justifyContent: 'center'
                                             }}>
-                                                {item.weightIni === item.weightAct ?
+                                                {item.peso_ini === item.peso_actual ?
                                                     <Barcode
                                                         format="CODE128"
-                                                        value={item.bobinaID.toString()}
-                                                        text={item.bobinaID.toString()}
+                                                        value={item.bobina_fk.toString()}
+                                                        text={item.bobina_fk.toString()}
                                                         style={{}}
                                                         maxWidth={Dimensions.get('window').width / 3}
                                                         height={dragItemHeight / 8}
                                                     />
                                                     :
                                                     <Text style={{textAlign: 'center'}}>
-                                                        {item.bobinaID}
+                                                        {item.bobina_fk}
                                                     </Text>
                                                 }
                                             </View>
@@ -167,9 +169,9 @@ const DragDropCardsComponent = ({props}) => {
                                     //     newData.splice(toIndex, 0, newData.splice(fromIndex, 1)[0]);
                                     //     setAlphaData(newData);
                                     // }}
-                                    keyExtractor={(item) => item.bobinaID.toString()}
+                                    keyExtractor={(item) => item.bobina_fk.toString()}
                                     onItemDragStart={({index, item}) => {
-                                        console.log(`Item #${index} (${item}) drag start`);
+                                        console.log(`Item #${index} (${item.bobina_fk}) drag start`);
                                     }}
                                     onItemDragEnd={({
                                                         index,
@@ -177,7 +179,10 @@ const DragDropCardsComponent = ({props}) => {
                                                         toIndex,
                                                         toItem
                                                     }) => {
-                                        console.log(`Item #${index + 1} (${item.bobinaID}) drag ended at index ${toIndex + 1} (${toItem.bobinaID})`);
+                                        if (!toItem) {
+                                            return
+                                        }
+                                        console.log(`Item #${index + 1} (${item.bobina_fk}) drag ended at index ${toIndex + 1} (${toItem.bobina_fk})`);
                                     }}
                                     onItemReorder={({fromIndex, toIndex}) => {
                                         const newData = rolls.slice();

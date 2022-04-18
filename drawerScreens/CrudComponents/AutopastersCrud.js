@@ -1,5 +1,5 @@
 import React, {useEffect, useState, useRef} from 'react';
-import {Alert, StyleSheet, View, Text, Picker, TouchableOpacity} from 'react-native';
+import {Alert, StyleSheet, View, Text, TouchableOpacity} from 'react-native';
 import {pickerLineaProd, insertaAutopasterByID, autopasterByID, updateAutoasterByID} from "../../dbCRUD/actionsSQL";
 import * as SQLite from "expo-sqlite";
 import {FormYupSchemas} from "../../components/FormComponents/YupSchemas";
@@ -13,7 +13,8 @@ import * as Yup from "yup";
 import HRtag from "../../components/HRtag";
 import ToastMesages from "../../components/ToastMessages";
 import ResetButtonForm from "../../components/FormComponents/ResetButtonForm";
-import {genericUpdatefunction, genericInsertFunction} from '../../dbCRUD/actionsFunctionsCrud'
+import {genericUpdatefunction, genericInsertFunction} from '../../dbCRUD/actionsFunctionsCrud';
+import {Picker} from '@react-native-picker/picker';
 
 const AutopastersCrud = ({props}) => {
 

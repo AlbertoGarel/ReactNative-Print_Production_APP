@@ -7,7 +7,11 @@ function FlipCard({flipnow = '',ContentFront, ContentBack, enabled, contheight =
 
     const flipAnimation = useRef(new Animated.Value(0)).current;
     useEffect(() => {
-        if (enabled) flipToFront()
+        if (enabled) {
+            flipToFront()
+        }else{
+            flipToBack()
+        }
     }, [enabled])
 
     useEffect(() => {

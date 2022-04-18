@@ -3,7 +3,7 @@ import {StyleSheet, Text, View, ActivityIndicator} from 'react-native';
 import {COLORS, shadowPlatform} from "../../assets/defaults/settingStyles";
 import {autopasters_prod_table_by_production} from "../../dbCRUD/actionsSQL";
 import * as SQLite from "expo-sqlite";
-import {genericUpdatefunction} from "../../dbCRUD/actionsFunctionsCrud";
+import {genericTransaction, genericUpdatefunction} from "../../dbCRUD/actionsFunctionsCrud";
 import FullCardProduction from "./FullCardProduction";
 import {cautionSVG, icon360SVG} from "../../assets/svg/svgContents";
 import SvgComponent from "../SvgComponent";
@@ -27,6 +27,7 @@ const ContainerSectionListItem = ({
                                       viewCardSpinner,
                                       bobinaCodeForSpinner
                                   }) => {
+    return null
     const db = SQLite.openDatabase('bobinas.db');
     const [existBobinas, getExistBobinas] = useState(null);
     const [bobinaBBDD, getBobinaBBD] = useState([]);
@@ -38,46 +39,46 @@ const ContainerSectionListItem = ({
     //     console.log(codePathSVG)
     // },[codePathSVG ])
 
-    useEffect(() => {
-        let isMounted = true;
-
-        getExistBobinas(item.bobina_fk);
-        //GET BOBINAS IF EXIST
-        if (item.bobina_fk) {
-            const params = [item.bobina_fk, item.production_fk]
-            db.transaction(tx => {
-                tx.executeSql(
-                    innerBobinaTableAndProductData,
-                    //[codigoBobinaFK, productionFK]
-                    params,
-                    (_, {rows: {_array}}) => {
-                        if (_array.length > 0) {
-                            if (isMounted) {
-                                console.log('.  .   .   .   .   .   .   .   .  .')
-                                getRollData(_array);
-                                //     const objToState = {
-                                //         autopaster: _array[0].autopaster_fk,
-                                //         bobinaID: _array[0].bobina_fk || 0,
-                                //         radiusIni: _array[0].radio_actual,
-                                //         radius: '',
-                                //         weightIni: _array[0].peso_ini,
-                                //         weightAct: _array[0].peso_actual,
-                                //         weightEnd: null,
-                                //         ismedia: _array[0].media,
-                                //         toSend: false,
-                                //         position: _array[0].position_roll,
-                                //         codepathSVG: ''
-                                //     };
-                                // setStateForRadius(objToState)
-                                // console.log('__________array', _array)
-                            }
-                        }
-                    }, err => console.log(err)
-                );
-            });
-        }
-        return () => isMounted = false;
-    }, [item]);
+    // useEffect(() => {
+    //     let isMounted = true;
+    //
+    //     getExistBobinas(item.bobina_fk);
+    //     //GET BOBINAS IF EXIST
+    //     if (item.bobina_fk) {
+    //         const params = [item.bobina_fk, item.production_fk]
+    //         db.transaction(tx => {
+    //             tx.executeSql(
+    //                 innerBobinaTableAndProductData,
+    //                 //[codigoBobinaFK, productionFK]
+    //                 params,
+    //                 (_, {rows: {_array}}) => {
+    //                     if (_array.length > 0) {
+    //                         if (isMounted) {
+    //                             console.log('.  .   .   .   .   .   .   .   .  .')
+    //                             getRollData(_array);
+    //                             //     const objToState = {
+    //                             //         autopaster: _array[0].autopaster_fk,
+    //                             //         bobinaID: _array[0].bobina_fk || 0,
+    //                             //         radiusIni: _array[0].radio_actual,
+    //                             //         radius: '',
+    //                             //         weightIni: _array[0].peso_ini,
+    //                             //         weightAct: _array[0].peso_actual,
+    //                             //         weightEnd: null,
+    //                             //         ismedia: _array[0].media,
+    //                             //         toSend: false,
+    //                             //         position: _array[0].position_roll,
+    //                             //         codepathSVG: ''
+    //                             //     };
+    //                             // setStateForRadius(objToState)
+    //                             // console.log('__________array', _array)
+    //                         }
+    //                     }
+    //                 }, err => console.log(err)
+    //             );
+    //         });
+    //     }
+    //     return () => isMounted = false;
+    // }, [item]);
 
     // useEffect(() => {
     //     let isMounted = true;
@@ -127,8 +128,7 @@ const ContainerSectionListItem = ({
                 </View>
             </View>
         )
-    }
-    ;
+    };
 
     return (
         <View>

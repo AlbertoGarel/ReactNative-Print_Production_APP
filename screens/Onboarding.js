@@ -1,6 +1,6 @@
 import React, {useRef, useEffect, useState} from 'react';
 import {View, StatusBar, SafeAreaView, Text} from 'react-native';
-import ViewPager from '@react-native-community/viewpager';
+import PagerView from 'react-native-pager-view';
 import Footer from '../components/onboardingComponents/FooterOnboarding';
 import Page from '../components/onboardingComponents/Page';
 import {useNavigation} from '@react-navigation/native';
@@ -32,7 +32,7 @@ const Onboarding = ({initialpage}) => {
                     showHideTransition={'slide'}
                     hidden={true}
                 />
-                <ViewPager style={{flex: 1}}
+                <PagerView style={{flex: 1}}
                            initialPage={initialpage}
                            ref={pagerRef}
                            scrollEnabled={true}
@@ -90,7 +90,7 @@ const Onboarding = ({initialpage}) => {
                             }}
                         />
                     </View>
-                </ViewPager>
+                </PagerView>
             </View>
         </SafeAreaView>
     );

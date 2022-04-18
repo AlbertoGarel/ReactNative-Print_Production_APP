@@ -19,8 +19,8 @@ const TextInputCoilRadius = ({stylesTextInput, propsAttrInput}) => {
                     keyboardType={propsAttrInput.keyboardType}
                     style={propsAttrInput.styled}
                     name={propsAttrInput.name}
-                    onChangeText={propsAttrInput._onChangeText}
-                    onBlur={propsAttrInput._onBlur}
+                    // onChangeText={propsAttrInput._onChangeText }
+                    onEndEditing={propsAttrInput._onEndEditing}
                     value={propsAttrInput._value}
                     defaultValue={propsAttrInput._defaultValue}
                 />
