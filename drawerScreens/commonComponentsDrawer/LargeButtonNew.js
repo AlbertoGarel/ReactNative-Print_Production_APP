@@ -42,7 +42,6 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.primary,
         padding: 5,
         borderRadius: 10,
-        elevation: 3
     },
     text: {
         fontFamily: 'Anton',

@@ -77,6 +77,7 @@ export const identifyAutopasters = (num) => {
 export const individualProvidedWeightRollProduction = (numProd, pesoBob, coef) => {
     const returnObject = {rollweight: 0, copies: 0};
     console.log('---------------- params ---------------', `numprod:${numProd} * pesoBob:${pesoBob} * coef:${coef}`)
+    // const res = Math.round((pesoBob / coef) - numProd); REPASAR CÁLCULOS....
     const res = Math.round((pesoBob / coef) - numProd);
     console.log('----------------res ---------------', res)
     if (res > 0) {

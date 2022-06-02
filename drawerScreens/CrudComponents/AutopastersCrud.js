@@ -29,7 +29,7 @@ const AutopastersCrud = ({props}) => {
     const [linProdDB, setLinProdDB] = useState([]);
     //if min value for formik is 1, in state will 0.
     const [stateLinProdFk, setStateLinProdFK] = useState(0);
-    const [stateAutopastName, setStateAutopastName] = useState('');
+    const [stateAutopastName, setStateAutopastName] = useState(0);
     //for item picker values 0 and 1 (true / false ), negative value.
     const [stateAutopastContainMedia, setStateAutopastContainMedia] = useState(-1);
 
@@ -79,7 +79,7 @@ const AutopastersCrud = ({props}) => {
 
     const schemasValidation = Yup.object().shape({
         pickerLinProd: FormYupSchemas.pickerGramaje,
-        autopastName: FormYupSchemas.meditionStyle,
+        autopastName: FormYupSchemas.editions,
         autopastContMed: FormYupSchemas.trueFalseBin,
     });
 

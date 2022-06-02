@@ -1,16 +1,30 @@
-import React, {useState} from 'react';
-import {SafeAreaView, View, StyleSheet, ImageBackground, Modal} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {ImageBackground, SafeAreaView, StyleSheet, View} from 'react-native';
 import {COLORS} from "../assets/defaults/settingStyles";
 import HeaderCommonDrawer from "./commonComponentsDrawer/HeaderCommonDrawer";
 import LargeButtonNew from "./commonComponentsDrawer/LargeButtonNew";
 import ModalCRUD from "./commonComponentsDrawer/ModalCRUD";
 import Tables from "./commonComponentsDrawer/Tables";
-import {LinearGradient} from "expo-linear-gradient";
+import InfoDrawer from "./commonComponentsDrawer/InfoDrawer";
+import {useNavigation} from '@react-navigation/native';
 
 const TableViewwCommonScreen = ({props}) => {
 
+    const navigation = useNavigation();
+
     const [modal, setModal] = useState(false);
     const [typeForm, setTypeForm] = useState('');
+    const [openModalInfo, setOpenModalInfo] = useState(false);
+
+    useEffect(() => {
+        return navigation.addListener('blur', () => {
+            setOpenModalInfo(false);
+        });
+    })
+
+    function handlerModalInfo() {
+        setOpenModalInfo(!openModalInfo)
+    };
 
     const _onPress = (param, id = 0) => {
         setTypeForm(param);
@@ -29,6 +43,8 @@ const TableViewwCommonScreen = ({props}) => {
                     <HeaderCommonDrawer
                         headerTitle={props.headerTitle}
                         headerParagraph={props.headerParagraph}
+                        handlerModalInfo={handlerModalInfo}
+                        info={props.info}
                     />
                     <LargeButtonNew
                         textButton={props.textButton}
@@ -51,6 +67,7 @@ const TableViewwCommonScreen = ({props}) => {
                     form={props.form}
                     typeForm={typeForm}
                 />
+                {openModalInfo && <InfoDrawer info={props.info} handlerModalInfo={handlerModalInfo}/>}
             </ImageBackground>
         </SafeAreaView>
     )

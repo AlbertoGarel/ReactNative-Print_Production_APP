@@ -52,6 +52,7 @@ import {
 } from "../../utils";
 import {genericInsertFunction, genericTransaction} from "../../dbCRUD/actionsFunctionsCrud";
 import CustomDateTimePicker from "../../components/FormComponents/CustomDateTimePicker";
+import * as yup from "yup";
 
 //SEARCH AND SELECT MINOR WEIGHT ROLL IN OTHER PRODUCTION
 const searchStatementAutoProdData_Table =
@@ -133,6 +134,7 @@ const SettingsProductionScreen = () => {
     const inputDateRef = useRef();
     const fullproduction = useRef();
 
+
     function handlePageChange(pageNumber) {
         //Method .setPage() re-render component. use setPageWithoutAnimation()
         pagerRef.current?.setPageWithoutAnimation(pageNumber);
@@ -152,7 +154,7 @@ const SettingsProductionScreen = () => {
     useEffect(() => {
         const unsubscribe = navigation.addListener('focus', () => {
             //CODE FOR REFRESH BASEDATA HERE AND PAGES OF PAGEVIEWER
-            // handlePageChange(0);
+            handlePageChange(0);
             //PRODUCT ALL
             db.transaction(tx => {
                 tx.executeSql(
@@ -275,10 +277,9 @@ const SettingsProductionScreen = () => {
          **/
         //CODE HERE
 
-
         return unsubscribe;
     }, [
-        // navigation,
+        navigation,
         // isCheckedAutomaticSettingsConf,
         // selectedTirada,
         // nullCopiesByEdition,
@@ -358,6 +359,7 @@ const SettingsProductionScreen = () => {
                         const meditionVal = meditionDataDB.filter(item => item.medition_id === selectedMedition);
                         const SumTotalCopies = parseInt(prodData.nulls) + parseInt(prodData.tirada);
                         if (_array.length > 0) {
+                            console.log('comprobar bobinas1', _array)
                             // OK. INSERT 'CODIGO_BOBINA' ROLL IN autopasters_prod_data.
                             coefRoll = searchCoefTypeRoll(...meditionVal, ..._array);
                             nowRollWeight = _array[0].resto_previsto;
@@ -378,6 +380,7 @@ const SettingsProductionScreen = () => {
                                     queryParams,
                                     (_, {rows: {_array}}) => {
                                         if (_array.length > 0) {
+                                            console.log('comprobar bobinas2', _array)
                                             // OK. INSERT 'CODIGO_BOBINA' ROLL IN autopasters_prod_data.
                                             coefRoll = searchCoefTypeRoll(...meditionVal, ..._array);
                                             nowRollWeight = _array[0].peso_actual;
@@ -389,6 +392,7 @@ const SettingsProductionScreen = () => {
                                                 .then(response => console.log('response NEGATIVE COIL', response))
                                                 .catch(err => console.log('err', err))
                                         } else {
+                                            console.log('comprobar bobinas3', _array)
                                             // NO ROLL FOUND.
                                             const insertAutopastWithoutRoll = [...item, positionRoll];
                                             genericInsertFunction(insertWithoutRoll, insertAutopastWithoutRoll)
@@ -416,7 +420,7 @@ const SettingsProductionScreen = () => {
                     //LOOP INSERT DATA
                     groupAuto(toSendAutopastProd, toSendProd);
                     showToast('Guardado con éxito.');
-                    setTimeout(() => navigation.navigate('HomeStack'), 3000);
+                    setTimeout(() => navigation.navigate('HomeStack'), 2000);
                     resetForm();
                 } else {
                     showToast('Error al guardar.')
@@ -441,6 +445,7 @@ const SettingsProductionScreen = () => {
         getselectedMedition(0);
         getselectedEditions('');
         getselectedNulls('');
+        getSelectedDate('');
     }
 
     const handlerChangeLineProd = (val) => {
@@ -502,14 +507,21 @@ const SettingsProductionScreen = () => {
             setCheckedAutomaticAutopasters(!isCheckedAutomaticAutopasters)
             autopastersAutomaticSelection(selectedProduct, selectedPagination, maxPaginationOptionPickerLineSelected)
                 .then(response => {
+                    if (response.length === 0) {
+                        setCheckedAutomaticAutopasters(false)
+                        return alert('no existen registros anteriores similares.')
+                    }
+                    console.log('resp', response)
                     let autopasters = [...response];
                     if (isMedia !== 0) {
                         autopasters = response.filter(i => parseInt(i) !== isMedia)
                     }
                     setEnteras(autopasters)
+                    setCheckedAutomaticAutopasters(true)
                 })
+                .catch(err => console.log(err))
         } else {
-            // alert('selecciona producto y paginación')
+            alert('completa loss campos de los apartados "paso1" y "paso 2"')
         }
     }
 
@@ -522,7 +534,7 @@ const SettingsProductionScreen = () => {
             WHERE ejemplares BETWEEN ? AND ? AND paginacion = ? AND nombre_producto = ? AND ediciones = ?;
             `;
         if (!maxPaginationOptionPickerLineSelected || !selectedPagination || !selectedTirada || !selectedEditions || !selectedProduct) {
-            showToast('Completa los campos necesarios.')
+            alert('completa loss campos de los apartados "paso1" y "paso 2"')
             return;
         }
         const pagValue = maxPaginationOptionPickerLineSelected.filter(i => i.paginacion_id === selectedPagination)[0].paginacion_value;
@@ -537,7 +549,8 @@ const SettingsProductionScreen = () => {
                             min, max, pagValue, selectedProduct, selectedEditions
                         )
                         console.log(response)
-                        showToast('No existen datos para calcular.');
+                        setCheckedAutomaticNulls(false)
+                        return alert('No existen datos para calcular.');
                     } else {
                         const dif = response.reduce((acc, item) => {
                             return acc + (item.tiradabruta - item.ejemplares)
@@ -550,20 +563,38 @@ const SettingsProductionScreen = () => {
                 .catch(err => console.log(err))
         }
         setCheckedAutomaticNulls(!isCheckedAutomaticNulls)
-    }
+    };
 
     useEffect(() => {
+        // if (isNaN(parseInt(selectedTirada)) && (switchTirada || switchEditions)) {
+        //     setSwitchTirada(false);
+        //     setSwitchEditions(false);
+        //     // alert('fail')
+        //     return
+        // }
+        console.log('selected editions', selectedEditions)
         getselectedNulls('');
         let nullsByTir = ((parseInt(selectedTirada) * parseInt(nullCopiesByTiradaPercentage)) / 100);
         let nullsByEd = parseInt(nullCopiesByEdition) * parseInt(selectedEditions);
 
+        if (isNaN(nullsByTir)) nullsByTir = 0;
+        if (isNaN(nullsByEd)) nullsByEd = 0;
+
         if (switchTirada) {
-            if (isNaN(nullsByEd)) nullsByTir = '';
+            // if (isNaN(nullsByTir)) nullsByTir = 0;
+            if (nullCopiesByTiradaPercentage === 0) {
+                setTimeout(() => navigation.navigate('SettingsStack'), 2000)
+                return alert('Complete "descarte de ejemplares" en el apartado "SETTINGS".')
+            }
             getselectedNulls(nullsByTir + parseInt(selectedTirada))
             setNullCopiesByTirada(nullsByTir);
         }
         if (switchEditions) {
-            if (isNaN(nullsByEd)) nullsByEd = '';
+            // if (isNaN(nullsByEd)) nullsByEd = 0;
+            if (nullCopiesByEdition === 0) {
+                setTimeout(() => navigation.navigate('SettingsStack'), 2000);
+                return alert('Complete "descarte de ejemplares" en el apartado "SETTINGS".')
+            }
             getselectedNulls(nullsByEd + parseInt(selectedTirada));
 
         }
@@ -580,6 +611,7 @@ const SettingsProductionScreen = () => {
                     inputDate: selectedDates,
                     // tirada: selectedTirada === '' ? selectedTirada : parseInt(selectedTirada),
                     tirada: selectedTirada,
+                    switchTirada: switchTirada,
                     pickerProduct: selectedProduct,
                     pickerPagination: selectedPagination,
                     pickerlinProd: selectedLinProd,
@@ -612,7 +644,7 @@ const SettingsProductionScreen = () => {
                         producto: values.pickerProduct,
                         tirada: values.tirada,
                         nulls: values.inputNulls,
-                        date: values.inputDate.replace(/\//g, '-')
+                        date: values.inputDate.replace(/\//g, '-'),
                     };
                     handlerSendOptionsSelected(objectAutopast, objectProd)
                 }}
@@ -968,7 +1000,7 @@ const SettingsProductionScreen = () => {
                                         <View style={styles.subCont}>
                                             <View style={{marginTop: 10}}>
                                                 {(errors.tirada && touched.tirada) &&
-                                                < Text
+                                                <Text
                                                     style={{
                                                         fontSize: 10,
                                                         color: 'red',
@@ -1002,7 +1034,13 @@ const SettingsProductionScreen = () => {
                                                     thumbColor={!switchTirada && !isCheckedAutomaticSettingsConf ? '#f4f3f4' : '#f5dd4b'}
                                                     ios_backgroundColor="#3e3e3e"
                                                     // onValueChange={() => setCheckedAutomaticSettingsConf(!isCheckedAutomaticSettingsConf)}
-                                                    onValueChange={() => setSwitchTirada(!switchTirada)}
+                                                    onValueChange={() => {
+                                                        if (isNaN(parseInt(selectedTirada)) || selectedTirada <= 0) {
+                                                            alert('introduce una cantidad en "tirada prevista');
+                                                        } else {
+                                                            setSwitchTirada(!switchTirada)
+                                                        }
+                                                    }}
                                                     value={switchTirada}
                                                     // chidren={item.checkName}
                                                     // disabled={isCheckedAutomaticNulls}
@@ -1026,7 +1064,7 @@ const SettingsProductionScreen = () => {
                                                     <>Usar valores de descarte de "SETTINGS" para <Text
                                                         style={{color: COLORS.primary}}>tirada</Text></>}
                                                 </Text>
-                                                <Text>{nullCopiesByTirada}</Text>
+                                                {/*<Text>alf:{nullCopiesByTirada}</Text>*/}
                                             </View>
                                             <View style={{marginTop: 10}}>
                                                 {(errors.inputEditions && touched.inputEditions) &&
@@ -1052,7 +1090,6 @@ const SettingsProductionScreen = () => {
                                                     value={values.inputEditions}
                                                     _defaultValue={selectedEditions.toString()}
                                                 />
-                                                <Text>{values.inputEditions}</Text>
                                             </View>
                                             <View
                                                 style={[styles.swicthparent, {opacity: switchTirada || isCheckedAutomaticNulls ? .2 : 1}]}
@@ -1064,7 +1101,13 @@ const SettingsProductionScreen = () => {
                                                     trackColor={{false: '#767577', true: '#ffff0080'}}
                                                     thumbColor={!switchEditions && !isCheckedAutomaticSettingsConf ? '#f4f3f4' : '#f5dd4b'}
                                                     ios_backgroundColor="#3e3e3e"
-                                                    onValueChange={() => setSwitchEditions(!switchEditions)}
+                                                    onValueChange={() => {
+                                                        if (isNaN(parseInt(selectedEditions)) || selectedEditions <= 0) {
+                                                            alert('introduce una cantidad en "ediciones');
+                                                        } else {
+                                                            setSwitchEditions(!switchEditions)
+                                                        }
+                                                    }}
                                                     value={switchEditions}
                                                     // chidren={item.checkName}
                                                     // disabled={isCheckedAutomaticNulls}
@@ -1148,8 +1191,6 @@ const SettingsProductionScreen = () => {
                                                     ejemplares
                                                     "nulos" según ediciones y tirada</Text>
                                             </View>
-                                            <Text>a:{JSON.stringify(isCheckedAutomaticNulls)}</Text>
-                                            <Text>b:{selectedNulls}</Text>
                                         </View>
                                     </View>
                                     <Footer
@@ -1177,7 +1218,7 @@ const SettingsProductionScreen = () => {
                                         <View style={[styles.subCont, {justifyContent: 'flex-start'}]}>
                                             {/*//form here*/}
                                             <View
-                                                style={[styles.swicthparent]}
+                                                style={styles.swicthparent}
                                                 // key={item.checkName + '/' + index}
                                             >
                                                 <Switch
@@ -1190,7 +1231,6 @@ const SettingsProductionScreen = () => {
                                                     // onValueChange={() => setCheckedAutomaticAutopasters(!isCheckedAutomaticAutopasters)}
                                                     value={isCheckedAutomaticAutopasters}
                                                     // chidren={item.checkName}
-                                                    // disabled={!isCheckedAutomaticAutopasters}
                                                 />
                                                 <Text
                                                     style={{
@@ -1405,7 +1445,7 @@ const input = [
     {"brand": "HP", "model": "Z840",},
     {"brand": "Apple", "model": "MacBook Pro",},
     {"brand": "Apple", "model": "iMac",},
-];
+]
 // const autopastersDataProduction =[
 // {
 //         "autopaster_fk": 5,

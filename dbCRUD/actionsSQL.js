@@ -34,6 +34,21 @@ export async function openDatabase(pathToDatabaseFile: fileDB2): SQLite.WebSQLDa
 }
 
 /**
+ * HANDLER ERRORS
+ */
+export function HandlingErrorsSQLITE(err){
+    let message = '';
+    switch (err.toString()) {
+        case 'Error: FOREIGN KEY constraint failed (code 1811 SQLITE_CONSTRAINT_TRIGGER)':
+            message = 'No se puede eliminar, ya que está siendo utilizado en otros registros'
+            break;
+        default:
+            message = "Error no definido en base de datos."
+            break;
+    }
+    return message;
+}
+/**
  *  MEDITION_STYLE
  */
 export const medition_style_table_ALL =
@@ -408,10 +423,10 @@ export const barcodes_table_all =
     "SELECT * FROM barcodes_table;"
 ;
 export const barcodesAndroid =
-    "SELECT * FROM barcodes_table WHERE barcode_android = 1;"
+    "SELECT * FROM barcodes_table WHERE barcode_android = ?;"
 ;
 export const barcodesIos =
-    "SELECT * FROM barcodes_table WHERE barcode_ios = 1;"
+    "SELECT * FROM barcodes_table WHERE barcode_ios = ?;"
 ;
 /**
  * AUTOPASTERS_PROD_TABLE

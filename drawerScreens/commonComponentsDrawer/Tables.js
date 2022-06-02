@@ -14,6 +14,7 @@ import {Table, TableWrapper, Row, Cell} from 'react-native-table-component';
 import {COLORS} from "../../assets/defaults/settingStyles";
 import {Feather as Icon} from "@expo/vector-icons";
 import * as SQLite from "expo-sqlite";
+import {HandlingErrorsSQLITE} from "../../dbCRUD/actionsSQL";
 import {deleteMeditionStyle} from "../../dbCRUD/actionsSQL";
 
 class Tables extends Component {
@@ -34,8 +35,11 @@ class Tables extends Component {
     TouchableWidth = 50;
     cellMargin = 16;
 
-
     requestDB(requestProps) {
+        //'PRAGMA foreign_keys = ON;'
+        this.db.exec([{sql: 'PRAGMA foreign_keys = ON;', args: []}], false, (error, resultSet) => {
+        });
+
         this.db.transaction(tx => {
             tx.executeSql(
                 requestProps,
@@ -95,7 +99,7 @@ class Tables extends Component {
                     this.requestDB(this.props.request.allItems);
                 },
                 (_, error) => {
-                    console.log(error)
+                    alert(HandlingErrorsSQLITE(error))
                 })
         })
     };
@@ -154,7 +158,7 @@ class Tables extends Component {
                 </TouchableOpacity>
                 :
                 <TouchableOpacity disabled={true}
-                                          style={{width: this.TouchableWidth, margin: this.cellMargin}}>
+                                  style={{width: this.TouchableWidth, margin: this.cellMargin}}>
                     <View style={[styles.btn, {opacity: .4}]}>
                         <Icon name={'edit'} size={25} color={'white'}/>
                     </View>

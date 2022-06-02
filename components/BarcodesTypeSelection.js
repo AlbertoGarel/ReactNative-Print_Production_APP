@@ -19,8 +19,9 @@ const BarcodesTypeSelection = ({props}) => {
                 tx.executeSql(
                     Platform.OS === 'ios' ? barcodesIos : barcodesAndroid,
                     // barcodes_table_all,
-                    [],
+                    [1],
                     (_, {rows: {_array}}) => {
+                        console.log(_array)
                         if (_array.length > 0) {
                             const stateCodebarsItems = _array.map(item => {
                                 return {checkName: item.barcode_name, checkValue: item.barcode_name === 'code128'}

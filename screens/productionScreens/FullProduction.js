@@ -52,7 +52,7 @@ import CustomTextArea from "../../components/FormComponents/CustomTextArea";
 import BgRepeatSVG from "../../components/BackgroundComponent/BgRepeatSVG";
 import {getDatas} from "../../data/AsyncStorageFunctions";
 import {htmlDefaultTemplate} from "../../PDFtemplates/defaultTemplateHTML";
-import {createAndSavePDF_HTML_file} from "../../data/FileSystemFunctions";
+import {createAndSavePDF_HTML_file, readFolder, sendFile} from "../../data/FileSystemFunctions";
 import ContainerSectionListItem from "../../components/productions/ContainerSectionListItem";
 import TouchableIcon from "../../components/TouchableIcon";
 import BottomSheetComponent from "../../components/BottomSheetComponent";
@@ -270,7 +270,7 @@ const FullProduction = ({route}) => {
                     return response
                 })
                 .then(response => setCalculationProductionButton(response.initCalc))
-                // .catch(err => err);
+            // .catch(err => err);
             // updatedataRollState(radiusState, item, maxRadius, radiusCoefBBDD)
         } catch (err) {
             console.log(err);
@@ -472,6 +472,8 @@ const FullProduction = ({route}) => {
             .then(async resp => {
                 const formatedName = dataProd.date.replace(/[\-]/g, "")
                 await createAndSavePDF_HTML_file(`${formatedName}_${dataProd.product}`, resp);
+                const pdfDocumentawait = await readFolder();
+                await sendFile(pdfDocumentawait.filter( doc => doc === `${formatedName}_${dataProd.product}.pdf`)[0])
             })
             .then(() => {
                 const request_update_AllBobinaTable =
@@ -490,8 +492,10 @@ const FullProduction = ({route}) => {
                 return new Promise.all(...paramsAllsPromises)
             })
             .then(() => {
+                const autopastersList = individualAutopasterDataForSectionList.map(i => i.title);
+                autopastersList.sort((a, b) => a - b);
                 const insertFinalProduction = `
-                INSERT INTO productresults_table VALUES (?,?,?,?,?,?,?,?,?);`
+                INSERT INTO productresults_table VALUES (?,?,?,?,?,?,?,?,?,?);`
                 const values = [
                     null,
                     finalCalc.tiradaBruta,
@@ -501,10 +505,12 @@ const FullProduction = ({route}) => {
                     dataProd.tirada,
                     dataProd.pagination,
                     dataProd.productId,
-                    dataProd.editions
+                    dataProd.editions,
+                    autopastersList.toString()
                 ]
                 return genericInsertFunction(insertFinalProduction, values);
             })
+            .then(() => genericDeleteFunction('DELETE from autopasters_prod_data where production_fk = ?', [dataProd.productionID]))
             .then(() => {
                 const delete_production = `
                 DELETE FROM produccion_table WHERE produccion_id = ?;`
@@ -517,6 +523,8 @@ const FullProduction = ({route}) => {
                 if (err === 'noname') {
                     alert('Complete DATOS DE ENCABEZADO.')
                     setTimeout(() => navigation.navigate('SettingsStack'), 2000)
+                } else {
+                    console.log(err)
                 }
             })
     };
@@ -740,7 +748,8 @@ const FullProduction = ({route}) => {
             <BottomSheetComponent
                 ref={bottomSheetRef}
                 height={height}
-                openDuration={250}
+                animationType={'slide'}
+                openDuration={550}
                 onClose={() => bottomSheetHandler()}
                 onOpen={() => bottomSheetHandler()}
                 children={<BarcodeScannerComponent props={{

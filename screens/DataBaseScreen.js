@@ -100,6 +100,12 @@ const DataBaseScreen = ({navigation, setChangeButtonFunc}) => {
         typeform: typeform,
         disable: false,
         getTypeFormForHeader: getTypeFormForHeader,
+        info: [
+            "Establezca la medición ( por ejamplo: sólo papel útil o desde interior del mandril ) para calcular los kilogramos restantes.",
+            "Introduzca un nombre identificativo.",
+            "Asigne valor para bobina de ancho completo o entera y media.",
+            "Introduzca el gramaje de dicha bobina."
+        ]
     };
     const coeficienteComponentProps = {
         headerTitle: "Coeficiente",
@@ -116,6 +122,10 @@ const DataBaseScreen = ({navigation, setChangeButtonFunc}) => {
             update: 'actualizar'
         },
         form: <MeditionStyleCrud/>,
+        info: [
+            "*No editable.",
+            "Incluye radio máximo en centímetros para bobinas de papel más utilizadas."
+        ]
     };
     const paginationComponentProps = {
         headerTitle: "Paginaciones",
@@ -129,6 +139,10 @@ const DataBaseScreen = ({navigation, setChangeButtonFunc}) => {
         typeform: typeform,
         disable: false,
         getTypeFormForHeader: getTypeFormForHeader,
+        info: [
+            "Añada tantas paginaciones como necesite.",
+            "8, 16, 24, 32, etc."
+        ]
     };
     const gramajeComponentProps = {
         headerTitle: "Gramaje",
@@ -142,6 +156,7 @@ const DataBaseScreen = ({navigation, setChangeButtonFunc}) => {
         typeform: typeform,
         disable: false,
         getTypeFormForHeader: getTypeFormForHeader,
+
     };
     const lineaproduccionComponentProps = {
         headerTitle: "Líneas de Producción",
@@ -155,6 +170,7 @@ const DataBaseScreen = ({navigation, setChangeButtonFunc}) => {
         typeform: typeform,
         disable: false,
         getTypeFormForHeader: getTypeFormForHeader,
+
     };
     const papelComunComponentProps = {
         headerTitle: "Propietarios de Bobinas",
@@ -168,6 +184,7 @@ const DataBaseScreen = ({navigation, setChangeButtonFunc}) => {
         typeform: typeform,
         disable: false,
         getTypeFormForHeader: getTypeFormForHeader,
+
     };
     const kbaComponentProps = {
         headerTitle: "Coeficientes KBA para Calculos de Producción",
@@ -180,6 +197,7 @@ const DataBaseScreen = ({navigation, setChangeButtonFunc}) => {
         form: <CoeficienteKbaCrud props={{typeform, registerID}}/>,
         disable: false,
         getTypeFormForHeader: getTypeFormForHeader,
+
     };
     const autopasterComponentProps = {
         headerTitle: "Autopasters",
@@ -192,6 +210,11 @@ const DataBaseScreen = ({navigation, setChangeButtonFunc}) => {
         form: <AutopastersCrud props={{typeform, registerID}}/>,
         disable: false,
         getTypeFormForHeader: getTypeFormForHeader,
+        info: [
+            '*Defina de manera obligatoria un autopaster como "media bobina"',
+            "Enumere e introduzca todos los autopasters por cada línea de impresión.",
+            'En el campo "nombre" sólo dígitos serán admitidos.'
+        ]
     };
     const productosComponentProps = {
         headerTitle: "Productos",
@@ -203,7 +226,7 @@ const DataBaseScreen = ({navigation, setChangeButtonFunc}) => {
         },
         form: <ProductosCrud props={{typeform, registerID}}/>,
         disable: false,
-        getTypeFormForHeader: getTypeFormForHeader,
+        getTypeFormForHeader: getTypeFormForHeader
     };
     const bobinasComponentProps = {
         headerTitle: "Bobinas",
@@ -213,7 +236,7 @@ const DataBaseScreen = ({navigation, setChangeButtonFunc}) => {
             allItems: bobina_table_ALL,
             deleteItem: ''
         },
-        disable: true,
+        disable: true
     };
     const produccionComponentProps = {
         headerTitle: "Producciones abiertas",
@@ -224,6 +247,11 @@ const DataBaseScreen = ({navigation, setChangeButtonFunc}) => {
             deleteItem: ''
         },
         disable: true,
+        info: [
+            "*No editable.",
+            "Puede ver una relación de las producciones abiertas en ese momento.",
+            "Al finalizar una producción se eliminará de la tabla."
+        ]
     };
     const bobinasProduccionComponentProps = {
         headerTitle: "bobinas en Producciones abiertas",
@@ -234,6 +262,11 @@ const DataBaseScreen = ({navigation, setChangeButtonFunc}) => {
             deleteItem: ''
         },
         disable: true,
+        info: [
+            "*No editable.",
+            "Puede ver una relación de bobinas que serán incluidas en las distintas producciones abiertas en ese momento.",
+            "Al finalizar una producción se eliminará de la tabla."
+        ]
     };
 
     const option_edit = {
@@ -270,20 +303,20 @@ const DataBaseScreen = ({navigation, setChangeButtonFunc}) => {
                                   drawerContent={(props) => <CustomSidebarMenu {...props} />}
                 >
                     <Drawer.Screen options={option_edit} name="InitialDrawerScreen" component={InitialDrawerScreen}/>
-                    <Drawer.Screen options={option_edit} name="Estilo de medición"
-                                   children={() => <TableViewwCommonScreen props={meditionStyleComponentProps}/>}/>
                     <Drawer.Screen options={option_vis} name="Coeficientes"
                                    children={() => <TableViewwCommonScreen props={coeficienteComponentProps}/>}/>
                     <Drawer.Screen options={option_edit} name="Paginaciones"
                                    children={() => <TableViewwCommonScreen props={paginationComponentProps}/>}/>
                     <Drawer.Screen options={option_edit} name="Gramajes del papel"
                                    children={() => <TableViewwCommonScreen props={gramajeComponentProps}/>}/>
-                    <Drawer.Screen options={option_edit} name="Líneas de produccion"
-                                   children={() => <TableViewwCommonScreen props={lineaproduccionComponentProps}/>}/>
+                    <Drawer.Screen options={option_edit} name="Estilo de medición"
+                                   children={() => <TableViewwCommonScreen props={meditionStyleComponentProps}/>}/>
                     <Drawer.Screen options={option_edit} name="Propietarios de bobinas"
                                    children={() => <TableViewwCommonScreen props={papelComunComponentProps}/>}/>
-                    <Drawer.Screen options={option_edit} name="Coeficientes KBA"
+                    <Drawer.Screen options={option_edit} name="Coef. cálculo de restos"
                                    children={() => <TableViewwCommonScreen props={kbaComponentProps}/>}/>
+                    <Drawer.Screen options={option_edit} name="Líneas de produccion"
+                                   children={() => <TableViewwCommonScreen props={lineaproduccionComponentProps}/>}/>
                     <Drawer.Screen options={option_edit} name="Autopasters"
                                    children={() => <TableViewwCommonScreen props={autopasterComponentProps}/>}/>
                     <Drawer.Screen options={option_edit} name="Productos"
@@ -292,7 +325,7 @@ const DataBaseScreen = ({navigation, setChangeButtonFunc}) => {
                                    children={() => <TableViewwCommonScreen props={bobinasComponentProps}/>}/>
                     <Drawer.Screen options={option_vis} name="Producciones"
                                    children={() => <TableViewwCommonScreen props={produccionComponentProps}/>}/>
-                    <Drawer.Screen options={option_vis} name="Boinas en producciones"
+                    <Drawer.Screen options={option_vis} name="Bobinas en producciones"
                                    children={() => <TableViewwCommonScreen props={bobinasProduccionComponentProps}/>}/>
                 </Drawer.Navigator>
             </View>

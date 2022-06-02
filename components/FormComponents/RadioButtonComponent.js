@@ -23,7 +23,7 @@ const RadioButtonComponent = ({
             _setState(resto)
         }
 
-        if (limitSelection === data.length > 0 && !notSelectable) {
+        if (limitSelection === data.length && !notSelectable) {
             _setState(data.map(item => item.autopaster_id))
         }
         if (limitSelection === data.length - 1 && notSelectable) {

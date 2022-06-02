@@ -4,6 +4,7 @@ const errorMessages = {
     required: 'Requerido.',
     tooLong: 'Excedido límite permitido',
     tooShort: 'Valor mínimo no válido.',
+    tooShortThatZeroValuePicker: 'Realiza una selección válida.',
     tooShortThatZero: 'Introduce un número mayor que cero.'
 }
 
@@ -31,11 +32,11 @@ export const FormYupSchemas = {
         .max(100000, errorMessages.tooLong)
         .required(`-- ${errorMessages.required} --`),
     pickerPagination: Yup.number()
-        .min(1, errorMessages.tooShortThatZero),
+        .min(1, errorMessages.tooShortThatZeroValuePicker),
     pickerProducto: Yup.number()
-        .min(1, errorMessages.tooShortThatZero),
+        .min(1, errorMessages.tooShortThatZeroValuePicker),
     pickerGramaje: Yup.number()
-        .min(1, errorMessages.tooShortThatZero),
+        .min(1, errorMessages.tooShortThatZeroValuePicker),
     meditionStyle: Yup.string()
         .matches(/[A-Za-z0-9]+/g, "Sólo letras y dígitos")
         .required(errorMessages.required),

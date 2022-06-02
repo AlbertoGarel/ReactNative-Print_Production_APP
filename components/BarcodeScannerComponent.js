@@ -23,40 +23,40 @@ const BarcodeScannerComponent = ({props}) => {
             let isMounted = true;
             (async () => {
                 const {status} = await BarCodeScanner.requestPermissionsAsync();
-                setHasPermission(status === 'granted');
+                if(isMounted) setHasPermission(status === 'granted');
             })();
+                //GET TO asyncStorage
+                getDatas('@storage_codeTypesSelected').then(r => {
+                    // console.log('datos de storage en barcodeCompnent', r)
+                    if (r) {
+                        const cloneRequest = [...r];
+                        const formatSelectedTypes = [];
+                        cloneRequest.forEach((codeItem, index) => {
+                            if (codeItem.checkValue === true) {
+                                formatSelectedTypes.push('BarCodeScanner.Constants.BarCodeType.' + codeItem.checkName);
+                            }
+                        });
+                        getBarcodeTypesSelected(formatSelectedTypes);
+                    } else {
+                        getBarcodeTypesSelected([{
+                            "checkName": "code128",
+                            "checkValue": true,
+                        }])
+                    }
+                });
 
-            //GET TO asyncStorage
-            getDatas('@storage_codeTypesSelected').then(r => {
-                // console.log('datos de storage en barcodeCompnent', r)
-                if(r){
-                    const cloneRequest = [...r];
-                    const formatSelectedTypes = [];
-                    cloneRequest.forEach((codeItem, index) => {
-                        if (codeItem.checkValue === true) {
-                            formatSelectedTypes.push('BarCodeScanner.Constants.BarCodeType.' + codeItem.checkName);
-                        }
-                    });
-                    getBarcodeTypesSelected(formatSelectedTypes);
-                }else{
-                    getBarcodeTypesSelected([{
-                        "checkName": "code128",
-                        "checkValue": true,
-                    }])
+                if (props.isVisible && hasPermission) {
+                    const initScan = setTimeout(() => {
+                        setInitScanState(true);
+                    }, 250);
+
+                    return () => clearTimeout(initScan);
+                } else {
+                    setInitScanState(false);
                 }
-            });
 
-            if (props.isVisible) {
-                const initScan = setTimeout(() => {
-                    setInitScanState(true);
-                }, 250);
-
-                return () => clearTimeout(initScan);
-            } else {
-                setInitScanState(false);
-            }
             return () => isMounted = false;
-        }, [props.isVisible]
+        }, [hasPermission, props.isVisible]
     )
 
     const handleBarCodeScanned = (scanningResult: BarCodeScannerResult) => {

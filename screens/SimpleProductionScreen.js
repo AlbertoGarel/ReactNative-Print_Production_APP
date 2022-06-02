@@ -21,7 +21,7 @@ import FormTotalCalculationProduction from "../components/productions/FormTotalC
 const simpleProductionScreen = ({setChangeButtonFunc}) => {
 
     const [visiblemenu, setVisibleMenu] = useState(false);
-    const [isFocus, setIsFocus] = useState(false);
+    // const [isFocus, setIsFocus] = useState(false);
     const [seeData, setSeeData] = useState(false);
     const [objsaved, getObjSaved] = useState([]);
     const [renderNowItem, setRenderNowItem] = useState('');
@@ -42,17 +42,17 @@ const simpleProductionScreen = ({setChangeButtonFunc}) => {
 
     useFocusEffect(
         useCallback(() => {
-            setIsFocus(true);
+            // setIsFocus(true);
             setChangeButtonFunc(true);
             // animatedArrow()
             updateGetStorage();
             // removeValue('@simpleProdData').then(r => console.log('gjgj'))
-            return () => {
-                setIsFocus(false);
+            // return () => {
+                // setIsFocus(false);
                 //CHANGE BUTTON COLOR FOR CREATE SIMPLE PERODUCTION OR FULL PRODUCTION IN BOTTOM TAB NAV.
                 // setChangeButtonFunc(false);
 
-            };
+            // };
         }, [])
     );
 

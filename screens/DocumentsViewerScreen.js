@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Dimensions, SafeAreaView, SectionList, StyleSheet, Text, View} from 'react-native';
+import {Dimensions, SafeAreaView, SectionList, StyleSheet, Text, View, Alert} from 'react-native';
 import {
     deleteFile,
     diskcapacity,
@@ -75,7 +75,20 @@ const DocumentsViewerScreen = ({navigation, route}) => {
     };
 
     const handlerDelete = (title) => {
-        deleteFile(title).then(() => getReload(true));
+        createTwoButtonAlert(title);
+    };
+
+    function createTwoButtonAlert(title) {
+        Alert.alert(
+            'ELIMINAR DOCUMENTO',
+            '¿Está seguro de eliminar el documento?. No podrá deshacer la acción.', [
+                {
+                    text: 'Cancel',
+                    onPress: () => null,
+                    style: 'cancel',
+                },
+                {text: 'OK', onPress: () => deleteFile(title).then(() => getReload(true))},
+            ]);
     };
 
     const Item = ({title}) => (

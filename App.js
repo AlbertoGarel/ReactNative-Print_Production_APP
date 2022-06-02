@@ -4,25 +4,38 @@ import React, {useState, useEffect} from 'react';
 import {StyleSheet, Text, View, Alert, ImageBackground} from 'react-native';
 import {NavigationContainer, useIsFocused} from '@react-navigation/native';
 import Routes from "./Routes";
-import SplashScreen from "./screens/SplashScreen";
 import * as SQLite from 'expo-sqlite';
 import {openDatabase} from './dbCRUD/actionsSQL';
-import Toast from "react-native-easy-toast";
-import ToastMesages from "./components/ToastMessages";
-import * as FileSystem from 'expo-file-system';
+import SplashScreen from "./screens/SplashScreen";
 import {appFolder, appHTMLfolderForPdf, checkAndCreateFolder, checkExistFolder} from "./data/FileSystemFunctions";
+import IntroductionScreen from "./screens/Introduction/IntroductionScreen";
+import {getDatas, storeData} from "./data/AsyncStorageFunctions";
 
 function App() {
-
+// let i = false
     const [loadScreen, setLoadScreen] = useState(true);
+    const [firstPresentation, setFirstPresentation] = useState(true);
     // const createFolder = `${FileSystem.documentDirectory}documentsAppBobinas`;
 
     useEffect(() => {
         let isMounted = true;
 
+        getDatas('@introduction')
+            .then(response => {
+                if(response === false){
+                    setFirstPresentation(response)
+                }
+            })
+            .catch(() => {
+               alert('false')
+            });
+
+        // openDatabase()
+        //     .then(response => showToast('CONECTANDO CON BASE DE DATOS...'))
+        //     .catch(error => showToast('ERROR EN DB'));
         openDatabase()
-            .then(response => showToast('CONECTANDO CON BASE DE DATOS...'))
-            .catch(error => showToast('ERROR EN DB'));
+            .then(response => response)
+            .catch(error => error);
 
         checkAndCreateFolder(appFolder)
             .then(response => response)
@@ -45,16 +58,14 @@ function App() {
         return () => isMounted = false;
     }, []);
 
-    // useEffect(() => {
-    //     setTimeout(() => {
-    //         setLoadScreen(false)
-    //     }, 4000);
-    // });
-
-    let toastRef;
-    const showToast = (message) => {
-        toastRef.show(message);
+    function HandlerPresentation() {
+        storeData('@introduction', false)
+            .then(()=> setFirstPresentation(false))
+            .catch(()=> alert('error'))
     }
+    // if(!i){
+    //     return <SplashScreen/>
+    // }
 
     return (
         <NavigationContainer>
@@ -62,18 +73,12 @@ function App() {
                 loadScreen ?
                     <SplashScreen/>
                     :
-                    <Routes/>
+                    firstPresentation
+                        ? <IntroductionScreen
+                            setFirstPresentation={HandlerPresentation}
+                        />
+                        : <Routes/>
             }
-            <ToastMesages
-                _ref={(toast) => toastRef = toast}
-                _style={{backgroundColor: '#FFFFFF'}}
-                _position='bottom'
-                _positionValue={200}
-                _fadeInDuration={150}
-                _fadeOutDuration={4000}
-                _opacity={1}
-                _textStyle={{color: '#000000', fontFamily: 'Anton'}}
-            />
         </NavigationContainer>
     );
 }

@@ -5,7 +5,7 @@ import {
     Alert
 } from 'react-native';
 
-import BottomSheet from 'react-native-raw-bottom-sheet';
+import RBSheet from 'react-native-raw-bottom-sheet';
 import {useFocusEffect} from '@react-navigation/native';
 
 
@@ -30,7 +30,7 @@ const BottomSheetComponent = (props, ref) => {
 
     return (
         <View>
-            <BottomSheet
+            <RBSheet
                 ref={ref}
                 closeOnDragDown={true}
                 {...props}
@@ -62,7 +62,7 @@ const BottomSheetComponent = (props, ref) => {
                 {/*</TouchableOpacity>*/}
                 {props.children}
                 {/*</View>*/}
-            </BottomSheet>
+            </RBSheet>
             {/*<TouchableOpacity*/}
             {/*    style={[*/}
             {/*        styles.button,*/}
