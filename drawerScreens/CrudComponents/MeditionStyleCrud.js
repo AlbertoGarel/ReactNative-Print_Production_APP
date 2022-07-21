@@ -45,7 +45,6 @@ const MeditionStyleCrud = ({props}) => {
                         if (_array.length > 0) {
                             //clone array
                             const responsetObj = [..._array];
-                            // setgramajeDB(..._array);
                             setStateMeditionType(responsetObj[0].medition_type);
                             setStateGramajeFK(responsetObj[0].gramaje_fk);
                             setStateFullVal(responsetObj[0].full_value.toString());
@@ -109,16 +108,14 @@ const MeditionStyleCrud = ({props}) => {
                         genericUpdatefunction(updateMeditionStyleByID, updateArr)
                             .then(result => {
                                 if (result.rowsAffected > 0) {
-                                    showToast('Actualizado con éxito', false)
+                                    showToast('Actualizado con éxito', false);
                                 } else {
-                                    showToast('Error al actualizar')
+                                    showToast('Error al actualizar');
                                 }
                             })
                             .catch(err => {
-                                showToast('Error al actualizar')
-                                console.log(err)
+                                showToast('Error al actualizar');
                             })
-                        // console.log(values.meditionStyle + ' , ' + values.fullVal + ' , ' + values.pickerGramaje + ' , ' + values.medVal + ' , ' + props.registerID)
                     }
                     if (props.typeform === 'CREAR') {
                         //row order: meditionid(ai) = null, medition_type, full_value, gramaje_fk, media_value
@@ -132,11 +129,9 @@ const MeditionStyleCrud = ({props}) => {
                                 }
                             })
                             .catch(err => {
-                                showToast('Error al crear registro')
-                                console.log(err)
+                                showToast('Error al crear registro');
                             })
                         meditionStyleForm.current?.resetForm()
-                        // console.log(values.meditionStyle + ' , ' + values.fullVal + ' , ' + values.pickerGramaje + ' , ' + values.medVal)
                     }
                 }}
             >
@@ -165,18 +160,7 @@ const MeditionStyleCrud = ({props}) => {
                             {(errors.pickerGramaje && touched.pickerGramaje) &&
                             < Text style={{fontSize: 10, color: 'red'}}>{errors.pickerGramaje}</Text>
                             }
-                            <View style={{
-                                backgroundColor: COLORS.white,
-                                width: '100%',
-                                height: 60,
-                                padding: 5,
-                                borderRadius: 5,
-                                flexDirection: 'row',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                borderWidth: .5,
-                                borderColor: COLORS.black,
-                            }}>
+                            <View style={style.contpicker}>
                                 <View style={styles.IconStyle}>
                                     <SvgComponent
                                         svgData={gramaje}
@@ -290,11 +274,6 @@ const MeditionStyleCrud = ({props}) => {
                             _opacity={0.8}
                             _textStyle={{color: '#FFFFFF', fontFamily: 'Anton'}}
                         />
-                        {/*+++*/}
-                        {/*DELETE WHENFINISH CRUD*/}
-                        {/*+++*/}
-                        {/*<Text>{gramajeDB ? JSON.stringify(gramajeDB) : null}</Text>*/}
-                        {/*++++++++++*/}
                     </>
                 )}
             </Formik>
@@ -319,6 +298,18 @@ const styles = StyleSheet.create({
         fontFamily: 'Anton',
         fontSize: 17,
         color: COLORS.white
+    },
+    contpicker: {
+        backgroundColor: COLORS.white,
+        width: '100%',
+        height: 60,
+        padding: 5,
+        borderRadius: 5,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: .5,
+        borderColor: COLORS.black,
     }
 });
 export default MeditionStyleCrud;

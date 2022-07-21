@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {COLORS} from "../../assets/defaults/settingStyles";
+import PropTypes from "prop-types";
 
 const SettingsProductionHeader = ({
                                       pagenumber,
@@ -38,5 +39,10 @@ const styles = StyleSheet.create({
         textAlign: 'left',
     }
 });
+
+SettingsProductionHeader.propTypes = {
+    pagenumber: PropTypes.number,
+    explanation: PropTypes.string.isRequired,
+};
 
 export default SettingsProductionHeader;

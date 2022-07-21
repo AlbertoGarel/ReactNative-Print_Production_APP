@@ -1,13 +1,11 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import {StyleSheet, View, Text, Picker, Dimensions} from 'react-native';
 import {COLORS, shadowPlatform} from "../assets/defaults/settingStyles";
 import HRtag from "./HRtag";
-import {icon360SVG, move_DownSVG, move_UpSVG} from "../assets/svg/svgContents";
+import {move_DownSVG, move_UpSVG} from "../assets/svg/svgContents";
 import SvgComponent from "./SvgComponent";
 import {DraxProvider, DraxList, DraxViewDragStatus} from 'react-native-drax';
-import {TouchableWithoutFeedback} from "react-native-web";
 import Barcode from "@kichiyaki/react-native-barcode-generator";
-import {LinearGradient} from "expo-linear-gradient";
 import SpinnerSquares from "./SpinnerSquares";
 
 const maxViewItems = 3;
@@ -22,17 +20,13 @@ const heightDraxParent = (dragItemHeight * normalViewsItems) + (dragContainerPad
 
 const DragDropCardsComponent = ({props}) => {
 //FUTURE ADD PROPS: type Barcode, add PrevKilos to itemObj
-//     const [itemsToOrder, getItemsToOreder] = useState([]);
     const {autopasterNum, inputRadioForRollRadius, setStateForRadiusChangedPosition, spin} = props;
     const [rolls, getRolls] = React.useState([]);
 
     useEffect(() => {
         let isMounted = true;
-        console.log('props for move', props)
+
         if (isMounted) {
-            // getRolls(inputRadioForRollRadius.filter(roll => roll.autopaster === autopasterNum)
-            //     .sort((a, b) => a.position - b.position)
-            // );
             getRolls(inputRadioForRollRadius.sort((a, b) => a.position - b.position));
         }
         return () => isMounted = false;
@@ -47,39 +41,10 @@ const DragDropCardsComponent = ({props}) => {
     }, [])
 
     const alphabet = 'ABCD'.split('');
-    const [alphaData, setAlphaData] = React.useState(alphabet);
 
     const calcHeightForContainer = (item) => {
         return (dragItemHeight * item.length) + (dragContainerPadding * 2) + (paddingItems * (maxViewItems * 2))
     }
-
-    // const getBackgroundColor = (alphaIndex) => {
-    //     switch (alphaIndex % 6) {
-    //         case 0:
-    //             return '#ffaaaa';
-    //         case 1:
-    //             return '#aaffaa';
-    //         case 2:
-    //             return '#aaaaff';
-    //         case 3:
-    //             return '#ffffaa';
-    //         case 4:
-    //             return '#ffaaff';
-    //         case 5:
-    //             return '#aaffff';
-    //         default:
-    //             return '#aaaaaa';
-    //     }
-    // };
-
-    // const getItemStyleTweaks = (alphaItem) => {
-    //     const alphaIndex = alphabet.indexOf(alphaItem);
-    //     return {
-    //         backgroundColor: getBackgroundColor(alphaIndex),
-    //         height: dragItemHeight,
-    //     };
-    // };
-
 
     return (
         <View style={styles.parentContainer}>
@@ -164,14 +129,11 @@ const DragDropCardsComponent = ({props}) => {
                                             </View>
                                         </View>
                                     )}
-                                    // onItemReorder={({fromIndex, toIndex}) => {
-                                    //     const newData = alphaData.slice();
-                                    //     newData.splice(toIndex, 0, newData.splice(fromIndex, 1)[0]);
-                                    //     setAlphaData(newData);
-                                    // }}
                                     keyExtractor={(item) => item.bobina_fk.toString()}
                                     onItemDragStart={({index, item}) => {
-                                        console.log(`Item #${index} (${item.bobina_fk}) drag start`);
+                                        if (__DEV__) {
+                                            console.log(`Item #${index} (${item.bobina_fk}) drag start`);
+                                        }
                                     }}
                                     onItemDragEnd={({
                                                         index,
@@ -182,22 +144,17 @@ const DragDropCardsComponent = ({props}) => {
                                         if (!toItem) {
                                             return
                                         }
-                                        console.log(`Item #${index + 1} (${item.bobina_fk}) drag ended at index ${toIndex + 1} (${toItem.bobina_fk})`);
+                                        if (__DEV__) {
+                                            console.log(`Item #${index + 1} (${item.bobina_fk}) drag ended at index ${toIndex + 1} (${toItem.bobina_fk})`);
+                                        }
                                     }}
                                     onItemReorder={({fromIndex, toIndex}) => {
                                         const newData = rolls.slice();
                                         newData.splice(toIndex, 0, newData.splice(fromIndex, 1)[0]);
-                                        // console.log('antes', rolls)
-                                        // console.log('ahora', newData)
                                         const reordered = newData.map((item, index) => {
                                             item.position = index + 1;
                                             return item;
-                                        })
-                                        // reordered.sort((a, b) => a.position - b.position);
-                                        // reordered.forEach(item=>{
-                                        //
-                                        // })
-                                        // setStateForRadiusChangedPosition(reordered);
+                                        });
                                         wait(reordered);
                                     }}
                                 />
@@ -206,11 +163,6 @@ const DragDropCardsComponent = ({props}) => {
                     }
                 </View>
             </View>
-
-
-            {/*<Text onPress={touc}>section id: </Text>*/}
-            {/*<Text>{JSON.stringify(item)}</Text>*/}
-            {/*<Text>{JSON.stringify(itemsToOrder)}</Text>*/}
         </View>
     )
 }
@@ -250,12 +202,10 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: '#000000' + 50,
     },
-
     container: {
         padding: 10,
     },
     alphaItem: {
-        // backgroundColor: '#aaaaff',
         backgroundColor: COLORS.buttonEdit,
         borderRadius: 8,
         margin: 4,

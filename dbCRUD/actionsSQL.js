@@ -382,8 +382,7 @@ export const search_bobina_fullWeight =
     ON producto_table.producto_id = linea_produccion_table.linea_id
     LEFT JOIN gramaje_table
     ON gramaje_table.gramaje_id = bobina_table.gramaje_fk 
-    WHERE bobina_table.peso_actual IS NULL
-    OR bobina_table.radio_actual IS NULL;`
+    WHERE bobina_table.radio_actual IS NULL;`
 export const insertBobina =
     `INSERT INTO bobina_table (codigo_bobina, peso_ini, peso_actual, radio_actual, papel_comun_fk, autopaster_fk, gramaje_fk, media)
      VALUES (?,?,?,?,?,?,?,?)`;
@@ -416,6 +415,19 @@ export const produccion_table_ALL =
     JOIN producto_table
     ON producto_table.producto_id = produccion_table.producto_fk`
 ;
+export const dataProductSelectedAllInfo =
+    `SELECT a.linea_id, a.linea_name,b.medition_id, b.full_value, b.media_value, c.paginacion_value, d.producto_id, d.producto_name,
+    f.kba_value, g.gramaje_value, g.gramaje_id, h.papel_comun_name, h.papel_comun_id, e.produccion_id, e.editions, e.tirada, e.nulls, e.fecha_produccion, b.full_value, b.media_value
+    FROM linea_produccion_table a, medition_style_table b, paginacion_table c, producto_table d, kba_table f, gramaje_table g, papel_comun_table h
+    INNER JOIN produccion_table e
+    WHERE a.linea_id = e.linea_fk AND
+    b.medition_id = e.medition_fk AND 
+    c.paginacion_id = e.pagination_fk AND 
+    d.producto_id = e.producto_fk AND
+    f.kba_id = d.cociente_total_fk AND
+    f.gramaje_fk = g.gramaje_id AND
+    h.papel_comun_id = d.papel_comun_fk AND e.produccion_id = ?`
+;
 /**
  * BARCODES_TABLE
  */
@@ -440,69 +452,14 @@ export const autopasters_prod_table_by_production =
 export const autopaster_prod_data_insert =
     `INSERT INTO autopasters_prod_data VALUES (?,?,?,?,?,?,?);`
 ;
-
-// CREATE TABLE "medition_style_table" (
-//     "medition_id"	INTEGER NOT NULL,
-//     "medition_type"	VARCHAR(50),
-//     "full_value"	REAL,
-//     "gramaje_fk"	INTEGER,
-//     "media_value"	REAL,
-//     PRIMARY KEY("medition_id" AUTOINCREMENT),
-//     FOREIGN KEY("gramaje_fk") REFERENCES "gramaje_table"("gramaje_id") ON DELETE NO ACTION ON UPDATE NO ACTION
-// )
-
-// CREATE TABLE PRODUCTION
-// CREATE TABLE "produccion_table" (
-//     "produccion_id" INTEGER NOT NULL,
-//     "editions" INTEGER,
-//     "linea_fk" INTEGER,
-//     "medition_fk" INTEGER,
-//     "pagination_fk" INTEGER,
-//     "producto_fk" INTEGER,
-//     "tirada" BIGINT,
-//     "nulls" BIGINT,
-//     "fecha_produccion" DATE,
-//     PRIMARY KEY("produccion_id"),
-//     FOREIGN KEY("linea_fk") REFERENCES "linea_produccion_table"("linea_id") ON DELETE NO ACTION ON UPDATE NO ACTION,
-//     FOREIGN KEY("medition_fk") REFERENCES "medition_style_table"("medition_id") ON DELETE CASCADE ON UPDATE CASCADE,
-//     FOREIGN KEY("pagination_fk") REFERENCES "paginacion_table"("paginacion_id") ON DELETE CASCADE ON UPDATE CASCADE,
-//     FOREIGN KEY("producto_fk") REFERENCES "producto_table"("producto_id") ON DELETE CASCADE ON UPDATE CASCADE
-// );
-
-// CREATE TABLE "autopasters_prod_data" (
-//     "autopasters_prod_data_id" INTEGER NOT NULL,
-//     "production_fk"	INTEGER NOT NULL,
-//     "autopaster_fk"	INTEGER NOT NULL,
-//     "bobina_fk"	INTEGER NOT NULL,
-//     "resto_previsto" INTEGER,
-//     "media_defined" BOOLEAN NOT NULL,
-//     PRIMARY KEY("autopasters_prod_data_id"),
-//     FOREIGN KEY("bobina_fk") REFERENCES "bobina_table"("codigo_bobina") ON DELETE CASCADE ON UPDATE CASCADE,
-//     FOREIGN KEY("autopaster_fk") REFERENCES "autopaster_table"("autopaster_id") ON DELETE CASCADE ON UPDATE CASCADE,
-//     FOREIGN KEY("production_fk") REFERENCES "produccion_table"("produccion_id") ON DELETE CASCADE ON UPDATE CASCADE
-// );
-//INSERT
-// INSERT INTO produccion_table (editions, linea_fk,medition_fk, pagination_fk, producto_fk, tirada, nulls, fecha_produccion)
-// VALUES (?,?,?,?,?,?,?,?)
-
-// SELECT
-// SELECT editions AS 'Ediciones',
-//     linea_name AS 'Linea produccion' ,
-//     medition_type AS 'Medicion',
-//     gramaje_value AS 'Gramaje',
-//     paginacion_value AS 'Paginacion',
-//     producto_name AS 'producto',
-//     tirada AS 'Tirada',
-//     nulls AS 'Nulls',
-//     fecha_produccion AS 'Fecha'
-// FROM produccion_table
-// LEFT JOIN linea_produccion_table
-// ON linea_produccion_table.linea_id = produccion_table.linea_fk
-// LEFT JOIN medition_style_table
-// ON medition_style_table.medition_id = produccion_table.medition_fk
-// LEFT JOIN gramaje_table
-// ON gramaje_table.gramaje_id = medition_style_table.gramaje_fk
-// LEFT JOIN paginacion_table
-// ON paginacion_table.paginacion_id = produccion_table.medition_fk
-// LEFT JOIN producto_table
-// ON producto_table.producto_id = produccion_table.producto_fk
+export const autopasters_prod_data_TABLEALL_AS =
+    `SELECT autopasters_prod_data_id AS 'id',
+     production_fk AS 'producción',
+     autopaster_fk AS 'autopaster',
+     bobina_fk AS 'código de bobina',
+     resto_previsto AS 'resto previso',
+     Case media_defined When 0 Then 'Entera' Else 'Media' End AS 'Tipo de Bobina',
+     position_roll AS 'Orden de bobina'
+     FROM autopasters_prod_data;
+     ;`
+;

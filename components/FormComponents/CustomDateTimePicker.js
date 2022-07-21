@@ -4,6 +4,8 @@ import DatePicker from 'react-native-modern-datepicker';
 import {COLORS, shadowPlatform} from "../../assets/defaults/settingStyles";
 import SvgComponent from "../SvgComponent";
 import {formatDateYYMMDD} from "../../utils";
+import PropTypes from 'prop-types';
+import BgComponent from "../BackgroundComponent/BgComponent";
 
 const date = formatDateYYMMDD();
 const {width} = Dimensions.get('window');
@@ -57,7 +59,6 @@ const CustomDateTimePicker = ({
                             name={_name}
                             options={styleOptions}
                             onDateChange={date => {
-                                // setSelectedDateState(date);
                                 getSelectedDate(date);
                                 setTimeout(() => {
                                     setCalendarVisible(!calendarVisible)
@@ -115,4 +116,19 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     }
 });
+
+CustomDateTimePicker.propTypes = {
+    text: PropTypes.string.isRequired,
+    modeType: PropTypes.string.isRequired,
+    styleOptions: PropTypes.object.isRequired,
+    svgData: PropTypes.any.isRequired,
+    svgWidth: PropTypes.number.isRequired,
+    svgHeight: PropTypes.number.isRequired,
+    _name: PropTypes.string.isRequired,
+    placeholder: PropTypes.string.isRequired,
+    _ref: PropTypes.object.isRequired,
+    _value: PropTypes.string.isRequired,
+    getSelectedDate: PropTypes.func.isRequired,
+};
+
 export default CustomDateTimePicker;

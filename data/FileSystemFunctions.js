@@ -18,7 +18,7 @@ export const dataBaseFolder = FileSystem.documentDirectory + 'SQLite'
  *
  * CREATE FOLDER FOR SAVE FILES.
  *
- * @param type: string (folder name)
+ * @param folder_path type: string (folder name)
  *
  * */
 export const checkAndCreateFolder = async (folder_path = appFolder) => {
@@ -128,15 +128,15 @@ export const readFileHTMLFromDocumentDirectory = async fileName => {
 export const createAndSavePDF_HTML_file = async (fileName, html) => {
     try {
         const contentPath = await FileSystem.readDirectoryAsync(appFolder);
-        console.log('contentPath', contentPath)
-        console.log('filName', fileName)
         const searchEqualName = contentPath.filter(i=> i.split(/[\(\.]/)[0] === fileName);
-        console.log('searchEqualName', searchEqualName)
         const finallyName = searchEqualName.length > 0 ? `${fileName}(${searchEqualName.length})` : fileName;
-        console.log('finallyName', finallyName)
         const {uri} = await Print.printToFileAsync({html});
         await FileSystem.copyAsync({from: uri, to: appFolder + finallyName + '.pdf'});
         await FileSystem.writeAsStringAsync(appHTMLfolderForPdf + finallyName + '.html', html);
+        return {
+            nameFile: finallyName + '.pdf',
+            fileURI: appFolder + finallyName + '.pdf'
+        }
     } catch (error) {
         console.error(error);
     }
@@ -190,7 +190,7 @@ export const sendDataBase = async () => {
 };
 /**
  *
- * IMPORT LOCAL DATABSE FILE.
+ * IMPORT LOCAL DATABASE FILE.
  *
  * */
 export const importDataBase = async (fakeMessage) => {

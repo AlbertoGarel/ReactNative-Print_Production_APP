@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Text, TextInput, Alert} from 'react-native';
 import BgComponent from "../BackgroundComponent/BgComponent";
+import PropTypes from "prop-types";
 
 const TextInputCoilRadius = ({stylesTextInput, propsAttrInput}) => {
     let titleMessage = '!! ATENCIÓN !!'
@@ -19,7 +20,7 @@ const TextInputCoilRadius = ({stylesTextInput, propsAttrInput}) => {
                     keyboardType={propsAttrInput.keyboardType}
                     style={propsAttrInput.styled}
                     name={propsAttrInput.name}
-                    // onChangeText={propsAttrInput._onChangeText }
+                    onChangeText={propsAttrInput._onChangeText }
                     onEndEditing={propsAttrInput._onEndEditing}
                     value={propsAttrInput._value}
                     defaultValue={propsAttrInput._defaultValue}
@@ -28,6 +29,10 @@ const TextInputCoilRadius = ({stylesTextInput, propsAttrInput}) => {
         </View>
     )
 }
-export default React.memo(TextInputCoilRadius, (prevProps, nextProps) => {
-    return (prevProps.propsAttrInput === nextProps.propsAttrInput);
-});
+
+TextInputCoilRadius.propTypes = {
+    stylesTextInput: PropTypes.object.isRequired,
+    propsAttrInput: PropTypes.object.isRequired,
+};
+
+export default TextInputCoilRadius

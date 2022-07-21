@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react';
+import React, {useState, useRef} from 'react';
 import {StyleSheet, SafeAreaView, ScrollView, View, Dimensions} from "react-native";
 import ImageSection from "./ImageSection";
 import TextContainer from "./TextContainer";
@@ -87,4 +87,5 @@ const styles = StyleSheet.create({
         backgroundColor: '#ff0000'
     }
 });
+
 export default IntroductionScreen;

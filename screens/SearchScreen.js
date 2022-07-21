@@ -7,6 +7,8 @@ import {
     TouchableOpacity,
     SafeAreaView,
     Dimensions,
+    Text,
+    ActivityIndicator
 } from 'react-native';
 import {search, deleteThin, searchCode, semicircle2} from "../assets/svg/svgContents";
 import SvgComponent from "../components/SvgComponent";
@@ -16,8 +18,9 @@ import * as SQLite from "expo-sqlite";
 import BgComponent from "../components/BackgroundComponent/BgComponent";
 import HomeHeader from "../components/headers/HomeHeader";
 import {Table, TableWrapper, Row, Cell} from 'react-native-table-component';
-import BottomSheetComponent from "../components/BottomSheetComponent";
+import BottomSheetComponent from "../components/remove__BottomSheetComponent";
 import BarcodeScannerComponent from "../components/BarcodeScannerComponent";
+import {useFocusEffect} from "@react-navigation/native";
 
 const height = Dimensions.get('window').height / 1.5;
 
@@ -33,7 +36,7 @@ const SearchScreen = () => {
     const [tableData, setTableData] = useState([]);
 
     const [isVisible, SetIsVisible] = useState(false);
-
+    const [noResult, setNoResult] = useState(!valuesDB);
 
     //BACKGROUND PROP CONST
     const optionsSVG = {
@@ -42,6 +45,13 @@ const SearchScreen = () => {
     const optionsStyleContSVG = {
         width: '100%', height: '100%', top: 0, right: 0
     };
+    useFocusEffect(
+        React.useCallback(() => {
+            return () => {
+                setNoResult(false)
+            }
+        }, [])
+    );
 
     const getDataSearchForTable = (datas) => {
         setTablehead([...Object.keys(datas[0])]);
@@ -53,9 +63,9 @@ const SearchScreen = () => {
 
     const onChangeTexthandler = (searchValue) => {
         setValueForSearch(searchValue);
-        db.transaction(tx => {
+        db.transaction(async tx => {
             if (searchValue === ' ') {
-                tx.executeSql(
+                await tx.executeSql(
                     search_bobina_fullWeight,
                     [],
                     (_, {rows: {_array}}) => {
@@ -65,8 +75,8 @@ const SearchScreen = () => {
                         getValuesDB(_array)
                     }
                 );
-            } else if (searchValue.length > 0) {
-                tx.executeSql(
+            } else if (searchValue.length > 1) {
+                await tx.executeSql(
                     search_bobina,
                     [
                         `%${searchValue}%`,
@@ -80,8 +90,9 @@ const SearchScreen = () => {
                     ],
                     (_, {rows: {_array}}) => {
                         if (_array.length > 0) {
-                            console.log(_array.length)
                             getDataSearchForTable(_array)
+                        } else {
+                            setNoResult(true)
                         }
                         getValuesDB(_array)
                     }
@@ -106,8 +117,9 @@ const SearchScreen = () => {
     const bottomSheetHandler = () => SetIsVisible(!isVisible);
 
     const getScannedCode = (param) => {
-        setValueForSearch(param);
+        onChangeTexthandler(param.scannedCode)
         setHideHeader(true);
+        bottomSheetRef.current.close()
     }
 
     return (
@@ -149,6 +161,7 @@ const SearchScreen = () => {
                                                       setValueForSearch('');
                                                       getValuesDB([]);
                                                       setHideHeader(false);
+                                                      setNoResult(false)
                                                   }}
                                 >
                                     <SvgComponent
@@ -167,7 +180,6 @@ const SearchScreen = () => {
                         placeholder={'buscador de bobinas...'}
                         name={'search'}
                         onChangeText={(valueForSearch) => {
-                            // Alert.alert(valueForSearch)
                             onChangeTexthandler(valueForSearch);
                         }}
                         onBlur={() => {
@@ -236,7 +248,10 @@ const SearchScreen = () => {
                         </View>
                     </View>
                     :
-                    null
+                    noResult && <View style={styles.contNoResult}>
+                        <ActivityIndicator size="small" color={COLORS.primary}/>
+                        <Text style={styles.textNoResult}>No se ha encontrado nada...</Text>
+                    </View>
             }
             <BottomSheetComponent
                 ref={bottomSheetRef}
@@ -313,6 +328,18 @@ const styles = StyleSheet.create(
         dataWrapper: {
             marginTop: -1
         },
+        contNoResult: {
+            borderRadius: 5,
+            backgroundColor: '#fff',
+            paddingHorizontal: 30,
+            alignSelf: 'center',
+            paddingVertical: 10
+        },
+        textNoResult: {
+            textAlign: 'center',
+            fontSize: 16,
+            fontFamily: 'Anton'
+        }
     })
 ;
 export default SearchScreen;

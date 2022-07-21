@@ -1,21 +1,27 @@
 import React, {useRef, useEffect} from 'react';
 import {Animated, View, StyleSheet, Pressable} from "react-native";
 
-// let contheight = 200;
-
-function FlipCard({flipnow = '',ContentFront, ContentBack, enabled, contheight = 200, contweight= '100%', parentStyle={}}) {
+function FlipCard({
+                      flipnow = '',
+                      ContentFront,
+                      ContentBack,
+                      enabled,
+                      contheight = 200,
+                      contweight = '100%',
+                      parentStyle = {}
+                  }) {
 
     const flipAnimation = useRef(new Animated.Value(0)).current;
     useEffect(() => {
         if (enabled) {
             flipToFront()
-        }else{
+        } else {
             flipToBack()
         }
     }, [enabled])
 
     useEffect(() => {
-        if(!isNaN(flipnow)){
+        if (!isNaN(flipnow)) {
             if (flipnow) flipToFront()
             if (!flipnow) flipToBack()
         }
@@ -67,23 +73,24 @@ function FlipCard({flipnow = '',ContentFront, ContentBack, enabled, contheight =
                 onPress={() => enabled ? !!flipRotation ? flipToBack() : flipToFront() : null}
             >
                 <Animated.View
-                    style={{...style.cardFront, ...flipToFrontStyle, ...style.commonStyles, height: contheight, width: contweight}}
+                    style={{
+                        ...style.cardFront, ...flipToFrontStyle, ...style.commonStyles,
+                        height: contheight,
+                        width: contweight
+                    }}
 
                 >
                     <ContentFront/>
-                    {/*<Animated.Image style={{...style.cardFront, ...flipToFrontStyle}}*/}
-                    {/*                source={require("../assets/images/error.png")}*/}
-                    {/*/>*/}
                 </Animated.View>
                 <Animated.View
-                    style={{...style.cardBack, ...flipToBackStyle, ...style.commonStyles, height: contheight, width: contweight}}
+                    style={{
+                        ...style.cardBack, ...flipToBackStyle, ...style.commonStyles,
+                        height: contheight,
+                        width: contweight
+                    }}
 
                 >
                     <ContentBack/>
-                    {/*<Animated.Image*/}
-                    {/*    style={{...style.cardBack}}*/}
-                    {/*    source={require("../assets/images/browser.png")}*/}
-                    {/*/>*/}
                 </Animated.View>
             </Pressable>
         </View>

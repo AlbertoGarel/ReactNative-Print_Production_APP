@@ -9,11 +9,11 @@
 //                 icon: "ios-home"
 //             },
 //             {
-//                 name: "CoeficienteScreen",
+//                 name: "Remove__CoeficienteScreen",
 //                 icon: "ios-contact"
 //             },
 //             {
-//                 name: "PaginationScreen",
+//                 name: "Remove__PaginationScreen",
 //                 icon: "ios-settings"
 //             },
 //         ]

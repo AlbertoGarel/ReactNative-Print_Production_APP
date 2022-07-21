@@ -36,9 +36,8 @@ export function genericUpdateFunctionConfirm(request, valueArr) {
     return new Promise((resolve, reject) => {
         db.transaction((tx) => {
             tx.executeSql(request, valueArr,
-                (_, result) => resolve(result.rowsAffected),
-                (_, err) => reject(err));
-        });
+                (_, result) => resolve(result.rowsAffected));
+        }, err => err,);
     });
 };
 

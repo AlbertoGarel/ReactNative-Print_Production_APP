@@ -5,7 +5,7 @@ import * as SQLite from "expo-sqlite";
 import {FormYupSchemas} from "../../components/FormComponents/YupSchemas";
 import {COLORS} from "../../assets/defaults/settingStyles";
 import SvgComponent from "../../components/SvgComponent";
-import {lineaprodSVG, nombre, coeficienteSVG, mediaSVG, favoriteSVG} from "../../assets/svg/svgContents";
+import {lineaprodSVG, nombre, mediaSVG} from "../../assets/svg/svgContents";
 import CustomPicker from "../../components/FormComponents/CustomPicker";
 import CustomTextInput from "../../components/FormComponents/CustomTextInput";
 import {Formik} from "formik";
@@ -21,9 +21,6 @@ const AutopastersCrud = ({props}) => {
     const db = SQLite.openDatabase('bobinas.db');
     const autopastersForm = useRef();
     const linprodRef = useRef();
-    const autopasNameRef = useRef();
-    const autopastPrefRef = useRef();
-    const autopastContainMediaRef = useRef();
     const medRef = useRef();
 
     const [linProdDB, setLinProdDB] = useState([]);
@@ -114,9 +111,8 @@ const AutopastersCrud = ({props}) => {
                                     showToast('Error al actualizar')
                                 }
                             })
-                            .catch(err => {
+                            .catch(() => {
                                 showToast('Error al actualizar')
-                                console.log(err)
                             })
                     }
                     if (props.typeform === 'CREAR') {
@@ -130,9 +126,8 @@ const AutopastersCrud = ({props}) => {
                                     showToast('Error al crear registro')
                                 }
                             })
-                            .catch(err => {
+                            .catch(() => {
                                 showToast('Error al crear registro')
-                                console.log(err)
                             })
                         autopastersForm.current?.resetForm();
                     }

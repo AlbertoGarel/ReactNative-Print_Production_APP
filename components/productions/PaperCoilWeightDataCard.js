@@ -28,7 +28,7 @@ const PaperCoilWeightDataCard = ({stylesPeperCoilWeight, restoInicioData, restoF
 
     return (
         <View style={stylesPeperCoilWeight.parent}>
-            <View style={[{flexDirection: 'row', justifyContent: 'space-between'}, styleRestPrev ? {
+            <View style={[styles.subparent, styleRestPrev ? {
                 backgroundColor: pressed ? COLORS.buttonEdit : '#FFFACD',
                 marginRight: 5
             } : null]}>
@@ -36,28 +36,11 @@ const PaperCoilWeightDataCard = ({stylesPeperCoilWeight, restoInicioData, restoF
                     <Text style={stylesPeperCoilWeight.textRFinal}>Resto
                         inicial: <Text style={stylesPeperCoilWeight.subText}>{restoInicioData}</Text> Kg.</Text>
                     :
-                    <Text style={[stylesPeperCoilWeight.textRFinal, {
-                        fontFamily: 'Anton',
-                        // position: 'absolute',
-                        left: 0,
-                        padding: 4,
-                        fontSize: 12,
-                        top: 0
-                    }]}>Previsión anterior producción</Text>
+                    <Text style={[stylesPeperCoilWeight.textRFinal, styles.textrestoFinal]}>Previsión anterior
+                        producción</Text>
                 }
                 {styleRestPrev && !pressed ?
-                    <Text style={{
-                        paddingRight: 10,
-                        paddingLeft: 10,
-                        marginRight: 2,
-                        fontFamily: 'Anton',
-                        borderRadius: 100,
-                        borderWidth: 1,
-                        borderColor: 'red',
-                        backgroundColor: 'white',
-                        color: 'red',
-                        textAlign: 'center'
-                    }}
+                    <Text style={styles.textInfo}
                           onPress={() => getPressed(true)}
                     >i</Text>
                     :
@@ -71,8 +54,28 @@ const PaperCoilWeightDataCard = ({stylesPeperCoilWeight, restoInicioData, restoF
         </View>
     )
 }
-// export default React.memo(PaperCoilWeightDataCard, (prevProps, nextProps) => {
-//     return (prevProps.restoInicioData === nextProps.restoInicioData &&
-//         prevProps.restoFinalData === nextProps.restoFinalData)
-// });
+
+const styles = StyleSheet.create({
+    subparent: {flexDirection: 'row', justifyContent: 'space-between'},
+    textrestoFinal: {
+        fontFamily: 'Anton',
+        left: 0,
+        padding: 4,
+        fontSize: 12,
+        top: 0
+    },
+    textInfo: {
+        paddingRight: 10,
+        paddingLeft: 10,
+        marginRight: 2,
+        fontFamily: 'Anton',
+        borderRadius: 100,
+        borderWidth: 1,
+        borderColor: 'red',
+        backgroundColor: 'white',
+        color: 'red',
+        textAlign: 'center'
+    }
+});
+
 export default PaperCoilWeightDataCard;

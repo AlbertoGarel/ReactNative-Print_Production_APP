@@ -9,7 +9,9 @@ const ModalEndProduction = ({
                                 nameProduction,
                                 handler
                             }) => {
-    const fadeAnim = useRef(new Animated.Value(0)).current
+
+    const fadeAnim = useRef(new Animated.Value(0)).current;
+
     useEffect(() => {
         Animated.timing(
             fadeAnim,

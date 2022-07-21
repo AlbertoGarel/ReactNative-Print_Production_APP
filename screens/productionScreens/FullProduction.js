@@ -1,45 +1,42 @@
-import React, {useEffect, useState, useRef} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
-    ActivityIndicator,
     Alert,
-    Dimensions, Image,
+    Dimensions,
+    Image,
     Keyboard,
+    KeyboardAvoidingView,
     SafeAreaView,
-    ScrollView, SectionList,
+    ScrollView,
+    SectionList,
     StyleSheet,
     Text,
     TouchableWithoutFeedback,
     View,
-    KeyboardAvoidingView,
+    InteractionManager
 } from 'react-native';
-import {COLORS, shadowPlatform} from "../../assets/defaults/settingStyles";
-import * as SQLite from "expo-sqlite";
-import {
-    autopaster_prod_data_insert,
-    autopasters_prod_table_by_production,
-    picker_coeficiente
-} from "../../dbCRUD/actionsSQL";
+import {COLORS} from "../../assets/defaults/settingStyles";
 import {
     CalcPrevConsKilosRollsAutopaster,
-    calcValues,
-    deleteItem, getScannedCode,
-    groupBy,
-    OriginalWeight, registerNewBobina, searchItems,
-    typeBarcodeFiter, updatedataRollState,
+    deleteItem,
+    getScannedCode,
+    handleEmail,
+    registerNewBobina,
+    searchItems,
+    updatedataRollState,
 } from "../../utils";
 import {
     genericDeleteFunction,
     genericInsertFunction,
-    genericTransaction, genericUpdatefunction,
+    genericTransaction,
+    genericUpdatefunction,
     genericUpdateFunctionConfirm
 } from "../../dbCRUD/actionsFunctionsCrud";
 import {useNavigation} from "@react-navigation/native";
 import SvgComponent from "../../components/SvgComponent";
 import {
     bgSquaresSVG,
-    cautionSVG,
     changeSVG,
-    icon360SVG,
+    icon180SVG,
     searchCode,
     texturesSVG,
     tirada2SVG
@@ -52,49 +49,29 @@ import CustomTextArea from "../../components/FormComponents/CustomTextArea";
 import BgRepeatSVG from "../../components/BackgroundComponent/BgRepeatSVG";
 import {getDatas} from "../../data/AsyncStorageFunctions";
 import {htmlDefaultTemplate} from "../../PDFtemplates/defaultTemplateHTML";
-import {createAndSavePDF_HTML_file, readFolder, sendFile} from "../../data/FileSystemFunctions";
-import ContainerSectionListItem from "../../components/productions/ContainerSectionListItem";
+import {createAndSavePDF_HTML_file} from "../../data/FileSystemFunctions";
 import TouchableIcon from "../../components/TouchableIcon";
-import BottomSheetComponent from "../../components/BottomSheetComponent";
+import BottomSheetComponent from "../../components/remove__BottomSheetComponent";
 import BarcodeScannerComponent from "../../components/BarcodeScannerComponent";
 import FormUsedRoll from "../../components/productions/FormUsedRoll";
 import FloatOpacityModal from "../../components/FloatOpacityModal";
 import DragDropCardsComponent from "../../components/DragDropCardsComponent";
 import FullCardProduction from "../../components/productions/FullCardProduction";
 import ModalEndProduction from "../../components/productions/ModalEndProduction";
+import SpinnerSquares from "../../components/SpinnerSquares";
 
-const searchTypeMeditionDataInBBDD =
-    `SELECT * FROM medition_style_table
-    WHERE medition_style_table.gramaje_fk = (SELECT gramaje_id FROM gramaje_table WHERE gramaje_value = ?)
-    AND medition_style_table.medition_type = ?`
-;
-const dataProductSelected =
-    `SELECT * FROM producto_table
-    JOIN kba_table ON producto_table.cociente_total_fk = kba_table.kba_id
-    WHERE producto_table.producto_name = ?`
-;
-const autopasters_prod_data_update =
-    `UPDATE autopasters_prod_data
-    SET bobina_fk = ?, resto_previsto = ?
-    WHERE production_fk = ? AND autopaster_fk = ?;`
-;
 const UPDATE_PROMISES_ALL =
     `UPDATE autopasters_prod_data SET
              position_roll = ?, resto_previsto = ?
              WHERE production_fk = ? AND bobina_fk = ?;`
-const UPDATE_ItemFromAutopasterSQL =
-    `UPDATE autopasters_prod_data SET
-             bobina_fk = ?, resto_previsto = ?
-             WHERE production_fk = ? AND bobina_fk = ?;`
-const DELETE_ItemFromAutopasterSQL =
-    `DELETE FROM autopasters_prod_data 
-                 WHERE production_fk = ? AND bobina_fk = ?;`
+;
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 const titleContHeight = 60;
 let svgSquare = 100
 const height = windowHeight / 1.5;
+
 //BACKGROUND PROP CONST
 const optionsSVG = {
     svgData: bgSquaresSVG, svgWidth: svgSquare, svgHeight: svgSquare
@@ -112,25 +89,22 @@ const optionsStyleContSVG2 = {
 
 const FullProduction = ({route}) => {
     const principalScroll = useRef();
-    // const [spin, setSpin] = useState(false);
     const navigation = useNavigation()
     const {
         item,
-        autopasters,
         groupedDataSectionList,
         maxRadius,
         radiusCoefBBDD,
-        autopastersLineData,
         kilosForAutopasterState,
         definedAutopasters
     } = route.params;
-    // const db = SQLite.openDatabase('bobinas.db');
+
     const bottomSheetRef = useRef();
     const bottomSheetRollUsedRef = useRef();
 
-    const [parentHeight, setParentHeight] = useState(false);
+    // SPINNER FULL VIEW
+    const [refresh, setRefresh] = useState(false)
     //DRAG AND DROP CARDS MENU SATATES
-    // const [isVisibleDropMenu, setIsVisibleDropMenu] = useState(false);
     const [itemForChangePosition, getItemForChangePosition] = useState(null);
     //SCANNER
     const [isVisible, SetIsVisible] = useState(false);
@@ -138,27 +112,14 @@ const FullProduction = ({route}) => {
     const [autopasterID, setAutopasterID] = useState('');
     const [isVisibleDropMenu, setIsVisibleDropMenu] = useState(false);
     const [spin, setSpin] = useState(false);
-    //FULL DATA
-    // const [itemData, getItemData] = useState({});
-    // const [autopastersLineProdData, getAutopastersLineProdData] = useState([]);
-    // const [productProdData, getProductProdData] = useState([]);
-    // const [gramajeValues, getGramajeValues] = useState({entera: null, media: null});
-    // const [coefficientDDBB, setCoefficientDDBB] = useState([]);
-
     //PRODUCTION SELECTED DATA
     const [scannedCodeforUsedRegisterRoll, getScannedCodeforUsedRegisterRoll] = useState('');
-    // const [generalDataForRoll, setGeneralDataForRoll] = useState({});//gramaje y papel común
-    const [autopastersDataProduction, getAutopastersDataProduction] = useState(autopasters);//autopasters names
     const [individualAutopasterDataForSectionList,
         getIndividualAutopasterDataForSectionList] = useState(groupedDataSectionList);// DATA for sectionList
-
     //STATE KILOS NEEDED FOR COMPLETE PRODUCTION (BY AUTOPASTERS).
-    const [renderSectionList, setRenderSectionList] = useState(false)
     const [kilosNeeded, getKilosNeeded] = useState(kilosForAutopasterState);
     //STATE OF TEXTAREA
     const [contentTextArea, getContentTextArea] = useState('');
-    //DATA OF INPUTRADIUS FOR SEND TO BBDD
-    const [inputRadioForRollRadius, getInputRadioForRollRadius] = useState([]);
     //TO SEND
     const [calculationProductionButton, setCalculationProductionButton] = useState(false);
     //STATE INPUT VISIBLE AND ERRORS.
@@ -168,8 +129,6 @@ const FullProduction = ({route}) => {
         inputTirBruta: '',
     });
     //SPINNER STATE FOR DELETE CARDS
-    const [viewCardSpinner, setViewCardSpinner] = useState(false);
-    const [bobinaCodeForSpinner, setBobinaCodeForSpinner] = useState(false);
     const [modalEndProduction, setModalEndProduction] = useState(false);
 
     //FINAL RESULT OF THE PRODUCTION
@@ -178,71 +137,60 @@ const FullProduction = ({route}) => {
         kilosTirada: 0,
         kilosConsumidos: 0
     });
+    const [itemForSpinner, setItemForSpinner] = useState(0);
 
     useEffect(() => {
-        console.log('rtyrugyyrbverubvuebve', kilosForAutopasterState)
         //Search negative Kilos.
-        const positiveKilos = [].concat(kilosNeeded.filter(i => i.kilosNeeded <= 0));
-        if (calculationProductionButton && positiveKilos.length === 0) {
-            principalScroll.current.scrollToEnd();
-        }
+        new Promise((resolve) => {
+            const positiveKilos = [].concat(kilosNeeded.filter(i => i.kilosNeeded <= 0));
+            if (calculationProductionButton && positiveKilos.length === 0) {
+                resolve(true)
+            }
+        }).then(resolve => resolve ? principalScroll.current.scrollToEnd() : null)
+            .catch(err => err)
     }, [calculationProductionButton])
-    // useEffect(() => {
-    //     if (!individualAutopasterDataForSectionList.length > 0) {
-    //         getIndividualAutopasterDataForSectionList(groupedDataSectionList)
-    //     }
-    // }, [individualAutopasterDataForSectionList])
 
-    // useEffect(() => {
-    //
-    // }, []);
-    // const confirmDelete = React.useCallback((rollID, autopasterID) => {
-    //     Alert.alert('ELIMINAR BOBINA DE AUTOPASTER.',
-    //         `Puede añadirla en cualquier otro autopaster más tarde.`,
-    //         [
-    //             {
-    //                 text: 'Cancel',
-    //                 onPress: () => console.log('Cancel Pressed'),
-    //                 style: 'cancel',
-    //             },
-    //             {
-    //                 text: 'OK', onPress: () => {
-    //                     handlerRemoveItem(rollID, autopasterID)
-    //                     // .then(() => console.log('response', `${rollID} /// ${autopasterID}`))
-    //                     setViewCardSpinner(true)
-    //                 }
-    //             },
-    //         ]);
-    // }, [])
+    function confirmDelete(rollID, autopasterID) {
+        Alert.alert('ELIMINAR BOBINA DE AUTOPASTER.',
+            `Puede añadirla en cualquier otro autopaster más tarde.`,
+            [
+                {
+                    text: 'Cancel',
+                    onPress: () => console.log('Cancel Pressed'),
+                    style: 'cancel',
+                },
+                {
+                    text: 'OK', onPress: () => {
+                        setItemForSpinner(rollID);
+                        handlerRemoveItem(rollID, autopasterID)
+                    }
+                },
+            ]);
+    };
 
-    async function handlerRemoveItem(rollID, autopasterID) {
-        try {
-            await searchItems(autopasterID, individualAutopasterDataForSectionList, item)
-                .then(response => deleteItem(response, rollID, item))
-                .then(response => {
-                    console.log('responseresponseresponseresponse', response)
-                    getIndividualAutopasterDataForSectionList(response.updateItemsForSectionList)
-                    console.log('kilosNeeded', kilosNeeded)
-                    const updateKilos = kilosNeeded.map(autopaster => {
-                        console.log('-----r------r--- loop', autopaster)
-                        if (autopaster.autopaster_id === autopasterID) {
-                            return {...autopaster, kilosNeeded: response.updateKilosNeededState}
-                        } else {
-                            return autopaster;
-                        }
-                    })
-                    console.log('-----r------r--- finalLooped', updateKilos)
-                    getKilosNeeded(updateKilos)
+    function handlerRemoveItem(rollID, autopasterID) {
+        searchItems(autopasterID, individualAutopasterDataForSectionList, item)
+            .then(response => deleteItem(response, rollID, item))
+            .then(response => {
+                getIndividualAutopasterDataForSectionList(response.updateItemsForSectionList);
+                const updateKilos = kilosNeeded.map(autopaster => {
+                    if (autopaster.autopaster_id === autopasterID) {
+                        return {...autopaster, kilosNeeded: response.updateKilosNeededState}
+                    } else {
+                        return autopaster;
+                    }
                 })
-                .catch(r => console.log(r))
-        } catch (err) {
-            console.log(err)
-        }
+                getKilosNeeded(updateKilos)
+            })
+            .catch(() => {
+                setItemForSpinner(0);
+                alert('error aleliminar item')
+            })
     };
 
     async function updateCodepathSVG(codePath, bobinaID, autopasterID) {
         const {toUpdate, others} = await searchItems(autopasterID, individualAutopasterDataForSectionList);
-        const updated = toUpdate.data.map((item, index) => {
+        const updated = toUpdate.data.map((item) => {
             if (item.codigo_bobina === bobinaID) {
                 return {...item, codepathSVG: codePath}
             } else {
@@ -255,23 +203,18 @@ const FullProduction = ({route}) => {
         }].sort((a, b) => a.title - b.title))
     }
 
-    async function updateRoll(radiusState, rollID, autopasterID) {
-        // console.log('radio', radiusState);
-        // console.log('id', rollID);
-        // console.log('autopaster_id', autopasterID);
+    function updateRoll(radiusState, rollID, autopasterID) {
         try {
-
             searchItems(autopasterID, individualAutopasterDataForSectionList, item)
-                .then(response => updatedataRollState(rollID, radiusState, response, maxRadius, radiusCoefBBDD))
+                .then(response => updatedataRollState(rollID, radiusState, response, maxRadius, radiusCoefBBDD, kilosNeeded))
                 .then(response => {
-                    // console.log('response', response)
-                    // setCalculationProductionButton(response.initCalc)
-                    getIndividualAutopasterDataForSectionList(response.sectionListUpdate);
-                    return response
+                    //DELAY UPDATE FOR DON´T TRUNCATE KEYBOARD ANIMATION.
+                    setTimeout(() => {
+                        getIndividualAutopasterDataForSectionList(response.sectionListUpdate)
+                        setCalculationProductionButton(response.initCalc)
+                    }, 500)
                 })
-                .then(response => setCalculationProductionButton(response.initCalc))
-            // .catch(err => err);
-            // updatedataRollState(radiusState, item, maxRadius, radiusCoefBBDD)
+                .then(() => console.log(individualAutopasterDataForSectionList))
         } catch (err) {
             console.log(err);
         }
@@ -280,14 +223,11 @@ const FullProduction = ({route}) => {
     const calcTirada = (tirBruta) => {
         tirBruta = parseInt(tirBruta);
         let resultData = {tiradaBruta: 0, kilosTirada: 0, kilosConsumidos: 0};
-        const allRolls = [].concat(...individualAutopasterDataForSectionList.map(i => i.data))
-        // c = [].concat(...a.map(i=> i.data)))
+        const allRolls = [].concat(...individualAutopasterDataForSectionList.map(i => i.data));
         resultData.kilosConsumidos = allRolls.reduce((acc, item) => acc + (parseInt(item.peso_actual) - parseInt(item.weightEnd)), 0);
         resultData.kilosTirada = Math.round(item["kba_value"] * item["paginacion_value"] * tirBruta);
         resultData.tiradaBruta = tirBruta;
-        console.log('individualAutopasterDataForSectionList', individualAutopasterDataForSectionList)
-        console.log('resultData, resultData', resultData)
-        console.log('item', item)
+
         return resultData;
     };
 
@@ -323,7 +263,6 @@ const FullProduction = ({route}) => {
                 defValue = deleteBadChar;
             }
             setErrors({inputTirBruta: 'introduce caracter numérico o punto para decimales.(autocorregido)'})
-            // Alert.alert('introduce caracter numérico o punto para decimales.');
         } else {
             defValue = param;
         }
@@ -333,9 +272,17 @@ const FullProduction = ({route}) => {
         getSelectedTiradaBruta(defValue);
     };
 
-    const bottomSheetHandler = () => SetIsVisible(!isVisible);
-    const bottomSheetHandlerRollUsed = () => SetIsVisibleRollUsedForm(!isVisible);
-    const handlerSetVibleDropMenu = () => setIsVisibleDropMenu(!isVisibleDropMenu);
+    function bottomSheetHandler() {
+        SetIsVisible(!isVisible)
+    };
+
+    function bottomSheetHandlerRollUsed() {
+        SetIsVisibleRollUsedForm(!isVisible);
+    };
+
+    function handlerSetVibleDropMenu() {
+        setIsVisibleDropMenu(!isVisibleDropMenu);
+    };
 
     //BUTTON OPEN CAMERA FUNCTION FOR CAPTURE THE CODE OF ROLL
     function handlerAddBobina(unitID) {
@@ -348,7 +295,6 @@ const FullProduction = ({route}) => {
     function handlerScannedCode(scannedCode) {
         getScannedCode(scannedCode, autopasterID, individualAutopasterDataForSectionList, item, definedAutopasters)
             .then(response => {
-                console.log(response)
                 if (response.length > 0) {
                     createThreeButtonAlert(...response);
                 }
@@ -357,7 +303,6 @@ const FullProduction = ({route}) => {
             .catch(err => {
                 bottomSheetRef.current.close()
                 console.log(err)
-                alert('error, intentelo de nuevo')
             })
     };
 
@@ -365,10 +310,10 @@ const FullProduction = ({route}) => {
     const createThreeButtonAlert = (param, actionDDBB, text) => {
         let newBobina = `,\nPeso Actual: ${param.actualWeight} Kg,\nRadio: ${param.radius ? param.radius : 'Bobina completa'}`
         Alert.alert(`${text}`,
-            `Código:  ${param.scanCode}${text.charAt(0) === 'B' ? newBobina : ''}`, [
+            `Código1:  ${param.scanCode}${text.charAt(0) === 'B' ? newBobina : ''}`, [
                 {
                     text: 'CANCELAR',
-                    // onPress: () => bottomSheetRef.current.close(),
+                    onPress: () => null,
                 },
                 {
                     text: 'NO',
@@ -380,62 +325,61 @@ const FullProduction = ({route}) => {
                 },
                 {
                     text: 'SI',
-                    onPress: () => handlerRegisterRoll(param, actionDDBB, individualAutopasterDataForSectionList, item)
+                    onPress: () => {
+                        setRefresh(true)
+                        InteractionManager.runAfterInteractions(() => {
+                            return handlerRegisterRoll(param, actionDDBB, individualAutopasterDataForSectionList, item)
+                        })
+                    }
                 },
             ]);
     };
 
-    const setStateForRadiusChangedPosition = (arrItems) => {
-        console.log(arrItems)
-        console.log(kilosNeeded)
-        console.log(item)
-        const {tirada, nulls, media_value, full_value, produccion_id} = item
-        // CalcPrevConsKilosRollsAutopaster(arrObjects, tiradaTotal, gramajeValues, productionID)
+    const setStateForRadiusChangedPosition = async (arrItems) => {
+        const {tirada, nulls, media_value, full_value, produccion_id} = item;
         const objectResult = CalcPrevConsKilosRollsAutopaster(arrItems, (tirada + nulls), {
             media: media_value,
             entera: full_value
         }, produccion_id);
-        // const autopasterNum = arrItems[0].autopaster;
-        // const distincAutopastersNum = inputRadioForRollRadius.filter(item => item.autopaster !== autopasterNum);
-        // getInputRadioForRollRadius([...distincAutopastersNum, ...arrItems]);
-        // const dataPromisesAll = CalcPrevConsKilosRollsAutopaster(arrItems, itemData.tirada + itemData.nulls, gramajeValues, itemData.produccion_id);
+
         let promisesALLforUpdateItems = [];
         objectResult.updatedItemsForPromises.forEach(item => {
             promisesALLforUpdateItems.push(genericUpdateFunctionConfirm(UPDATE_PROMISES_ALL, item));
         });
+
         //ADD init spinner
         setSpin(true);
-        Promise.all(promisesALLforUpdateItems)
-            .then(response => {
-                console.log('respuesta', response);
-                // updateInfoForSectionList()
-                const ot = individualAutopasterDataForSectionList.filter(i => i.title !== 5);
+
+        const numAutopster = objectResult.updatedItemsForSection[0].autopaster_fk;
+        await Promise.all(promisesALLforUpdateItems)
+            .then(() => {
+                const ot = individualAutopasterDataForSectionList.filter(i => i.title !== numAutopster);
                 getIndividualAutopasterDataForSectionList([
                     ...ot,
-                    {data: objectResult.updatedItemsForSection, title: 5}
-                ].sort((a, b) => a.title - b.title))
-                // getIndividualAutopasterDataForSectionList((prevState, nextState)=>{
-                //     return [...prevState, {data: objectResult.updatedItemsForSection.sort((a,b)=> a.position - b.position), title: 5}]
-                // })
+                    {data: objectResult.updatedItemsForSection, title: numAutopster}
+                ].sort((a, b) => a.title - b.title));
+                //END SPINNER
                 setSpin(false);
-            })//END SPINNER
+            })
             .catch(err => console.log(err))
     }
 
     function handlerRegisterRoll(param, actionDDBB, individualAutopasterDataForSectionList, item) {
-        registerNewBobina(param, actionDDBB, individualAutopasterDataForSectionList, item, kilosNeeded)
+        return registerNewBobina(param, actionDDBB, individualAutopasterDataForSectionList, item, kilosNeeded)
             .then(response => {
                 getIndividualAutopasterDataForSectionList(response.items)
                 getKilosNeeded(response.kilos)
+                setRefresh(false)
             })
             .catch(err => console.log(err))
     };
 
     function handlerRegisterUsedRoll(param, actionDDBB) {
-        registerNewBobina(param, actionDDBB, individualAutopasterDataForSectionList, item, kilosNeeded)
+        return registerNewBobina(param, actionDDBB, individualAutopasterDataForSectionList, item, kilosNeeded)
             .then(response => {
                 getIndividualAutopasterDataForSectionList(response.items)
                 getKilosNeeded(response.kilos)
+                setRefresh(false)
             })
             .catch(err => console.log(err))
     }
@@ -447,7 +391,15 @@ const FullProduction = ({route}) => {
 
 
     //FOR SEND DATA TO DDBB WHEN PRODUCTION FINISH AND CREATE PDF.
-    function handlerSaveDataAndSend() {
+    async function handlerSaveDataAndSend() {
+        const request_update_AllBobinaTable =
+            `UPDATE bobina_table SET
+                     peso_actual = ?, radio_actual = ?, autopaster_fk = ?
+                     WHERE codigo_bobina = ?;`
+        ;
+        const insertFinalProduction = `
+                INSERT INTO productresults_table VALUES (?,?,?,?,?,?,?,?,?,?);`
+        ;
         const dataProd = {
             date: item.fecha_produccion,
             prodLine: item.linea_name,
@@ -460,225 +412,266 @@ const FullProduction = ({route}) => {
         };
         const rollsDataProduction = [].concat(...individualAutopasterDataForSectionList.map(i => i.data));
         const autopasterNumLine = individualAutopasterDataForSectionList.map(i => i.title).sort((a, b) => a - b);
-
-        getDatas('@UserDataForm')
-            .then(resp => {
+        try {
+            const {email, enterprise, name} = await getDatas('@UserDataForm').then(resp => {
                 if (resp) {
-                    return htmlDefaultTemplate(dataProd, resp, finalCalc, rollsDataProduction, autopasterNumLine, contentTextArea)
+                    return resp
                 } else {
                     throw 'noname';
                 }
             })
-            .then(async resp => {
-                const formatedName = dataProd.date.replace(/[\-]/g, "")
-                await createAndSavePDF_HTML_file(`${formatedName}_${dataProd.product}`, resp);
-                const pdfDocumentawait = await readFolder();
-                await sendFile(pdfDocumentawait.filter( doc => doc === `${formatedName}_${dataProd.product}.pdf`)[0])
+
+            const promisesUPDATED = await new Promise.all(rollsDataProduction.map(item => {
+                return genericUpdatefunction(request_update_AllBobinaTable, [
+                    item.weightEnd, parseInt(item.radiusEnd), item.autopaster_fk, item.codigo_bobina])
+            }));
+            const rowsAffected = promisesUPDATED.filter(i => i.rowsAffected === 0);
+            if (!rowsAffected) throw 'updateError';
+
+            const autopastersList = individualAutopasterDataForSectionList.map(i => i.title);
+            autopastersList.sort((a, b) => a - b);
+
+            const values = [
+                null,
+                finalCalc.tiradaBruta,
+                finalCalc.kilosTirada,
+                finalCalc.kilosConsumidos,
+                dataProd.date,
+                dataProd.tirada,
+                dataProd.pagination,
+                dataProd.productId,
+                dataProd.editions,
+                autopastersList.toString()
+            ]
+            const prodStatisticsINSERT = await genericInsertFunction(insertFinalProduction, values);
+            if (!prodStatisticsINSERT.rowsAffected) throw 'insertError';
+            // SEARCH FOR PRODUCTIONS FROM THE SAME OWNER.
+            const papelcomunID = individualAutopasterDataForSectionList[0].data[0].papel_comun_fk;
+            const productions = await genericTransaction(
+                `SELECT produccion_id FROM produccion_table
+                        WHERE produccion_id > ? AND producto_fk = (SELECT producto_id FROM producto_table WHERE papel_comun_fk = ?)
+                        ORDER BY produccion_id`,
+                [dataProd.productionID, papelcomunID]
+            );
+            // GET FINISHED ROLLS.
+            let endedRolls = [];
+            individualAutopasterDataForSectionList.map(autopaster => {
+                autopaster.data.forEach(roll => {
+                    if (roll.weightEnd === 0) {
+                        endedRolls.push({
+                            id: roll.bobina_fk,
+                            autopaster: roll.autopaster_fk,
+                            items: autopaster.data.length,
+                            prodID: roll.production_fk
+                        })
+                    }
+                })
             })
-            .then(() => {
-                const request_update_AllBobinaTable =
-                    `UPDATE bobina_table SET
-                     peso_actual = ?, radio_actual = ?, autopaster_fk = ?
-                     WHERE codigo_bobina = ?;`;
-                const paramsAllsPromises = rollsDataProduction.reduce((acc, item) => {
-                    acc.push([
-                        genericUpdatefunction(request_update_AllBobinaTable, [
-                            item.weightEnd, parseInt(item.radiusEnd), item.autopaster_fk, item.codigo_bobina
-                        ])
-                    ]);
-                    return acc;
-                }, []);
-                // console.log('paramaAllsPromises', paramsAllsPromises[1])
-                return new Promise.all(...paramsAllsPromises)
-            })
-            .then(() => {
-                const autopastersList = individualAutopasterDataForSectionList.map(i => i.title);
-                autopastersList.sort((a, b) => a - b);
-                const insertFinalProduction = `
-                INSERT INTO productresults_table VALUES (?,?,?,?,?,?,?,?,?,?);`
-                const values = [
-                    null,
-                    finalCalc.tiradaBruta,
-                    finalCalc.kilosTirada,
-                    finalCalc.kilosConsumidos,
-                    dataProd.date,
-                    dataProd.tirada,
-                    dataProd.pagination,
-                    dataProd.productId,
-                    dataProd.editions,
-                    autopastersList.toString()
-                ]
-                return genericInsertFunction(insertFinalProduction, values);
-            })
-            .then(() => genericDeleteFunction('DELETE from autopasters_prod_data where production_fk = ?', [dataProd.productionID]))
-            .then(() => {
-                const delete_production = `
-                DELETE FROM produccion_table WHERE produccion_id = ?;`
-                return genericDeleteFunction(delete_production, [dataProd.productionID]);
-            })
-            .then((resp) => {
-                setModalEndProduction(true)
-            })
-            .catch(err => {
-                if (err === 'noname') {
-                    alert('Complete DATOS DE ENCABEZADO.')
-                    setTimeout(() => navigation.navigate('SettingsStack'), 2000)
+            // GET AND DELETE FINISHED ROLLS WHEN THERE IS MORE THAN ONE AND UPDATE WHEN ONLY ONE EXISTS.
+            let Promises = await endedRolls.map(i => {
+                if (i.items > 1) {
+                    return genericUpdatefunction(
+                        `DELETE FROM autopasters_prod_data WHERE bobina_fk = ? AND autopasters_prod_data_id > ?`,
+                        [i.id, dataProd.productId]
+                    );
                 } else {
-                    console.log(err)
+                    return genericUpdatefunction(
+                        `UPDATE autopasters_prod_data SET bobina_fk = ?, resto_previsto = ? WHERE bobina_fk = ? `,
+                        [null, null, i.id]
+                    );
                 }
             })
+            const actionsThisProd = await new Promise.all(Promises)
+            // DELETE EMPTY ROLLS OF NEXT PRODUCTIONS.
+            const nextProductionsID = productions.map(i => i.produccion_id);
+            for (let item of nextProductionsID) {
+                for (let roll of endedRolls) {
+                    const response = await genericTransaction(
+                        `SELECT * FROM autopasters_prod_data
+                                INNER JOIN bobina_table ON bobina_table.codigo_bobina = autopasters_prod_data.bobina_fk
+                                WHERE autopasters_prod_data.production_fk = ?
+                                AND autopasters_prod_data.autopaster_fk = ?;`,
+                        [item, roll.autopaster]
+                    );
+                    const actionsNextProds = response.filter(roll => roll.bobina_fk);
+                    const deletedEmptyRolls = response.filter(roll => !roll.bobina_fk);
+                    if (actionsNextProds.length) {
+                        await new Promise.all(deletedEmptyRolls.map(i => genericDeleteFunction(`DELETE FROM autopasters_prod_data WHERE autopasters_prod_data_id = ?`, [i.autopasters_prod_data_id])))
+                    } else {
+                        if (response.length > 1) {
+                            const deleteLessOne = deletedEmptyRolls.filter((item, index) => index > 0)
+                            await new Promise.all(deleteLessOne.map(i => genericDeleteFunction(`DELETE FROM autopasters_prod_data WHERE autopasters_prod_data_id = ?`, [i.autopasters_prod_data_id])))
+                        }
+                    }
+                }
+            }
+            ;
+
+            // CREATE FILE FOR CONSULTATION WITHIN THE APP
+            const dataPdf = {
+                template: htmlDefaultTemplate(dataProd, {
+                    name,
+                    enterprise
+                }, finalCalc, rollsDataProduction, autopasterNumLine, contentTextArea),
+                mailtosend: email
+            };
+
+            // CREATE PDF FILES FROM HTML AND SAVE IN APP FOLDER
+            const formatedName = dataProd.date.replace(/[\-]/g, "")
+            const {
+                nameFile,
+                fileURI
+            } = await createAndSavePDF_HTML_file(`${formatedName}_${dataProd.product}`, dataPdf.template);
+
+            // CREATE OPTIONS FOR SEND EMAIL
+            let options = {
+                subject: `${dataProd.date}-${dataProd.product}-${dataProd.pagination}`,
+                recipients: [dataPdf.mailtosend],
+                body: `Informe de producción de ${dataProd.product}`,
+                isHTML: false,
+                attachments: [fileURI]
+            };
+            handleEmail(options, nameFile)
+
+            // DELETE PRODUCTION
+            const deleteRollsOnThisProd = await genericDeleteFunction('DELETE from autopasters_prod_data where production_fk = ?', [dataProd.productionID])
+            if (!deleteRollsOnThisProd.rowsAffected) throw 'deleteError';
+            const thisProdDelete = await genericDeleteFunction(`DELETE FROM produccion_table WHERE produccion_id = ?;`, [dataProd.productionID]);
+            if (!thisProdDelete.rowsAffected) throw 'deleteError';
+
+            // CLOSE MODAL
+            setModalEndProduction(true)
+        } catch (err) {
+            let message = '';
+            switch (err) {
+                case 'noname':
+                    message = 'Complete DATOS DE ENCABEZADO.';
+                    navigation.navigate('Settings')
+                    break;
+                case 'updateError':
+                    message = 'Error al actualizar';
+                    break;
+                case 'insertError':
+                    message = 'Error al guardar';
+                    break;
+                case 'deleteError':
+                    message = 'Error al eliminar producción';
+                    break;
+                case 'emailError':
+                    message = 'Error al enviar informe. Intentelo manualmente desde';
+                    break;
+                default:
+                    message = 'Error en base de datos';
+            }
+            alert(message)
+        }
     };
 
     function handlerCloseModalEndProd() {
         setModalEndProduction(false);
         navigation.navigate('Home');
+    };
+
+    const renderItem = ({item}) => {
+        return (
+            <FullCardProduction
+                roll_autopaster={item.autopaster_fk}
+                peso_ini={item.peso_ini}
+                peso_actual={item.peso_actual}
+                bobinaID={item.bobina_fk}
+                media_defined={item.media_defined}
+                restoPrevisto={item.resto_previsto}
+                restoPrevistoAnteriorProduccion={item.rest_antProd}
+                weight_End={item.weightEnd}
+                new_radius={item.radiusEnd}
+                updatedataRollState={(e) => updateRoll(e.nativeEvent.text, item.bobina_fk, item.autopaster_fk)}
+                updateCodepathSVG={item.peso_ini === item.peso_actual ? updateCodepathSVG : null}
+                confirmDelete={confirmDelete}
+                itemForSpinner={itemForSpinner}
+            />)
+    };
+
+    const renderSectionHeader = ({section: {data, title}}) => {
+        let kiloscalc = Math.round(kilosNeeded.filter(i => i.autopaster_id === title)[0].kilosNeeded);
+        return (
+            <View style={styles.sectionHeader}>
+                <Text style={[styles.headerText, {
+                    fontSize: 12
+                }]}>
+                    UNIDAD:
+                    <Text
+                        style={{fontSize: 20, color: COLORS.buttonEdit}}> {title}</Text></Text>
+                {kiloscalc > 0
+                    ? null
+                    : <WarningKilos weightCalc={kiloscalc}/>
+                }
+                <View style={{display: 'flex', flexDirection: 'row'}}>
+                    {data.length > 1 && <TouchableIcon
+                        handlerOnPress={() => handlerMoveItem(data[0].autopaster_fk)}
+                        touchableStyle={[styles.IconStyle, styles.touchableMoveItem]}
+                        svgName={changeSVG}
+                        WidthSVG={40}
+                        heightSVG={40}
+                    />}
+                    <TouchableIcon
+                        handlerOnPress={() => handlerAddBobina(title)}
+                        touchableStyle={[styles.IconStyle, styles.touchableAdd]}
+                        svgName={searchCode}
+                        WidthSVG={40}
+                        heightSVG={40}
+                    />
+                </View>
+            </View>
+        )
     }
 
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: COLORS.whitesmoke}}>
-            <ScrollView ref={principalScroll} nestedScrollEnabled horizontal snapToEnd={false}
-                        automaticallyAdjustContentInsets={false} pagingEnabled
+            <ScrollView ref={principalScroll}
+                        nestedScrollEnabled
+                        horizontal
+                        snapToEnd={false}
+                        automaticallyAdjustContentInsets={false}
+                        pagingEnabled
                         showsHorizontalScrollIndicator={false}
                         decelerationRate={0}
                         scrollEventThrottle={21}>
-                {/*<ScrollView style={{width: windowWidth, backgroundColor: 'red'}}>*/}
-                {/*    <Text>{JSON.stringify(maxRadiusValueDDBB)}</Text>*/}
-                {/*</ScrollView>*/}
-                <KeyboardAvoidingView enabled>
-                    <View style={{width: windowWidth, height: windowHeight, flex: 1}}>
-                        <BgRepeatSVG
-                            svgOptions={optionsSVG2}
-                            styleOptions={optionsStyleContSVG2}
-                        />
-                        <View style={{
-                            height: titleContHeight,
-                            padding: 10,
-                            display: 'flex',
-                            flexDirection: 'row',
-                            justifyContent: 'space-around',
-                            alignItems: 'center',
-                            // borderBottomWidth: parentHeight ? 0 : 2,
-                            borderBottomColor: COLORS.white,
-                            backgroundColor: COLORS.primary,
-                        }}>
-                            <View style={{maxWidth: '50%'}}>
-                                <Text style={[styles.title, {
-                                    color: COLORS.white,
-                                    fontSize: item.producto_name.length > 10 ? 16 : 24
-                                }]}>{item.producto_name}</Text>
-                            </View>
+                <KeyboardAvoidingView enabled behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                                      style={{width: windowWidth, height: windowHeight, flex: 1}}>
+                    <BgRepeatSVG
+                        svgOptions={optionsSVG2}
+                        styleOptions={optionsStyleContSVG2}
+                    />
+                    <View style={styles.header}>
+                        <View style={{maxWidth: '50%'}}>
                             <Text style={[styles.title, {
                                 color: COLORS.white,
-                                fontSize: 15
-                            }]}>fecha: {item.fecha_produccion}</Text>
+                                fontSize: item.producto_name.length > 10 ? 16 : 24
+                            }]}>{item.producto_name}</Text>
                         </View>
-                        <View style={{flex: 1}}>
-                            {/*WRAP SECTIONLIST WITH FORMIK*/}
-                            {/*<Text>state: {JSON.stringify(individualAutopasterDataForSectionList)}</Text>*/}
-                            <Text>{JSON.stringify(kilosNeeded)}</Text>
-                            <SectionList
-                                // extraData={renderSectionList}
-                                stickySectionHeadersEnabled
-                                sections={individualAutopasterDataForSectionList}
-                                keyExtractor={(item, index) => item + index}
-                                // renderItem={({item}) => <ContainerSectionListItem item={item} itemData={itemData}
-                                //     // setStateForRadius={setStateForRadius}
-                                //     // updatedataRollState={updatedataRollState}
-                                //                                                   maxRadiusValueDDBB={maxRadius}
-                                //                                                   inputRadioForRollRadius={inputRadioForRollRadius}
-                                //     // handlerRemoveItem={confirmDelete}
-                                //                                                   viewCardSpinner={viewCardSpinner}
-                                //                                                   bobinaCodeForSpinner={bobinaCodeForSpinner}
-                                // />}
-                                renderItem={({item}) => <FullCardProduction
-                                    productionID={item.production_fk}
-                                    roll_autopaster={item.autopaster_fk}
-                                    peso_ini={item.peso_ini}
-                                    peso_actual={item.peso_actual}
-                                    bobinaID={item.bobina_fk}
-                                    media_defined={item.media_defined}
-                                    restoPrevisto={item.resto_previsto}
-                                    restoPrevistoAnteriorProduccion={item.rest_antProd}
-                                    weight_End={item.weightEnd}
-                                    radius={item.radio_actual}
-                                    new_radius={item.radiusEnd}
-                                    radio_actual={item.radio_actual}
-                                    viewCardSpinner={viewCardSpinner}
-                                    bobinaCodeForSpinner={bobinaCodeForSpinner}
-                                    handlerRemoveItem={handlerRemoveItem}
-                                    updatedataRollState={updateRoll}
-                                    maxRadius={maxRadius}
-                                    pos={item.position_roll}
-                                    updateCodepathSVG={updateCodepathSVG}
-                                />}
-                                ListEmptyComponent={() => <ActivityIndicator size="large" color={COLORS.buttonEdit}/>}
-                                // ListEmptyComponent={() => {
-                                //     return (
-                                //         <View style={styles.contWarning}>
-                                //             <View style={{flex: .5}}>
-                                //                 <SvgComponent svgData={cautionSVG} svgWidth={80} svgHeight={80}/>
-                                //             </View>
-                                //             <View style={{flex: 2}}>
-                                //                 <Text style={styles.textWarning}>
-                                //                     No existen bobinas asignadas.
-                                //                 </Text>
-                                //             </View>
-                                //         </View>
-                                //     )
-                                // }}
-                                ListFooterComponent={() => <EmptyFooter/>}
-                                renderSectionHeader={({section: {data, title}}) => (
-                                    <View style={styles.sectionHeader}>
-                                        <Text style={[styles.headerText, {
-                                            fontSize: 12
-                                        }]}>
-                                            UNIDAD:
-                                            <Text
-                                                style={{fontSize: 20, color: COLORS.buttonEdit}}> {title}</Text></Text>
-                                        <View style={{display: 'flex', flexDirection: 'row'}}>
-                                            {data.length > 1 && <TouchableIcon
-                                                // handlerOnPress={handlerSetVibleDropMenu}
-                                                handlerOnPress={() => handlerMoveItem(data[0].autopaster_fk)}
-                                                touchableStyle={[styles.IconStyle, {
-                                                    backgroundColor: COLORS.white,
-                                                    borderRadius: 5,
-                                                    shadowColor: COLORS.black,
-                                                    shadowOffset: {width: -2, height: 4},
-                                                    shadowOpacity: 0.8,
-                                                    shadowRadius: 3,
-                                                    borderWidth: 2,
-                                                    borderColor: COLORS.primary,
-                                                    padding: 2,
-                                                    marginRight: 5,
-                                                }]}
-                                                svgName={changeSVG}
-                                                WidthSVG={40}
-                                                heightSVG={40}
-                                            />}
-                                            <TouchableIcon
-                                                // handlerOnPress={() => handlerAddBobina(data[0].autopaster_fk)}
-                                                handlerOnPress={() => handlerAddBobina(title)}
-                                                touchableStyle={[styles.IconStyle, {
-                                                    backgroundColor: COLORS.white,
-                                                    borderRadius: 5,
-                                                    shadowColor: COLORS.black,
-                                                    shadowOffset: {width: -2, height: 4},
-                                                    shadowOpacity: 0.8,
-                                                    shadowRadius: 3,
-                                                    borderWidth: 2,
-                                                    borderColor: COLORS.primary,
-                                                    padding: 2
-                                                }]}
-                                                svgName={searchCode}
-                                                WidthSVG={40}
-                                                heightSVG={40}
-                                            />
-                                        </View>
-                                    </View>
-                                )}
-                            />
-                            {/*<Text>{JSON.stringify(individualAutopasterDataForSectionList)}</Text>*/}
-                        </View>
+                        <Text style={[styles.title, {
+                            color: COLORS.white,
+                            fontSize: 15
+                        }]}>fecha: {item.fecha_produccion}</Text>
+                    </View>
+                    <View style={{flex: 1}}>
+                        {refresh && <View
+                            style={styles.absoluteSpinner}><SpinnerSquares/></View>}
+                        {/*<Text>{JSON.stringify(kilosNeeded)}</Text>*/}
+                        <SectionList
+                            initialNumToRender={1}
+                            getItemLayout={(individualAutopasterDataForSectionList, index) => ({
+                                index,
+                                length: 218, // itemHeight is a placeholder for your amount
+                                offset: index * 218,
+                            })}
+                            stickySectionHeadersEnabled
+                            sections={individualAutopasterDataForSectionList}
+                            keyExtractor={(item, index) => item + index}
+                            renderItem={renderItem}
+                            ListFooterComponent={EmptyFooter}
+                            renderSectionHeader={renderSectionHeader}
+                        />
                     </View>
                 </KeyboardAvoidingView>
                 <ScrollView style={{height: windowHeight, width: windowWidth, backgroundColor: 'green'}}>
@@ -689,13 +682,12 @@ const FullProduction = ({route}) => {
                     <View style={[styles.contData]}>
                         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}
                                                   style={[styles.bottomdrawer, {height: windowHeight}]}>
-                            {/*<View style={[styles.contData, {display: parentHeight ? 'none' : 'flex'}]}>*/}
                             <View style={[styles.contData]}>
                                 <View style={{marginVertical: 30}}>
                                     {
                                         calculationProductionButton && inputirBrutaEnable ?
                                             <View style={{position: 'absolute', zIndex: 2, top: -30, left: -5}}>
-                                                <SvgComponent svgData={icon360SVG} svgWidth={50} svgHeight={50}/>
+                                                <SvgComponent svgData={icon180SVG} svgWidth={50} svgHeight={50}/>
                                             </View>
                                             :
                                             null
@@ -723,7 +715,6 @@ const FullProduction = ({route}) => {
                                         }}>{errors.inputTirBruta}</Text>
                                     }
                                     <CustomTextInput
-                                        // _ref={inputTbrutaRef}
                                         svgData={tirada2SVG}
                                         svgWidth={50}
                                         svgHeight={50}
@@ -738,8 +729,6 @@ const FullProduction = ({route}) => {
                                     />
                                 </View>
                                 <CustomTextArea toState={getContentTextArea}/>
-                                {/*<Text>{JSON.stringify(kilosNeeded)}</Text>*/}
-                                {/*<Text>{JSON.stringify(individualAutopasterDataForSectionList.map(t => t.title))}</Text>*/}
                             </View>
                         </TouchableWithoutFeedback>
                     </View>
@@ -762,7 +751,6 @@ const FullProduction = ({route}) => {
             {/*/!*CREAR BOTTOMSHEETCOMPONENT PARA FOMULARIO ENTRADA BOBINA USADA*!/*/}
             <BottomSheetComponent
                 ref={bottomSheetRollUsedRef}
-                // height={Math.round(height / 1.5)}
                 height={400}
                 openDuration={250}
                 onClose={() => bottomSheetHandlerRollUsed()}
@@ -778,7 +766,6 @@ const FullProduction = ({route}) => {
                 isVisibleDropMenu && <FloatOpacityModal
                     setVisibleMenu={handlerSetVibleDropMenu}
                     styled={{
-                        // height: Dimensions.get('window').height / 1.6,
                         height: 'auto',
                         width: Dimensions.get('window').width - 10,
                         backgroundColor: COLORS.whitesmoke
@@ -805,31 +792,19 @@ const FullProduction = ({route}) => {
 
 }
 const styles = StyleSheet.create({
+    header: {
+        height: titleContHeight,
+        padding: 10,
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        borderBottomColor: COLORS.white,
+        backgroundColor: COLORS.primary,
+    },
     contData: {
-        // flex: 1,
-        // width: windowWidth,
         height: windowHeight,
         paddingHorizontal: 5,
-        // flexDirection: 'column',
-        // backgroundColor: 'white'
-        // justifyContent: 'space-around',
-        // alignItems: 'center',
-        // flexWrap: 'wrap',
-        // height: '80%',
-    },
-    parent: {
-        // flex: 1,
-        position: 'absolute',
-        // width: '100%',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 100,
-        backgroundColor: COLORS.primary,
-        // marginBottom: 20,
-        borderBottomLeftRadius: 130,
-        overflow: 'hidden',
-        ...shadowPlatform
     },
     title: {
         textTransform: 'capitalize',
@@ -841,15 +816,10 @@ const styles = StyleSheet.create({
     content: {
         padding: 10,
     },
-    bottomdrawer: {
-        // position: 'absolute',
-        // height: windowHeight,
-        // backgroundColor: 'red'
-    },
+    bottomdrawer: {},
     textContData: {
         fontFamily: 'Anton',
         color: '#858585',
-        // width: '50%',
         fontSize: 14
     },
     buttonData: {
@@ -860,7 +830,6 @@ const styles = StyleSheet.create({
         marginLeft: 10,
     },
     sectionHeader: {
-        // flex: 1,
         width: windowWidth,
         height: 60,
         flexDirection: 'row',
@@ -874,7 +843,6 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         borderWidth: 2,
         borderColor: COLORS.white,
-        ...shadowPlatform
     },
     headerText: {
         color: COLORS.black,
@@ -908,44 +876,73 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: COLORS.white,
     },
+    emptyfooter: {
+        height: 150,
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        padding: 20
+    },
+    emptyfooter_image: {
+        width: 40,
+        height: 40
+    },
+    emptyfooter_text: {
+        fontFamily: 'Anton',
+        fontSize: 20,
+        color: COLORS.white
+    },
+    showdata: {
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        padding: 20
+    },
+    touchableMoveItem: {
+        backgroundColor: COLORS.white,
+        borderRadius: 5,
+        shadowColor: COLORS.black,
+        shadowOffset: {width: -2, height: 4},
+        shadowOpacity: 0.8,
+        shadowRadius: 3,
+        borderWidth: 2,
+        borderColor: COLORS.primary,
+        padding: 2,
+        marginRight: 5,
+    },
+    touchableAdd: {
+        backgroundColor: COLORS.white,
+        borderRadius: 5,
+        shadowColor: COLORS.black,
+        shadowOffset: {width: -2, height: 4},
+        shadowOpacity: 0.8,
+        shadowRadius: 3,
+        borderWidth: 2,
+        borderColor: COLORS.primary,
+        padding: 2
+    },
+    absoluteSpinner: {
+        position: 'absolute',
+        zIndex: 9999,
+        backgroundColor: '#ffffff',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0
+    }
 });
-export default FullProduction;
 
-// const groupedAutopasters = data => {
-//     const groupedForSectionList = data.reduce((acc, item) => {
-//         acc[item.autopaster_fk] ?
-//             acc[item.autopaster_fk]['data'].push(item)
-//             :
-//             acc[item.autopaster_fk] = {title: item.autopaster_fk, data: [item]};
-//         return acc;
-//     }, {});
-//     return Object.values(groupedForSectionList);
-// };
+export default FullProduction;
 
 const EmptyFooter = () => {
     return (
-        <View style={{
-            // width: '100%',
-            height: 150,
-            // marginTop: 10,
-            flexDirection: 'row',
-            justifyContent: 'flex-end',
-            // alignItems: 'center',
-            padding: 20
-        }}
-        >
+        <View style={styles.emptyfooter}>
             <Image
-                style={{
-                    width: 40,
-                    height: 40
-                }}
+                style={styles.emptyfooter_image}
                 source={require('../../assets/images/splash/Logo_AlbertoGarel.png')}
             />
-            <Text style={{
-                fontFamily: 'Anton',
-                fontSize: 20,
-                color: COLORS.white
-            }}>#Albertogarel</Text>
+            <Text style={styles.emptyfooter_text}>#Albertogarel</Text>
         </View>
     )
 };
@@ -953,27 +950,20 @@ const EmptyFooter = () => {
 // SHOW PRODUCTION INFO
 const ShowData = (item) => {
     const data = {
-        Fecha: item.fecha_produccion,
-        ID: item.produccion_id,
-        Producto: item.producto_name,
-        // Propietario: item.papel_comun_name,
-        Paginación: item.paginacion_value,
-        Coeficiente: item.kba_value,
-        Gramaje: item.gramaje_value,
-        Tirada: item.tirada,
-        Nulos_previstos: item.nulls,
-        Línea_de_producción: item.linea_name,
+        'Fecha': item.fecha_produccion,
+        'ID': item.produccion_id,
+        'Producto': item.producto_name,
+        'Propietario': item.papel_comun_name,
+        'Paginación': item.paginacion_value,
+        'Coeficiente': item.kba_value,
+        'Gramaje': item.gramaje_value,
+        'Tirada': item.tirada,
+        'Nulos previstos': item.nulls,
+        'Línea de producción': item.linea_name,
     }
     return (
         <View style={{flexDirection: 'row'}}>
-            <View style={{
-                flex: 1,
-                flexDirection: 'row',
-                justifyContent: 'flex-start',
-                flexWrap: 'wrap',
-                alignItems: 'center',
-                padding: 20
-            }}>
+            <View style={styles.showdata}>
                 {
                     Object.entries(data).map(([key, value], index) => {
                         let newKey = key.includes('_') ? key.replace('_', ' ') : key;
@@ -987,3 +977,15 @@ const ShowData = (item) => {
         </View>
     )
 };
+
+const WarningKilos = ({weightCalc}) => {
+    return (
+        <View style={{
+            backgroundColor: '#FF9999',
+            paddingVertical: 3,
+            paddingHorizontal: 6,
+            borderRadius: 5,
+        }}>
+            <Text>Faltan: <Text style={{color: COLORS.white}}>{Math.abs(weightCalc)}</Text> Kg</Text></View>
+    )
+}

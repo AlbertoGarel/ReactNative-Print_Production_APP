@@ -21,7 +21,6 @@ import FormTotalCalculationProduction from "../components/productions/FormTotalC
 const simpleProductionScreen = ({setChangeButtonFunc}) => {
 
     const [visiblemenu, setVisibleMenu] = useState(false);
-    // const [isFocus, setIsFocus] = useState(false);
     const [seeData, setSeeData] = useState(false);
     const [objsaved, getObjSaved] = useState([]);
     const [renderNowItem, setRenderNowItem] = useState('');
@@ -42,17 +41,8 @@ const simpleProductionScreen = ({setChangeButtonFunc}) => {
 
     useFocusEffect(
         useCallback(() => {
-            // setIsFocus(true);
             setChangeButtonFunc(true);
-            // animatedArrow()
             updateGetStorage();
-            // removeValue('@simpleProdData').then(r => console.log('gjgj'))
-            // return () => {
-                // setIsFocus(false);
-                //CHANGE BUTTON COLOR FOR CREATE SIMPLE PERODUCTION OR FULL PRODUCTION IN BOTTOM TAB NAV.
-                // setChangeButtonFunc(false);
-
-            // };
         }, [])
     );
 
@@ -61,7 +51,6 @@ const simpleProductionScreen = ({setChangeButtonFunc}) => {
         if (initAnimation) {
             pulse()
         }
-        // animatedArrow()
         updateGetStorage();
 
         return () => isMounted = false;
@@ -144,17 +133,7 @@ const simpleProductionScreen = ({setChangeButtonFunc}) => {
                 useNativeDriver: true
             })
         ])).start()
-    }
-    // Animated.sequence([
-    //     Animated.timing(moveArrow, {
-    //         toValue: 100,
-    //         duration: 500
-    //     }),
-    //     Animated.timing(moveArrow, {
-    //         toValue: 0,
-    //         duration: 200
-    //     })
-    // ]).start()
+    };
 
     const updateGetStorage = () => {
         getDatas('@simpleProdData')
@@ -165,8 +144,6 @@ const simpleProductionScreen = ({setChangeButtonFunc}) => {
                     const order = r.sort((a, b) => a.orderID - b.orderID);
                     setRenderNowItem(order[0].id);
                 }
-                //CALCULO DE PESO Y ACCESO A MODAL INPUT
-                // stateForFinalCalc(r, renderNowItem)
             })
             .catch(err => console.log(err))
     };
@@ -237,7 +214,6 @@ const simpleProductionScreen = ({setChangeButtonFunc}) => {
                     backgroundColor: '#FF8500',
                 }]}
                                   disabled={!calcButtonOpacity && !warningNoContainPaper}
-                    // onPress={() => storeDatas(value)}>
                                   onPress={() => calcButtonOpacity ? setStateModalFullcalc(true) : null}>
                     <Text
                         style={[styles.textTouchable, {color: calcButtonOpacity && warningNoContainPaper ? 'white' : COLORS.primary}]}>Calcular
@@ -376,4 +352,5 @@ const styles = StyleSheet.create({
         textShadowRadius: 1
     }
 });
+
 export default simpleProductionScreen;

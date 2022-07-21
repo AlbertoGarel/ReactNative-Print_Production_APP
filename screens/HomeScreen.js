@@ -1,9 +1,9 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useCallback} from 'react';
 import {
     View,
     StyleSheet,
     SafeAreaView,
-    Dimensions
+    Dimensions, Alert, Text
 } from 'react-native';
 import {COLORS} from '../assets/defaults/settingStyles';
 import HomeCard from "../components/HomeCard";
@@ -17,15 +17,13 @@ import {
 } from "../assets/svg/svgContents";
 import HomeHeader from "../components/headers/HomeHeader";
 import Caroussel from "../components/Caroussel";
-import * as SQLite from "expo-sqlite";
 import {produccion_table_ALL} from "../dbCRUD/actionsSQL";
 import {useFocusEffect} from "@react-navigation/native";
-import {genericTransaction} from "../dbCRUD/actionsFunctionsCrud";
+import {genericDeleteFunction, genericTransaction} from "../dbCRUD/actionsFunctionsCrud";
 
 const {width, height} = Dimensions.get('window');
 
-const HomeScreen = ({navigation, route}) => {
-    const db = SQLite.openDatabase('bobinas.db');
+const HomeScreen = ({navigation}) => {
     //ICON SIZE
     const iconSize = 50;
     //BACKGROUND PROP CONST
@@ -35,46 +33,61 @@ const HomeScreen = ({navigation, route}) => {
     const optionsStyleContSVG = {
         width: '100%', height: '100%', top: 0, right: 0
     };
-    const {itemID} = route.params || false
     const [isFocus, setIsFocus] = useState(false);
     const [productions, getProductions] = useState([]);
+    const [spinnerSelected, setSpinnerSelected] = useState({item: null, spin: false});
 
     useFocusEffect(
         useCallback(() => {
             setIsFocus(true);
             //Production
             genericTransaction(produccion_table_ALL, [])
-                .then(response => {
-                    console.log('respoonseeee', response)
-                    getProductions(response);
-                })
+                .then(response => getProductions(response))
                 .catch(err => console.log(err))
-
-            // db.transaction(tx => {
-            //     tx.executeSql(
-            //         produccion_table_ALL,
-            //         [],
-            //         (_, {rows: {_array}}) => {
-            //             if (_array.length > 0) {
-            //                 getProductions(_array);
-            //             }
-            //             // else {
-            //             //     console.log('(produccion_table_ALL) Sin producciones en HomeScreen Component to call productions_table');
-            //             // }
-            //         }, () => err => console.log(err)
-            //     );
-            // });
             return () => {
+                handlerSpinner(false, null)
                 setIsFocus(false);
             };
-        }, [itemID])
+        }, [isFocus])
     );
-    // useEffect(() => {
-    //     if (itemID) {
-    //         const productionsSetState = productions.filter(item => item.id !== itemID);
-    //         getProductions(productionsSetState);
-    //     }
-    // }, [itemID])
+
+    function handlerSpinner(param, item) {
+        setSpinnerSelected({item: item, spin: param});
+    }
+
+    async function actionDeleteProduction(data) {
+        try {
+            const deleteRollsOnThisProd = await genericDeleteFunction('DELETE from autopasters_prod_data where production_fk = ?', [data.id])
+            if (!deleteRollsOnThisProd.rowsAffected) throw 'deleteError';
+            const thisProdDelete = await genericDeleteFunction(`DELETE FROM produccion_table WHERE produccion_id = ?;`, [data.id]);
+            if (!thisProdDelete.rowsAffected) throw 'deleteError';
+            const productions = await genericTransaction(produccion_table_ALL, [])
+            getProductions(productions)
+        } catch (err) {
+            if (err === 'deleteError') {
+                alert('Error al eliminar producción.')
+            } else {
+                alert('Error en base de datos.')
+            }
+        }
+    }
+
+    function deleteProduction(data) {
+        Alert.alert(
+            `ELIMINAR PRODUCCIÓN ${data['producto']} / pag: ${data['Paginacion']}`,
+            `¿Desea eliminar esta produción?`,
+            [{
+                text: 'Cancelar',
+                onPress: () => alert('acción cancelada.'),
+                style: 'cancel',
+            },
+                {
+                    text: 'OK', onPress: async () => {
+                        await actionDeleteProduction(data);
+                    }
+                }]
+        )
+    }
 
     return (
         <SafeAreaView style={{flex: 1}}>
@@ -92,16 +105,30 @@ const HomeScreen = ({navigation, route}) => {
             <View style={{flex: 1, justifyContent: 'space-evenly'}}>
                 <Caroussel
                     items={productions}
+                    deleteProduction={deleteProduction}
+                    spinnerSelected={spinnerSelected}
+                    handlerSpinner={handlerSpinner}
                 />
+                {productions.length > 0 && <Text style={{
+                    textAlign: 'center',
+                    fontFamily: 'Anton',
+                    color: COLORS.white,
+                    fontSize: 14,
+                    textTransform: 'uppercase',
+                    textShadowColor: COLORS.black,
+                    textShadowOffset: {width: 2, height: 2},
+                    textShadowRadius: 1
+                }}>mantener pulsado para eliminar</Text>
+                }
                 <View style={{
                     maxWidth: width < 400 ? width : 400,
-                    maxHeight: height / 2.2 ,
+                    maxHeight: height / 2.2,
                     alignSelf: 'center',
                     flexDirection: 'row',
                     justifyContent: 'center',
                     alignItems: 'center',
                     flexWrap: 'wrap',
-                    marginTop: 20,
+                    marginTop: 0,
                     paddingVertical: 40,
                     paddingHorizontal: 50,
                     backgroundColor: 'transparent',

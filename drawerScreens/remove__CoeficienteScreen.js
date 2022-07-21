@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, Text} from 'react-native';
 
-const CoeficienteScreen = () => {
+const Remove__CoeficienteScreen = () => {
 
     return (
         <View>
@@ -10,4 +10,4 @@ const CoeficienteScreen = () => {
     )
 };
 
-export default CoeficienteScreen;
+export default Remove__CoeficienteScreen;

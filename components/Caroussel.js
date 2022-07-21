@@ -3,25 +3,17 @@ import {View, Text, Dimensions, StyleSheet, ImageBackground, TouchableOpacity} f
 import Carousel, {Pagination} from 'react-native-snap-carousel';
 import {COLORS} from "../assets/defaults/settingStyles";
 import {useNavigation} from '@react-navigation/native';
-import {callToSetData, formatDateYYMMDD, groupedAutopasters, kilosByAutopasterCalc} from "../utils";
+import {groupedAutopasters, kilosByAutopasterCalc} from "../utils";
 import {genericTransaction} from "../dbCRUD/actionsFunctionsCrud";
-import {autopasters_prod_table_by_production, picker_coeficiente} from "../dbCRUD/actionsSQL";
+import {
+    autopasters_prod_table_by_production,
+    dataProductSelectedAllInfo,
+    picker_coeficiente
+} from "../dbCRUD/actionsSQL";
+import SpinnerSquares from "./SpinnerSquares";
+import PropTypes from 'prop-types';
 
-const dataProductSelected =
-    `SELECT a.linea_id, a.linea_name,b.medition_id, b.full_value, b.media_value, c.paginacion_value, d.producto_id, d.producto_name,
-    f.kba_value, g.gramaje_value, g.gramaje_id, h.papel_comun_name, h.papel_comun_id, e.produccion_id, e.editions, e.tirada, e.nulls, e.fecha_produccion, b.full_value, b.media_value
-    FROM linea_produccion_table a, medition_style_table b, paginacion_table c, producto_table d, kba_table f, gramaje_table g, papel_comun_table h
-    INNER JOIN produccion_table e
-    WHERE a.linea_id = e.linea_fk AND
-    b.medition_id = e.medition_fk AND 
-    c.paginacion_id = e.pagination_fk AND 
-    d.producto_id = e.producto_fk AND
-    f.kba_id = d.cociente_total_fk AND
-    f.gramaje_fk = g.gramaje_id AND
-    h.papel_comun_id = d.papel_comun_fk AND e.produccion_id = ?`
-;
-
-const Caroussel = ({items}) => {
+const Caroussel = ({items, deleteProduction, spinnerSelected, handlerSpinner}) => {
 
     const navigation = useNavigation();
     const contHeight = 130;
@@ -59,80 +51,47 @@ const Caroussel = ({items}) => {
         genericTransaction(autopasters_prod_table_by_production, [item.id])
             .then(async response => {
                 try {
+                    handlerSpinner(true, item.id)
                     //ORDERED ITEMS FOR POSITION_ROLL.
                     response.sort((a, b) => a.autopaster_fk - b.autopaster_fk);
                     //DATA REQUEST.
                     const coefBBDD = await genericTransaction(picker_coeficiente, []);
                     const maxRadius = await genericTransaction("SELECT MAX(medida) AS 'radiomax' FROM coeficiente_table", []);
-                    const productData = await genericTransaction(dataProductSelected, [item.id]);
-                    const grouped = await groupedAutopasters(response);
-                    const AutopastersLineProdData = await genericTransaction("SELECT * FROM autopaster_table WHERE linea_fk = ?",[productData[0].linea_id]);
+                    const productData = await genericTransaction(dataProductSelectedAllInfo, [item.id]);
+                    const grouped = await groupedAutopasters(response, item.id);
+                    const AutopastersLineProdData = await genericTransaction("SELECT * FROM autopaster_table WHERE linea_fk = ?", [productData[0].linea_id]);
                     const kilosNeededForAutopaster = await kilosByAutopasterCalc(grouped, productData[0], response);
-                    console.log('grouped', grouped)
+
                     return {
-                        radiusCoefBBDD: coefBBDD,
-                        groupedDataSectionList: grouped,
-                        autopasters: grouped.map(i => i.title),
-                        item: productData[0],
-                        maxRadius: maxRadius[0].radiomax,
-                        autopastersLineData: AutopastersLineProdData,
-                        kilosForAutopasterState: kilosNeededForAutopaster,
-                        definedAutopasters: response
+                        radiusCoefBBDD: await coefBBDD,
+                        groupedDataSectionList: await grouped,
+                        autopasters: await grouped.map(i => i.title),
+                        item: await productData[0],
+                        maxRadius: await maxRadius[0].radiomax,
+                        autopastersLineData: await AutopastersLineProdData,
+                        kilosForAutopasterState: await kilosNeededForAutopaster,
+                        definedAutopasters: await response
                     };
                 } catch (err) {
                     console.log(err)
                 }
             })
-            .then(async response => await navigation.navigate('FullProduction', response))
+            .then(async response => {
+                await navigation.navigate('FullProduction', response)
+            })
             .catch(err => console.log(err));
     };
 
+
     const renderItem = ({item, index}) => {
         return (
-            <TouchableOpacity onPress={() => updateInfoForSectionList(item)}>
-                <View style={{
-                    backgroundColor: 'floralwhite',
-                    borderRadius: 5,
-                    height: contHeight,
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                }}
+            <TouchableOpacity onPress={() => updateInfoForSectionList(item)}
+                              onLongPress={() => deleteProduction(item)}>
+                <View style={{...styles.itemCont, height: contHeight}}
                 >
-                    {
-                        formatDateYYMMDD() !== item['Fecha de creación'] ?
-                            <View style={{
-                                width: 20,
-                                height: 20,
-                                position: 'absolute',
-                                top: 2,
-                                right: 2,
-                                backgroundColor: 'red',
-                                borderRadius: 100,
-                                elevation: 12
-                            }}/>
-                            :
-                            null
-                    }
-                    <Text style={{
-                        width: '100%',
-                        borderTopLeftRadius: 5,
-                        borderTopRightRadius: 5,
-                        backgroundColor: 'floralwhite',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        padding: 3,
-                        paddingLeft: 10,
-                        color: '#a2a2a2',
-                        elevation: 2
-                    }}>{item['Fecha de creación']}</Text>
-                    <Text style={{
-                        marginTop: 5,
-                        fontSize: 30,
-                        textTransform: 'capitalize',
-                        textAlign: 'right'
-                    }}>
+                    {item.id === spinnerSelected.item && spinnerSelected.spin && <View style={styles.spinnerCont}><SpinnerSquares/></View>}
+                    <Text style={styles.datetext}>{item['Fecha de creación']}</Text>
+                    <Text style={styles.prodText}>
                         {item.producto.length > 10 ?
                             item.producto.substr(0, 10) + '...'
                             :
@@ -196,5 +155,47 @@ const styles = StyleSheet.create({
         resizeMode: "cover",
         justifyContent: "center"
     },
+    itemCont: {
+        backgroundColor: 'floralwhite',
+        borderRadius: 5,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    spinnerCont: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: '#ffffff90',
+        zIndex: 999
+    },
+    datetext: {
+        width: '100%',
+        borderTopLeftRadius: 5,
+        borderTopRightRadius: 5,
+        backgroundColor: 'floralwhite',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        padding: 3,
+        paddingLeft: 10,
+        color: '#a2a2a2',
+    },
+    prodText: {
+        marginTop: 5,
+        fontSize: 30,
+        color: COLORS.secondary,
+        textTransform: 'capitalize',
+        textAlign: 'right'
+    }
 })
+
+Caroussel.propTypes = {
+    items: PropTypes.array.isRequired,
+    deleteProduction: PropTypes.func.isRequired,
+    spinnerSelected: PropTypes.object.isRequired,
+    handlerSpinner: PropTypes.func.isRequired,
+};
 export default Caroussel;

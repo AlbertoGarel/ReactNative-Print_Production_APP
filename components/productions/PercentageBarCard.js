@@ -1,26 +1,14 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, View, Text, Alert} from 'react-native';
+import {StyleSheet, View, Text} from 'react-native';
 
 const PercentageBarCard = ({
                                data,
                                styleParent,
                                styleSubParent,
-                               // radiusState,
                                item
                            }) => {
-    const [percentage, setPercentage] = useState('')
+    const [percentage, setPercentage] = useState('');
 
-    // const calcPercentage = (radius) => {
-    //     let percent = Math.round((data.restoInicio / data.pesoOriginal) * 100);
-    //     if (radius === 0) {
-    //         percent = 0;
-    //     }
-    //     if (parseInt(data.restoFinal)) {
-    //         percent = Math.round((data.restoFinal / data.pesoOriginal) * 100);
-    //     }
-    //     console.log('percenttt', percent)
-    //     return percent;
-    // }
     const colors = (radius) => {
         let percent;
         switch (true) {

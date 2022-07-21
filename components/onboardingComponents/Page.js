@@ -2,6 +2,8 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import { Feather as Icon } from '@expo/vector-icons';
 import {COLORS} from "../../assets/defaults/settingStyles";
+import PropTypes from "prop-types";
+import BgComponent from "../BackgroundComponent/BgComponent";
 
 const Page = ({ backgroundColor, iconName, title }) => {
     return (
@@ -21,6 +23,12 @@ const Page = ({ backgroundColor, iconName, title }) => {
             </View>
         </View>
     );
+};
+
+Page.propTypes = {
+    backgroundColor: PropTypes.string.isRequired,
+    iconName: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
 };
 
 export default Page;

@@ -91,7 +91,6 @@ const CreateCardProduction = ({
 }
 const styles = StyleSheet.create({
     parent: {
-        // backgroundColor: COLORS.colorSupportfor,
         borderRadius: 5,
         padding: 5,
         elevation: 12,

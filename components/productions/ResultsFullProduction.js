@@ -2,8 +2,6 @@ import React, {useEffect, useState} from 'react';
 import {StyleSheet, View, Text} from 'react-native';
 import {COLORS} from "../../assets/defaults/settingStyles";
 import HRtag from "../HRtag";
-import SvgComponent from "../SvgComponent";
-import {icon360SVG} from "../../assets/svg/svgContents";
 
 const ResultFullProduction = ({finalCalc, item}) => {
 
@@ -22,10 +20,6 @@ const ResultFullProduction = ({finalCalc, item}) => {
         }
         return () => is_mounted = false;
     }, [finalCalc, item]);
-
-    const calcPercentage = () => {
-
-    };
 
     return (
         <View style={styles.parent}>
@@ -67,7 +61,6 @@ const separator = 8;
 
 const styles = StyleSheet.create({
     parent: {
-        // flex: 1,
         flexWrap: 'wrap',
         justifyContent: 'space-between',
         alignItems: 'stretch',
@@ -113,4 +106,5 @@ const styles = StyleSheet.create({
         textAlign: 'center'
     }
 });
+
 export default ResultFullProduction;

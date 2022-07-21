@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {Dimensions, Text, View, StyleSheet, Button, TouchableOpacity, ActivityIndicator, Vibration} from 'react-native';
+import {Dimensions, Text, View, StyleSheet, ActivityIndicator, Vibration} from 'react-native';
 import {BarCodeScanner, BarCodeScannerResult} from 'expo-barcode-scanner';
 import BarcodeMask from 'react-native-barcode-mask';
 import {getDatas} from "../data/AsyncStorageFunctions";
@@ -11,10 +11,12 @@ const height = Dimensions.get('window').height;
 const viewMinX = (width - finderWidth) / 2;
 const viewMinY = (height - finderHeight) / 2;
 
+// set back camera
+const type = "back";
+
 const BarcodeScannerComponent = ({props}) => {
 
     const [hasPermission, setHasPermission] = useState(null);
-    const [type, setType] = useState(BarCodeScanner.Constants.Type.back);
     const [scanned, setScanned] = useState(false);
     const [initScanState, setInitScanState] = useState(false);
     const [barcodeTypesSelected, getBarcodeTypesSelected] = useState([]);
@@ -23,37 +25,36 @@ const BarcodeScannerComponent = ({props}) => {
             let isMounted = true;
             (async () => {
                 const {status} = await BarCodeScanner.requestPermissionsAsync();
-                if(isMounted) setHasPermission(status === 'granted');
+                if (isMounted) setHasPermission(status === 'granted');
             })();
-                //GET TO asyncStorage
-                getDatas('@storage_codeTypesSelected').then(r => {
-                    // console.log('datos de storage en barcodeCompnent', r)
-                    if (r) {
-                        const cloneRequest = [...r];
-                        const formatSelectedTypes = [];
-                        cloneRequest.forEach((codeItem, index) => {
-                            if (codeItem.checkValue === true) {
-                                formatSelectedTypes.push('BarCodeScanner.Constants.BarCodeType.' + codeItem.checkName);
-                            }
-                        });
-                        getBarcodeTypesSelected(formatSelectedTypes);
-                    } else {
-                        getBarcodeTypesSelected([{
-                            "checkName": "code128",
-                            "checkValue": true,
-                        }])
-                    }
-                });
-
-                if (props.isVisible && hasPermission) {
-                    const initScan = setTimeout(() => {
-                        setInitScanState(true);
-                    }, 250);
-
-                    return () => clearTimeout(initScan);
+            //GET TO asyncStorage
+            getDatas('@storage_codeTypesSelected').then(r => {
+                if (r) {
+                    const cloneRequest = [...r];
+                    const formatSelectedTypes = [];
+                    cloneRequest.forEach((codeItem, index) => {
+                        if (codeItem.checkValue === true) {
+                            formatSelectedTypes.push('BarCodeScanner.Constants.BarCodeType.' + codeItem.checkName);
+                        }
+                    });
+                    getBarcodeTypesSelected(formatSelectedTypes);
                 } else {
-                    setInitScanState(false);
+                    getBarcodeTypesSelected([{
+                        "checkName": "code128",
+                        "checkValue": true,
+                    }])
                 }
+            });
+
+            if (props.isVisible && hasPermission) {
+                const initScan = setTimeout(() => {
+                    setInitScanState(true);
+                }, 250);
+
+                return () => clearTimeout(initScan);
+            } else {
+                setInitScanState(false);
+            }
 
             return () => isMounted = false;
         }, [hasPermission, props.isVisible]
@@ -68,7 +69,6 @@ const BarcodeScannerComponent = ({props}) => {
                 setScanned(true);
                 Vibration.vibrate();
                 props.getScannedCode({scannedCode: data, codeType: type});
-                // alert(`Bar code with type ${type} and data ${data} has been scanned!`);
             }
         }
     };
@@ -85,7 +85,6 @@ const BarcodeScannerComponent = ({props}) => {
                 props.isVisible && initScanState ?
                     <BarCodeScanner onBarCodeScanned={handleBarCodeScanned}
                                     type={type}
-                        // barCodeTypes={[BarCodeScanner.Constants.BarCodeType.qr]}
                                     barCodeTypes={
                                         barcodeTypesSelected.length > 0 ?
                                             [...barcodeTypesSelected]
@@ -93,46 +92,19 @@ const BarcodeScannerComponent = ({props}) => {
                                             //BY DEFAULT
                                             [BarCodeScanner.Constants.BarCodeType.code128]
                                     }
-                                    style={[StyleSheet.absoluteFillObject, styles.container]}>
-                        <View
-                            style={{
-                                flex: 1,
-                                backgroundColor: 'transparent',
-                                flexDirection: 'row',
-                            }}>
-                            <TouchableOpacity
-                                style={{
-                                    // flex: 1,
-                                    alignItems: 'flex-end',
-                                }}
-                                onPress={() => {
-                                    setType(
-                                        type === BarCodeScanner.Constants.Type.back
-                                            ? BarCodeScanner.Constants.Type.front
-                                            : BarCodeScanner.Constants.Type.back
-                                    );
-                                }}>
-                                <Text style={{fontSize: 18, margin: 5, color: 'white'}}> Flip Camera</Text>
-                            </TouchableOpacity>
-                        </View>
+                                    style={[StyleSheet.absoluteFillObject, styles.container]}
+                    >
                         <BarcodeMask edgeColor="#ff8500" showAnimatedLine/>
-                        {scanned &&
-                        <Button title="Scan Again" onPress={() => setScanned(false)}/>}
                     </BarCodeScanner>
                     :
                     <View
-                        style={{
-                            flex: 1,
-                            backgroundColor: 'black',
-                            justifyContent: 'center',
-                            alignItems: 'center'
-                        }}>
+                        style={styles.actIndicator}>
                         <ActivityIndicator size="large" color="#ff8500"/>
                     </View>
             }
         </View>
     )
-};
+}
 
 const styles = StyleSheet.create({
     text: {
@@ -142,6 +114,12 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'column',
         justifyContent: 'center',
+    },
+    actIndicator: {
+        flex: 1,
+        backgroundColor: 'black',
+        justifyContent: 'center',
+        alignItems: 'center'
     }
 });
 

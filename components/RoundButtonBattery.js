@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {StyleSheet, Text, View, TouchableOpacity, Vibration} from "react-native";
 import {COLORS} from "../assets/defaults/settingStyles";
 import {LinearGradient} from "expo-linear-gradient";
@@ -27,18 +27,8 @@ const RoundButtonBattery = ({
                                 defaultSelected = 0,
                                 getValue
                             }) => {
-    const [selected, getSelected] = useState(defaultSelected);
 
-    // const Gradient = ({color}) => {
-    //     return <LinearGradient colors={color} style={{
-    //         position: 'absolute',
-    //         left: 0,
-    //         right: 0,
-    //         top: 0,
-    //         bottom: 0,
-    //         borderRadius: 16,
-    //     }}/>
-    // };
+    const [selected, getSelected] = useState(defaultSelected);
 
     const handlerGetPressed = (value) => {
         getSelected(value.value);
@@ -82,4 +72,5 @@ const styles = StyleSheet.create({
     touchable: {width: 20, height: 20, borderRadius: 100, backgroundColor: COLORS.white}
 
 });
+
 export default RoundButtonBattery;

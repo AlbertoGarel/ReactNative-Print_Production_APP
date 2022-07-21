@@ -43,7 +43,6 @@ const styles = StyleSheet.create({
     absoluteinfo: {
         position: 'absolute',
         display: 'flex',
-        // alignSelf: 'center',
         width: '100%',
         height: '100%',
         justifyContent: 'center',

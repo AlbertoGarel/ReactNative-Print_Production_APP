@@ -53,14 +53,13 @@ const NullCopiesComponent = ({props}) => {
                     storeObjResult.nullcopiesbydefault = values.nullcopiesbydefault
 
                     storeData('@NullCopiesData', storeObjResult)
-                        .then(store => {
+                        .then(() => {
                             setNullCopiesByEdition(values.nullcopiesbyedition);
                             setNullCopiesByDefault(values.nullcopiesbydefault);
                             props.showToast('guardando...');
                         })
-                        .catch(err => {
-                            props.showToast('ERROOOOOOOR');
-                            console.log(err)
+                        .catch(() => {
+                            props.showToast('Error al guardar');
                         })
                 }}
             >
@@ -85,8 +84,7 @@ const NullCopiesComponent = ({props}) => {
                                         backgroundColor: '#ffffff',
                                         paddingTop: 5,
                                         borderRadius: 5,
-                                    } ||
-                                    (errors.nullcopiesbydefault && touched.nullcopiesbyedition) && {
+                                    } || (errors.nullcopiesbydefault && touched.nullcopiesbyedition) && {
                                         backgroundColor: '#ffffff',
                                         paddingTop: 15,
                                         borderRadius: 5
@@ -100,7 +98,6 @@ const NullCopiesComponent = ({props}) => {
                                     svgData={edicionesSVG}
                                     svgWidth={50}
                                     svgHeight={50}
-                                    // placeholder={'Ejemplares bruto...'}
                                     text={'Por edición:'}
                                     type={'numeric'}
                                     _name={'nullcopiesbyedition'}
@@ -117,7 +114,6 @@ const NullCopiesComponent = ({props}) => {
                                     svgData={tirada2SVG}
                                     svgWidth={50}
                                     svgHeight={50}
-                                    // placeholder={'Ejemplares bruto...'}
                                     text={'Por tirada %:'}
                                     type={'numeric'}
                                     _name={'nullcopiesbydefault'}
@@ -129,11 +125,13 @@ const NullCopiesComponent = ({props}) => {
                                 <View style={{paddingLeft: 20}}>
                                     <Text style={[styles.exampleTitle, styles.exampleComp]}>Ejemplo: </Text>
                                     <Text style={[styles.example, styles.exampleComp]}>con 1000 ejemplares serían nulos:
-                                        <Text style={{color: COLORS.buttonEdit}}> {(1000 * nullCopiesByDefault) / 100}</Text>
+                                        <Text
+                                            style={{color: COLORS.buttonEdit}}> {(1000 * nullCopiesByDefault) / 100}</Text>
                                     </Text>
                                     <Text style={[styles.example, styles.exampleComp]}>con 10.000 ejemplares serían
                                         nulos:
-                                        <Text style={{color: COLORS.buttonEdit}}> {(10000 * nullCopiesByDefault) / 100}</Text>
+                                        <Text
+                                            style={{color: COLORS.buttonEdit}}> {(10000 * nullCopiesByDefault) / 100}</Text>
                                     </Text>
                                 </View>
                             </View>
@@ -182,7 +180,6 @@ const styles = StyleSheet.create({
     },
     example: {
         marginLeft: 20,
-
     },
     exampleComp: {
         color: COLORS.black,
@@ -190,7 +187,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 12
     },
-    stylErrors:{
+    stylErrors: {
         alignSelf: 'center',
         width: '95%',
         fontSize: 10,
@@ -199,4 +196,5 @@ const styles = StyleSheet.create({
         paddingLeft: 10
     }
 });
+
 export default NullCopiesComponent;

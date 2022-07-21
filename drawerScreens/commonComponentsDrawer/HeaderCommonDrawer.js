@@ -52,9 +52,9 @@ const styles = StyleSheet.create({
     stretch: {
         width: 30,
         height: 30,
-        // resizeMode: 'contain',
     },
     title: {
+        flex: 1,
         fontFamily: 'Anton',
         fontSize: 30,
         alignSelf: 'flex-start',
@@ -68,13 +68,11 @@ const styles = StyleSheet.create({
     paragraph: {
         color: COLORS.dimgrey,
         padding: 10,
-        // backgroundColor: COLORS.white,
         borderRadius: 5
     },
     paragraph2: {
         color: COLORS.black,
         padding: 10,
-        // backgroundColor: COLORS.white,
         borderRadius: 5,
         textShadowColor: COLORS.primary,
         textShadowOffset: {width: 0.5, height: 0.5},

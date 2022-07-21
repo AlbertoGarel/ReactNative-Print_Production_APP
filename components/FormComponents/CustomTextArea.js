@@ -1,6 +1,7 @@
 import React from 'react';
 import {StyleSheet, View, TextInput, Text} from 'react-native';
 import {COLORS} from "../../assets/defaults/settingStyles";
+import PropTypes from 'prop-types';
 
 const CustomTextArea = ({toState}) => {
 
@@ -11,7 +12,7 @@ const CustomTextArea = ({toState}) => {
                 style={styles.TextInputStyleClass}
                 underlineColorAndroid="transparent"
                 placeholder={"  Introduce aquí tus observaciones..."}
-                onChangeText={(text)=>toState(text)}
+                onChangeText={(text) => toState(text)}
                 // placeholderTextColor={"#9E9E9E"}
                 placeholderTextColor={COLORS.primary}
                 numberOfLines={5}
@@ -23,9 +24,8 @@ const CustomTextArea = ({toState}) => {
 const styles = StyleSheet.create({
     MainContainer: {
         width: '100%',
-        // paddingTop: (Platform.OS) === 'ios' ? 20 : 10,
     },
-    title:{
+    title: {
         textAlign: 'left',
         fontFamily: 'Anton',
         color: COLORS.black,
@@ -37,4 +37,9 @@ const styles = StyleSheet.create({
         backgroundColor: "#FF850050",
     }
 });
+
+CustomTextArea.propTypes = {
+    toState: PropTypes.func.isRequired,
+};
+
 export default CustomTextArea;

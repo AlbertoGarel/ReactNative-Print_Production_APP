@@ -2,12 +2,12 @@ import React from 'react';
 import {StyleSheet, View, Text, TouchableOpacity} from 'react-native';
 import {COLORS} from "../assets/defaults/settingStyles";
 import SvgComponent from "./SvgComponent";
-import {pdfSVG, searchCode} from "../assets/svg/svgContents";
+import {pdfSVG} from "../assets/svg/svgContents";
 
 const LargeButton = ({handlerSaveDataAndSend, enabled}) => {
 
     return (
-        <View style={[styles.contLargeButton,{opacity: enabled ? 1 : 0.3}]}>
+        <View style={[styles.contLargeButton, {opacity: enabled ? 1 : 0.3}]}>
             <TouchableOpacity style={styles.touchable}
                               onPress={handlerSaveDataAndSend}
                               disabled={!enabled}
@@ -55,4 +55,5 @@ const styles = StyleSheet.create({
         textShadowRadius: 1
     }
 });
+
 export default LargeButton;

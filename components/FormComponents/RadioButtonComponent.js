@@ -1,6 +1,7 @@
 import React, {useEffect} from 'react';
 import {StyleSheet, View, Text, TouchableWithoutFeedback} from "react-native";
 import {COLORS} from "../../assets/defaults/settingStyles";
+import PropTypes from 'prop-types';
 
 const RadioButtonComponent = ({
                                   title,
@@ -99,10 +100,6 @@ const RadioButtonComponent = ({
                     })
                 }
             </View>
-            <Text>limitSelection: {JSON.stringify(limitSelection)}</Text>
-            <Text>!initialValueState[0]: {JSON.stringify(!initialValueState[0])}</Text>
-            <Text>multipleSelect: {JSON.stringify(multipleSelect)}</Text>
-            <Text>initialValueState: {JSON.stringify(initialValueState)}</Text>
         </View>
     )
 };
@@ -167,4 +164,16 @@ const styles = StyleSheet.create({
         color: COLORS.white
     }
 });
+
+RadioButtonComponent.propTypes = {
+    title: PropTypes.string.isRequired,
+    data: PropTypes.array.isRequired,
+    multipleSelect: PropTypes.bool,
+    limitSelection: PropTypes.number.isRequired,
+    initialValueState: PropTypes.array.isRequired,
+    keysForData: PropTypes.object.isRequired,
+    notSelectable: PropTypes.number,
+    _setState: PropTypes.func.isRequired,
+};
+
 export default RadioButtonComponent;

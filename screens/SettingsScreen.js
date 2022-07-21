@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import {StyleSheet, SafeAreaView, View, Text, SectionList, Dimensions, ActivityIndicator} from "react-native";
 import {COLORS} from "../assets/defaults/settingStyles";
 import {semicircle2} from "../assets/svg/svgContents";
@@ -9,7 +9,6 @@ import BarcodesTypeSelection from "../components/BarcodesTypeSelection";
 import UserDataComponent from "../components/UserDataComponent";
 import ToastMesages from "../components/ToastMessages";
 import NullCopiesComponent from "../components/NullCopiesComponent";
-import {useIsFocused} from "@react-navigation/native";
 import ExportImportComponent from "../components/ExportImportComponent";
 
 //BACKGROUND PROP CONST
@@ -28,14 +27,7 @@ const SettingsScreen = ({navigation, setChangeButtonFunc}) => {
     let toastRef;
     const showToast = (message) => {
         toastRef.show(message);
-    }
-
-    // const isFocused = useIsFocused();
-    //
-    // useEffect(() => {
-    //     //CHANGE SELECTION SIMPLEPRODUCTION OR FULL PRODUCTION
-    //     setChangeButtonFunc(false)
-    // }, [isFocused]);
+    };
 
     const dataProps = {
             swicthparent: {
@@ -98,7 +90,7 @@ const SettingsScreen = ({navigation, setChangeButtonFunc}) => {
                 sections={DATA}
                 keyExtractor={(item, index) => item + index}
                 renderItem={({item}) => <Item title={item}/>}
-                ListFooterComponent={()=> <View style={{paddingVertical: 20}}/>}
+                ListFooterComponent={() => <View style={{paddingVertical: 20}}/>}
                 renderSectionHeader={({section: {title}}) => <Text style={styles.header}>{title}</Text>}
                 ListEmptyComponent={() => <ActivityIndicator size="large" color={COLORS.buttonEdit}/>}
             />

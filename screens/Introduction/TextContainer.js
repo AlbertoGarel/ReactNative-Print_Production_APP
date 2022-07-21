@@ -1,6 +1,5 @@
 import React from 'react';
 import {StyleSheet, View, Text} from 'react-native';
-import IntroductionDots from "../../assets/images/introduction/IntroductionDots";
 import {COLORS} from "../../assets/defaults/settingStyles";
 
 const TextContainer = ({text, title}) => {
@@ -39,4 +38,5 @@ const styles = StyleSheet.create({
         textAlign: 'justify',
     }
 })
+
 export default TextContainer;

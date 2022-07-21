@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {Alert, StyleSheet, View, Text, TouchableOpacity} from 'react-native';
+import {StyleSheet, View, Text, TouchableOpacity} from 'react-native';
 import {insertLinProd, updateLinProdByID, linProdByID} from "../../dbCRUD/actionsSQL";
 import * as SQLite from "expo-sqlite";
 import * as Yup from "yup";
@@ -80,7 +80,6 @@ const LineasProduccionCrud = ({props}) => {
                             })
                             .catch(err => {
                                 showToast('Error al actualizar')
-                                console.log(err)
                             })
                     }
                     if (props.typeform === 'CREAR') {
@@ -96,7 +95,6 @@ const LineasProduccionCrud = ({props}) => {
                             })
                             .catch(err => {
                                 showToast('Error al crear registro')
-                                console.log(err)
                             })
                         linProdForm.current?.resetForm();
                     }

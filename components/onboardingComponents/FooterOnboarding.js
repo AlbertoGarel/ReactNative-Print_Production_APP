@@ -1,14 +1,14 @@
 import React from 'react';
 import {View, useWindowDimensions} from 'react-native';
-
 import RoundedButton from './RoundedButton';
+import PropTypes from "prop-types";
 
 const Footer = ({
                     backgroundColor,
-                    leftButtonLabel = false,
-                    leftButtonPress = false,
-                    rightButtonLabel = false,
-                    rightButtonPress = false,
+                    leftButtonLabel = null,
+                    leftButtonPress = null,
+                    rightButtonLabel = null,
+                    rightButtonPress = null,
                     buttonChild
                 }) => {
     const windowWidth = useWindowDimensions().width;
@@ -37,6 +37,15 @@ const Footer = ({
             }
         </View>
     );
+};
+
+Footer.propTypes = {
+    backgroundColor: PropTypes.string,
+    leftButtonLabel: PropTypes.string,
+    leftButtonPress: PropTypes.func,
+    rightButtonLabel: PropTypes.string,
+    rightButtonPress: PropTypes.func,
+    buttonChild: PropTypes.elementType,
 };
 
 export default Footer;

@@ -159,18 +159,7 @@ const CoeficienteKbaCrud = ({props}) => {
                             {(errors.pickerGramaje && touched.pickerGramaje) &&
                             < Text style={{fontSize: 10, color: 'red'}}>{errors.pickerGramaje}</Text>
                             }
-                            <View style={{
-                                backgroundColor: COLORS.white,
-                                width: '100%',
-                                height: 60,
-                                padding: 5,
-                                borderRadius: 5,
-                                flexDirection: 'row',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                borderWidth: .5,
-                                borderColor: COLORS.black,
-                            }}>
+                            <View style={styles.contPicker}>
                                 <View style={styles.IconStyle}>
                                     <SvgComponent
                                         svgData={gramaje}
@@ -267,11 +256,6 @@ const CoeficienteKbaCrud = ({props}) => {
                             _opacity={0.8}
                             _textStyle={{color: '#FFFFFF', fontFamily: 'Anton'}}
                         />
-                        {/*+++*/}
-                        {/*DELETE WHENFINISH CRUD*/}
-                        {/*+++*/}
-                        {/*<Text>{gramajeDB ? JSON.stringify(gramajeDB) : null}</Text>*/}
-                        {/*++++++++++*/}
                     </>
                 )}
             </Formik>
@@ -296,6 +280,18 @@ const styles = StyleSheet.create({
         fontFamily: 'Anton',
         fontSize: 17,
         color: COLORS.white
+    },
+    contPicker: {
+        backgroundColor: COLORS.white,
+        width: '100%',
+        height: 60,
+        padding: 5,
+        borderRadius: 5,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: .5,
+        borderColor: COLORS.black,
     }
 });
 export default CoeficienteKbaCrud;

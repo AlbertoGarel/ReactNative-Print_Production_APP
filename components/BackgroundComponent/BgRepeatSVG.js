@@ -1,6 +1,8 @@
 import React from 'react';
 import {Dimensions, View} from 'react-native';
 import SvgComponent from "../SvgComponent";
+import PropTypes from 'prop-types';
+import BgComponent from "./BgComponent";
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -21,11 +23,9 @@ const BgRepeatSVG = ({styleOptions, svgOptions}) => {
     }
     return (
         <View style={[{
-            // backgroundColor: 'white',
             width: numSVGAnchor * 100,
             heigth: numSVGheight * 100,
             position: 'absolute',
-            // flex: 1,
             flexDirection: 'row',
             flexWrap: 'wrap',
             justifyContent: 'flex-start',
@@ -34,6 +34,11 @@ const BgRepeatSVG = ({styleOptions, svgOptions}) => {
             {repeated()}
         </View>
     )
+};
+
+BgRepeatSVG.propTypes = {
+    svgOptions: PropTypes.object.isRequired,
+    styleOptions: PropTypes.object.isRequired,
 };
 
 export default BgRepeatSVG;

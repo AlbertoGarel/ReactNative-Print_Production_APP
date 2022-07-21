@@ -1,17 +1,12 @@
-import React, {useEffect, useState} from 'react';
-import {View, SafeAreaView, Image, StyleSheet, Text, ScrollView} from 'react-native';
+import React, {useState} from 'react';
+import {View, SafeAreaView, Image, StyleSheet, ScrollView} from 'react-native';
 import {
     createDrawerNavigator,
-    DrawerContentScrollView,
     DrawerItemList,
-    DrawerItem,
 } from '@react-navigation/drawer';
 import TableViewwCommonScreen from "../drawerScreens/TableViewwCommonScreen";
-import CoeficienteScreen from "../drawerScreens/CoeficienteScreen";
-import PaginationScreen from "../drawerScreens/PaginationScreen";
 import InitialDrawerScreen from "../drawerScreens/InitialDrawerScreen";
 import {COLORS} from "../assets/defaults/settingStyles";
-import HeaderCommonDrawer from "../drawerScreens/commonComponentsDrawer/HeaderCommonDrawer";
 import {
     medition_style_table_ALL,
     deleteMeditionStyle,
@@ -32,15 +27,10 @@ import {
     deletePapelComunByID,
     deleteKbaByID,
     deleteAutopasterByID,
-    deleteProductoByID
+    deleteProductoByID, autopasters_prod_data_TABLEALL_AS
 } from "../dbCRUD/actionsSQL";
 import {Feather as Icon} from "@expo/vector-icons";
 import MeditionStyleCrud from "../drawerScreens/CrudComponents/MeditionStyleCrud";
-import {useIsFocused} from "@react-navigation/native";
-import {
-    NavigationContainer,
-    // useFocusEffect,
-} from '@react-navigation/native';
 import PaginationCrud from "../drawerScreens/CrudComponents/PaginationCrud";
 import GramajeCrud from "../drawerScreens/CrudComponents/GramajeCrud";
 import LineasProduccionCrud from "../drawerScreens/CrudComponents/LineasProduccionCrud";
@@ -64,21 +54,8 @@ const CustomSidebarMenu = (props) => {
 };
 
 const DataBaseScreen = ({navigation, setChangeButtonFunc}) => {
+
     const Drawer = createDrawerNavigator();
-    // const isFocused = useIsFocused();
-
-    // useEffect(() => {
-    //
-    // }, [isFocused]);
-
-    // useFocusEffect(
-    //     React.useCallback(() => {
-    //         alert('Screen was focused');
-    //         return () => {
-    //             alert('Screen was unfocused');
-    //         };
-    //     }, [])
-    // );
 
     const [typeform, setTypeForm] = useState('');
     const [registerID, getRegisterID] = useState('');
@@ -255,10 +232,10 @@ const DataBaseScreen = ({navigation, setChangeButtonFunc}) => {
     };
     const bobinasProduccionComponentProps = {
         headerTitle: "bobinas en Producciones abiertas",
-        headerParagraph: "Vista SÒLO para desarrollo.",
+        headerParagraph: "Listado de bobinas en producciones activas.",
         textButton: "Nuevo registro",
         requestDB: {
-            allItems: "SELECT * FROM autopasters_prod_data;",
+            allItems: autopasters_prod_data_TABLEALL_AS,
             deleteItem: ''
         },
         disable: true,
@@ -276,21 +253,6 @@ const DataBaseScreen = ({navigation, setChangeButtonFunc}) => {
     const option_vis = {
         drawerIcon: () => <Icon name={'eye'} size={15} color={COLORS.primary}/>,
     };
-
-    // const CustomSidebarMenu = (props) => {
-    //     console.log('sidebar render')
-    //     return (
-    //         <SafeAreaView style={{flex: 1}}>
-    //             <Image
-    //                 style={[styles.image, {backgroundColor: COLORS.white}]}
-    //                 source={require('../assets/images/splash/Logo_AlbertoGarel.png')}
-    //             />
-    //             <DrawerContentScrollView {...props}>
-    //                 <DrawerItemList {...props} />
-    //             </DrawerContentScrollView>
-    //         </SafeAreaView>
-    //     );
-    // };
 
     return (
         <SafeAreaView style={{flex: 1}}>

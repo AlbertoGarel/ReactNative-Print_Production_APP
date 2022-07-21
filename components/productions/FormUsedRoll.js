@@ -4,7 +4,7 @@ import * as Yup from "yup";
 import {COLORS} from "../../assets/defaults/settingStyles";
 import {Formik} from "formik";
 import CustomTextInput from "../FormComponents/CustomTextInput";
-import {edicionesSVG, peso, radio} from "../../assets/svg/svgContents";
+import {peso, radio} from "../../assets/svg/svgContents";
 import * as SQLite from "expo-sqlite";
 
 const FormUsedRoll = ({props}) => {
@@ -32,7 +32,6 @@ const FormUsedRoll = ({props}) => {
         db.transaction(tx => {
                 tx.executeSql(
                     searchCoefMinProx,
-                    //[gramajeValue (integer), gramajeType (string)]
                     [coefResult],
                     (_, {rows: {_array}}) => {
                         if (_array.length > 0) {
@@ -79,16 +78,6 @@ const FormUsedRoll = ({props}) => {
                     }}
                     validationSchema={registerUsedRollSchema}
                     onSubmit={values => {
-                        // {
-                        //     scanCode: parseInt(scannedCode),
-                        //     originalWeight: OrWeight,
-                        //     actualWeight: OrWeight, // UPDATE THIS
-                        //     radius: null, // UPDATE THIS
-                        //     commonRole: generalDataForRoll.papelComun,
-                        //     autopaster: autopasterID,
-                        //     grama: generalDataForRoll.gramajeRoll,
-                        //     isMedia: isMedia
-                        // }
                         const usedRollDataProps = props.item;
                         usedRollDataProps.actualWeight = values.inputUsedRoll;
                         usedRollDataProps.radius = values.calculatedradius;
@@ -118,7 +107,6 @@ const FormUsedRoll = ({props}) => {
                                 }}>{errors.inputUsedRoll}</Text>
                                 }
                                 <CustomTextInput
-                                    // _ref={EdicionesRef}
                                     svgData={peso}
                                     svgWidth={50}
                                     svgHeight={50}
@@ -140,7 +128,6 @@ const FormUsedRoll = ({props}) => {
                             <View>
                                 {!activityIndicatorVisble ?
                                     <CustomTextInput
-                                        // _ref={EdicionesRef}
                                         svgData={radio}
                                         svgWidth={50}
                                         svgHeight={50}
@@ -149,9 +136,6 @@ const FormUsedRoll = ({props}) => {
                                         type={'numeric'}
                                         styled={{marginBottom: 10}}
                                         _name={'calculatedradius'}
-                                        // _onChangeText={handleChange('inputUsedRoll')}
-                                        // _onBlur={handleBlur('inputUsedRoll')}
-                                        // _onEndEditing={() => getSelectedUsedRollWeight(values.inputUsedRoll)}
                                         value={calculatedRadius}
                                         _defaultValue={calculatedRadius.toString()}
                                         noEditable={true}
@@ -182,6 +166,7 @@ const FormUsedRoll = ({props}) => {
         </View>
     )
 };
+
 const styles = StyleSheet.create({
     touchable: {
         width: 120,
@@ -194,4 +179,5 @@ const styles = StyleSheet.create({
         borderColor: COLORS.white,
     }
 });
+
 export default FormUsedRoll;

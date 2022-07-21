@@ -1,5 +1,5 @@
 import React, {useEffect, useState, useRef} from 'react';
-import {Alert, StyleSheet, View, Text, TouchableOpacity} from 'react-native';
+import {StyleSheet, View, Text, TouchableOpacity} from 'react-native';
 import {pickerPapelcomun, pickerKBA, insertProducto, updateProductoByID, produtoByID} from "../../dbCRUD/actionsSQL";
 import * as SQLite from "expo-sqlite";
 import {FormYupSchemas} from "../../components/FormComponents/YupSchemas";
@@ -20,7 +20,6 @@ const ProductosCrud = ({props}) => {
 
     const db = SQLite.openDatabase('bobinas.db');
     const productosForm = useRef();
-    const poductoNameRef = useRef();
     const coefProdRef = useRef();
     const papelComRef = useRef();
 
@@ -46,7 +45,6 @@ const ProductosCrud = ({props}) => {
                         if (_array.length > 0) {
                             //clone array
                             const responsetObj = [..._array];
-                            // setCoeficienteDB(..._array);
                             setStateProductName(responsetObj[0].producto_name);
                             setStateCoefProdFk(responsetObj[0].cociente_total_fk);
                             setStatePapelCom(responsetObj[0].papel_comun_fk)
@@ -118,7 +116,6 @@ const ProductosCrud = ({props}) => {
                 validationSchema={schemasValidation}
                 onSubmit={values => {
                     if (props.typeform === 'ACTUALIZAR' && props.registerID > 0) {
-                        // row order: name_autopast = ?, autopastPref = ?, linea_fk = ?, autopast_id = ?
                         const updateArr = [values.productName, values.pickerCoefProd, values.pickerPapelComProd, props.registerID];
                         genericUpdatefunction(updateProductoByID, updateArr)
                             .then(result => {
@@ -129,10 +126,8 @@ const ProductosCrud = ({props}) => {
                                 }
                             })
                             .catch(err => {
-                                showToast('Error al actualizar')
-                                console.log(err)
+                                showToast('Error al actualizar');
                             })
-                        console.log(...updateArr)
                     }
                     if (props.typeform === 'CREAR') {
                         //row order: coefKbaid(ai) = null, producto_name, coeficiente_total_fk, papel_comun_fk
@@ -146,11 +141,9 @@ const ProductosCrud = ({props}) => {
                                 }
                             })
                             .catch(err => {
-                                showToast('Error al crear registro')
-                                console.log(err)
+                                showToast('Error al crear registro');
                             })
                         productosForm.current?.resetForm();
-                        console.log(...insertArr)
                     }
                 }}
             >
@@ -179,7 +172,6 @@ const ProductosCrud = ({props}) => {
                         < Text style={{fontSize: 10, color: 'red', marginLeft: 10}}>{errors.productName}</Text>
                         }
                         <CustomTextInput
-                            // _ref={poductoNameRef}
                             svgData={nombre}
                             svgWidth={50}
                             svgHeight={50}
@@ -196,18 +188,7 @@ const ProductosCrud = ({props}) => {
                             {(errors.pickerCoefProd && touched.pickerCoefProd) &&
                             < Text style={{fontSize: 10, color: 'red'}}>{errors.pickerCoefProd}</Text>
                             }
-                            <View style={{
-                                backgroundColor: COLORS.white,
-                                width: '100%',
-                                height: 60,
-                                padding: 5,
-                                borderRadius: 5,
-                                flexDirection: 'row',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                borderWidth: .5,
-                                borderColor: COLORS.black,
-                            }}>
+                            <View style={styles.contPicker}>
                                 <View style={styles.IconStyle}>
                                     <SvgComponent
                                         svgData={coeficienteSVG}
@@ -239,7 +220,6 @@ const ProductosCrud = ({props}) => {
                                                 }
                                             }}
                                             dataOptionsPicker={coeficienteDB.map((item, index) => {
-                                                console.log(item)
                                                 return <Picker.Item key={index}
                                                                     label={item.kba_name + ': ' + item.kba_value}
                                                                     value={item.kba_id}/>
@@ -333,11 +313,6 @@ const ProductosCrud = ({props}) => {
                             _opacity={0.8}
                             _textStyle={{color: '#FFFFFF', fontFamily: 'Anton'}}
                         />
-                        {/*+++*/}
-                        {/*DELETE WHENFINISH CRUD*/}
-                        {/*+++*/}
-                        {/*<Text>{gramajeDB ? JSON.stringify(gramajeDB) : null}</Text>*/}
-                        {/*++++++++++*/}
                     </>
                 )}
             </Formik>
@@ -362,6 +337,18 @@ const styles = StyleSheet.create({
         fontFamily: 'Anton',
         fontSize: 17,
         color: COLORS.white
+    },
+    contPicker: {
+        backgroundColor: COLORS.white,
+        width: '100%',
+        height: 60,
+        padding: 5,
+        borderRadius: 5,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: .5,
+        borderColor: COLORS.black,
     }
 });
 export default ProductosCrud;

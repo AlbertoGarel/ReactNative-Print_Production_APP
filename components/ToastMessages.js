@@ -1,5 +1,4 @@
 import React from 'react';
-import {ImageBackground, ToastAndroid} from 'react-native';
 import Toast from "react-native-easy-toast";
 
 const ToastMesages = ({

@@ -1,7 +1,6 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import BorderedButton from "../../components/BorderedButton";
-import {introdata} from "../../data/introductionData";
 import {COLORS} from "../../assets/defaults/settingStyles";
 import IntroductionDots from "../../assets/images/introduction/IntroductionDots";
 
@@ -62,4 +61,5 @@ const styles = StyleSheet.create({
         fontWeight: 'bold'
     }
 })
+
 export default IntroductionFooter;

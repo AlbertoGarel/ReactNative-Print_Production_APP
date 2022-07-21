@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {Text, TouchableHighlight, View, StyleSheet, Switch, TouchableWithoutFeedback} from 'react-native';
 import {COLORS} from "../../assets/defaults/settingStyles";
 import {Feather as Icon} from "@expo/vector-icons";
@@ -50,4 +50,5 @@ const styles = StyleSheet.create({
         fontSize: 18
     }
 });
+
 export default LargeButtonNew;

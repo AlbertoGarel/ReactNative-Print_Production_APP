@@ -1,13 +1,11 @@
 import React from 'react';
-import {SafeAreaView, View, StyleSheet, Text, TouchableOpacity, Alert, TouchableHighlight} from 'react-native';
+import {SafeAreaView, View, StyleSheet, Text, TouchableOpacity} from 'react-native';
 import {Fontisto as Icon} from "@expo/vector-icons";
 import BgComponent from "../components/BackgroundComponent/BgComponent";
 import {elephant, semicircle2} from "../assets/svg/svgContents";
-import SvgComponent from "../components/SvgComponent";
 import {COLORS} from "../assets/defaults/settingStyles";
 import HomeHeader from "../components/headers/HomeHeader";
-import { DrawerActions } from '@react-navigation/native';
-import LargeButtonNew from "./commonComponentsDrawer/LargeButtonNew";
+import {DrawerActions} from '@react-navigation/native';
 
 const InitialDrawerScreen = ({navigation}) => {
     //BACKGROUND PROP CONST
@@ -44,7 +42,8 @@ const InitialDrawerScreen = ({navigation}) => {
                 text={'Modifica los datos de las tablas para realizar operaciones y define autopasters, gramajes, valores varios y más....'}
             />
             <View style={styles.parentCont}>
-                <TouchableOpacity style={[styles.contExplain,{elevation: 12}]} onPress={()=>navigation.dispatch(DrawerActions.toggleDrawer())}>
+                <TouchableOpacity style={[styles.contExplain, {elevation: 12}]}
+                                  onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}>
                     <Icon name={'angle-dobule-right'} size={29} color={COLORS.primary}
                           style={styles.ico}
                     />
@@ -79,14 +78,7 @@ const styles = StyleSheet.create({
     explain: {
         fontFamily: 'Anton',
         marginLeft: 10
-    },
-    // title: {
-    //     fontFamily: 'Anton',
-    //     fontSize: 30,
-    //     alignSelf: 'flex-start',
-    //     textTransform: 'capitalize',
-    //     // color: '#FF8000'
-    //     color: 'green'
-    // }
+    }
 });
+
 export default InitialDrawerScreen;

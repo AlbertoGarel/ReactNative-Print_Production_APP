@@ -1,8 +1,6 @@
 import React from 'react';
-import {StyleSheet, View, Text, TouchableOpacity} from 'react-native';
-import {COLORS} from "../assets/defaults/settingStyles";
+import {Text, TouchableOpacity} from 'react-native';
 import SvgComponent from "./SvgComponent";
-import {searchCode} from "../assets/svg/svgContents";
 
 const TouchableIcon = ({handlerOnPress, touchableStyle, svgName, WidthSVG, heightSVG, text = null, styleText}) => {
 
@@ -19,5 +17,4 @@ const TouchableIcon = ({handlerOnPress, touchableStyle, svgName, WidthSVG, heigh
         </TouchableOpacity>
     )
 };
-const styles = StyleSheet.create({});
 export default TouchableIcon;

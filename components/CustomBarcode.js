@@ -14,9 +14,11 @@ const CustomBarcode = ({
                            text,
                            textStyle,
                            style,
+                           svgStyle,
                            onError,
                            maxWidth,
-                           getCodePathSVG
+                           getCodePathSVG,
+                           roll_autopaster
                        }) => {
     const drawRect = (x, y, width, height) => {
         return `M${x},${y}h${width}v${height}h-${width}z`;
@@ -113,17 +115,20 @@ const CustomBarcode = ({
 
     React.useEffect(() => {
         // GET CODE FOR SVG PATH D FOR PRINT PDF.
-        getCodePathSVG(bars.join(' '));
-    }, [bars, getCodePathSVG])
+        if (getCodePathSVG) {
+            getCodePathSVG(bars.join(' '), value, roll_autopaster);
+        }
+
+    }, [bars])
 
     return (
         <View
-            style={[{ backgroundColor: background, alignItems: 'center' }, style]}
+            style={[{backgroundColor: background, alignItems: 'center'}, style]}
         >
-            <Svg height={height} width={barCodeWidth} fill={lineColor}>
-                <Path d={bars.join(' ')} />
+            <Svg height={height} width={barCodeWidth} fill={lineColor} style={svgStyle}>
+                <Path d={bars.join(' ')}/>
             </Svg>
-            {text && <Text style={[{ textAlign: 'center' }, textStyle]}>{text}</Text>}
+            {text && <Text style={[{textAlign: 'center'}, textStyle]}>{text}</Text>}
         </View>
     );
 };

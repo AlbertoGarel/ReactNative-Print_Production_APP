@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, StyleSheet} from 'react-native';
 import SvgComponent from "../SvgComponent";
+import PropTypes from 'prop-types';
 
 const BgComponent = ({svgOptions, styleOptions}) => {
 
@@ -18,5 +19,10 @@ const styles = StyleSheet.create({
         position: 'absolute'
     }
 });
+
+BgComponent.propTypes = {
+    svgOptions: PropTypes.object.isRequired,
+    styleOptions: PropTypes.object.isRequired,
+};
 
 export default BgComponent;

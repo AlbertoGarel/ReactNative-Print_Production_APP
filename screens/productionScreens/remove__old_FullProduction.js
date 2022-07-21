@@ -38,8 +38,8 @@ import BorderedButton from "../../components/BorderedButton";
 import BgRepeatSVG from "../../components/BackgroundComponent/BgRepeatSVG";
 import SvgComponent from "../../components/SvgComponent";
 import BarcodeScannerComponent from "../../components/BarcodeScannerComponent";
-import BottomSheetComponent from "../../components/BottomSheetComponent";
-import ContainerSectionListItem from "../../components/productions/ContainerSectionListItem";
+import BottomSheetComponent from "../../components/remove__BottomSheetComponent";
+import Remove__ContainerSectionListItem from "../../components/productions/remove__ContainerSectionListItem";
 import {
     CalcPrevConsKilosRollsAutopaster,
     calcValues,
@@ -989,14 +989,14 @@ const FullProduction = ({route}) => {
                         stickySectionHeadersEnabled
                         sections={individualAutopasterDataForSectionList}
                         keyExtractor={(item, index) => item + index}
-                        renderItem={({item}) => <ContainerSectionListItem item={item} itemData={itemData}
-                                                                          setStateForRadius={setStateForRadius}
-                                                                          updatedataRollState={updatedataRollState}
-                                                                          maxRadiusValueDDBB={maxRadiusValueDDBB}
-                                                                          inputRadioForRollRadius={inputRadioForRollRadius}
-                                                                          handlerRemoveItem={confirmDelete}
-                                                                          viewCardSpinner={viewCardSpinner}
-                                                                          bobinaCodeForSpinner={bobinaCodeForSpinner}
+                        renderItem={({item}) => <Remove__ContainerSectionListItem item={item} itemData={itemData}
+                                                                                  setStateForRadius={setStateForRadius}
+                                                                                  updatedataRollState={updatedataRollState}
+                                                                                  maxRadiusValueDDBB={maxRadiusValueDDBB}
+                                                                                  inputRadioForRollRadius={inputRadioForRollRadius}
+                                                                                  handlerRemoveItem={confirmDelete}
+                                                                                  viewCardSpinner={viewCardSpinner}
+                                                                                  bobinaCodeForSpinner={bobinaCodeForSpinner}
                         />}
                         ListEmptyComponent={() => <ActivityIndicator size="large" color={COLORS.buttonEdit}/>}
                         ListFooterComponent={() => <EmptyFooter/>}

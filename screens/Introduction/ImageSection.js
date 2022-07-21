@@ -13,7 +13,6 @@ const ImageSection = ({
                     width: imgSquare,
                     height: imgSquare,
                 }]}
-                // source={require('../../assets/images/introduction/basedata.png')}
                 source={imageURI}
             />
         </View>

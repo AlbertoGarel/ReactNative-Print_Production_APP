@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleSheet, View, Text} from 'react-native';
 
-const PaginationScreen = () => {
+const Remove__PaginationScreen = () => {
  return (
      <View>
          <Text>Pagination screen</Text>
@@ -10,4 +10,4 @@ const PaginationScreen = () => {
 }
 
 const styles = StyleSheet.create({});
-export default PaginationScreen;
+export default Remove__PaginationScreen;

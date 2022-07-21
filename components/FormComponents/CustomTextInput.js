@@ -2,6 +2,7 @@ import React from 'react';
 import {StyleSheet, Text, TextInput, View} from "react-native";
 import SvgComponent from "../SvgComponent";
 import {COLORS} from "../../assets/defaults/settingStyles";
+import PropTypes from 'prop-types';
 
 const CustomTextInput = ({
                              svgData,
@@ -38,7 +39,10 @@ const CustomTextInput = ({
                 style={[{
                     flex: 1,
                     paddingLeft: 20,
-                }, inputStyled ? inputStyled : null, noEditable ? {fontFamily: 'Anton', color: '#189AB4'} : {color: 'black'}]}
+                }, inputStyled ? inputStyled : null, noEditable ? {
+                    fontFamily: 'Anton',
+                    color: '#189AB4'
+                } : {color: 'black'}]}
                 placeholder={placeholder}
                 keyboardType={type}
                 editable={!noEditable}
@@ -73,4 +77,30 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
 });
+
+CustomTextInput.propTypes = {
+    svgData: PropTypes.any,
+    svgWidth: PropTypes.number,
+    svgHeight: PropTypes.number,
+    placeholder: PropTypes.string,
+    text: PropTypes.string,
+    type: PropTypes.string,
+    noEditable: PropTypes.bool,
+    styled: PropTypes.object,
+    _ref: PropTypes.any,
+    _name: PropTypes.string,
+    _onChangeText: PropTypes.func,
+    _onBlur: PropTypes.func,
+    _defaultValue: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number
+    ]),
+    inputStyled: PropTypes.object,
+    _onEndEditing: PropTypes.func,
+    _value: PropTypes.PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number
+    ]),
+};
+
 export default CustomTextInput;

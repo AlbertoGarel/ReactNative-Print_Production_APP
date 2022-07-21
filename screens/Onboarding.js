@@ -1,5 +1,5 @@
-import React, {useRef, useEffect, useState} from 'react';
-import {View, StatusBar, SafeAreaView, Text} from 'react-native';
+import React, {useEffect, useRef} from 'react';
+import {SafeAreaView, StatusBar, View} from 'react-native';
 import PagerView from 'react-native-pager-view';
 import Footer from '../components/onboardingComponents/FooterOnboarding';
 import Page from '../components/onboardingComponents/Page';
@@ -15,10 +15,9 @@ const Onboarding = ({initialpage}) => {
     };
 
     useEffect(()=>{
-        const unsubscribe = navigation.addListener('focus', () => {
+        return navigation.addListener('focus', () => {
             handlePageChange(0);
         });
-        return unsubscribe;
     },[navigation])
 
     return (

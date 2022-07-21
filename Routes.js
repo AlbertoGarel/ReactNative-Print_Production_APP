@@ -1,41 +1,28 @@
 import React, {useState, useEffect} from 'react';
 import {
-    TouchableOpacity,
     SafeAreaView,
     View,
-    Text,
-    ScrollView,
     StyleSheet,
     StatusBar,
     Vibration,
-    Alert
 } from "react-native";
-import {NavigationContainer, useNavigation} from '@react-navigation/native';
-import {createStackNavigator} from '@react-navigation/stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import HomeScreen from "./screens/HomeScreen";
-import DocumentsViewerScreen from "./screens/DocumentsViewerScreen";
-import Onboarding from "./screens/Onboarding";
 import {COLORS} from './assets/defaults/settingStyles'
 import SettingsScreen from "./screens/SettingsScreen";
 import {Fontisto as Icon} from "@expo/vector-icons";
 import HomeStack from "./StacksScreens/HomeStack";
 import {AdMobBanner} from "expo-ads-admob";
 import Constants from 'expo-constants';
-import SvgComponent from "./components/SvgComponent";
-import {semicircle2} from "./assets/svg/svgContents";
-import listeners from "react-native-web/dist/exports/AppState";
 import SettingsProductionScreen from "./screens/productionScreens/SettingsProductionScreen";
 import {Platform} from 'react-native';
 import DataBaseScreen from "./screens/DataBaseScreen";
-// paddingTop: Constants.statusBarHeight
+
 /**
  *  Optimize memory usage and performance
  * */
 import {enableScreens} from 'react-native-screens';
 import SearchScreen from "./screens/SearchScreen";
 import SettingsSimpleProductionScreen from "./screens/productionScreens/SettingsSimpleProductionScren";
-import {getDatas, removeValue, storeData} from "./data/AsyncStorageFunctions";
 import * as Font from "expo-font";
 
 enableScreens();
@@ -48,16 +35,16 @@ const Routes = ({navigation}) => {
     const [changeButtonFunc, setChangeButtonFunc] = useState(false);
     const [isFontLoad, setIsfontLoad] = useState(false);
 
-    useEffect(()=>{
+    useEffect(() => {
         Font.loadAsync({
             "Anton": require("./assets/fonts/Anton-Regular.ttf"),
         }).then(response => setIsfontLoad(true));
-    },[])
+    }, [])
 
     const buttonChangeTabNabStyleAndfunc = () => {
         setChangeButtonFunc()
     }
-    
+
     const bannerError = () => {
         console.log("An error");
         return;
@@ -92,13 +79,10 @@ const Routes = ({navigation}) => {
                 initialRouteName="Feed"
                 tabBarOptions={{
                     activeTintColor: "#FF8000",
-                    // activeBackgroundColor: "#feb72b",
                     inactiveTintColor: "#C2C2C2",
-                    // inactiveBackgroundColor: "#527318",
                 }}>
                 <Tab.Screen
                     name="HomeStack"
-                    // component={HomeStack}
                     children={(props) => <HomeStack {...props} setChangeButtonFunc={setChangeButtonFunc}/>}
                     options={{
                         tabBarLabel: 'Home',
@@ -111,7 +95,6 @@ const Routes = ({navigation}) => {
                 />
                 <Tab.Screen
                     name="DataBaseStack"
-                    // component={DataBaseScreen}
                     children={(props) => <DataBaseScreen {...props} navigation={'navigation'}
                                                          setChangeButtonFunc={setChangeButtonFunc}/>}
                     options={{
@@ -124,13 +107,12 @@ const Routes = ({navigation}) => {
                     listeners={{
                         tabPress: () => {
                             // e.preventDefault(); // Use this to navigate somewhere else
-                            setChangeButtonFunc(false )
+                            setChangeButtonFunc(false)
                         },
                     }}
                 />
                 <Tab.Screen
                     name="CreateStack"
-                    // component={changeButtonFunc ? <SettingsSimpleProductionScreen setChangeButtonFunc={setChangeButtonFunc} /> : SettingsProductionScreen}
                     children={(props) => changeButtonFunc ?
                         <SettingsSimpleProductionScreen {...props} setChangeButtonFunc={setChangeButtonFunc}/> :
                         <SettingsProductionScreen {...props}/>}
@@ -161,7 +143,6 @@ const Routes = ({navigation}) => {
                                 shadowRadius: 3.84,
                                 elevation: 5,
                             }}
-                                // onPress={Vibration.vibrate(100)}
                             >
                                 <Icon name={'plus-a'}
                                       size={30}
@@ -181,7 +162,6 @@ const Routes = ({navigation}) => {
                     }}/>
                 <Tab.Screen
                     name="SearchStack"
-                    // component={SearchScreen}
                     children={(props) => <SearchScreen {...props} setChangeButtonFunc={setChangeButtonFunc}/>}
                     options={{
                         tabBarLabel: 'Search',
@@ -192,14 +172,13 @@ const Routes = ({navigation}) => {
                     listeners={{
                         tabPress: () => {
                             // e.preventDefault(); // Use this to navigate somewhere else
-                            setChangeButtonFunc(false )
+                            setChangeButtonFunc(false)
                         },
                     }}
                 />
                 <Tab.Screen
                     name="SettingsStack"
                     component={SettingsScreen}
-                    // children={(props) => <SettingsScreen {...props} setChangeButtonFunc={setChangeButtonFunc}/>}
                     options={{
                         tabBarLabel: 'Settings',
                         tabBarIcon: ({color = 'red', size = 12}) => (
@@ -210,7 +189,7 @@ const Routes = ({navigation}) => {
                     listeners={{
                         tabPress: () => {
                             // e.preventDefault(); // Use this to navigate somewhere else
-                            setChangeButtonFunc(false )
+                            setChangeButtonFunc(false)
                         },
                     }}
                 />
@@ -224,4 +203,5 @@ const styles = StyleSheet.create({
         alignSelf: 'center'
     },
 })
+
 export default Routes;

@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {View, Text, Platform, Switch} from 'react-native';
 import * as SQLite from "expo-sqlite";
 import {barcodesAndroid, barcodesIos} from "../dbCRUD/actionsSQL";
-import {getDatas, storeData, removeValue} from "../data/AsyncStorageFunctions";
+import {getDatas, storeData} from "../data/AsyncStorageFunctions";
 import {COLORS} from "../assets/defaults/settingStyles";
 
 const BarcodesTypeSelection = ({props}) => {
@@ -14,14 +14,11 @@ const BarcodesTypeSelection = ({props}) => {
         let isMounted = true;
 
         if (isMounted) {
-            // removeValue('@storage_codeTypesSelected').then(r => console.log('elim'))
             db.transaction(tx => {
                 tx.executeSql(
                     Platform.OS === 'ios' ? barcodesIos : barcodesAndroid,
-                    // barcodes_table_all,
                     [1],
                     (_, {rows: {_array}}) => {
-                        console.log(_array)
                         if (_array.length > 0) {
                             const stateCodebarsItems = _array.map(item => {
                                 return {checkName: item.barcode_name, checkValue: item.barcode_name === 'code128'}
@@ -35,8 +32,6 @@ const BarcodesTypeSelection = ({props}) => {
                                 }
                             })
                                 .catch(err => console.error('In SettingsScreen request @storageAsync: ', err));
-                        } else {
-                            console.error('Error al conectar base de datos en IndividualCalculation Component');
                         }
                     },
                     err => console.error('In request BarcodesTypeselection', err)
@@ -56,7 +51,9 @@ const BarcodesTypeSelection = ({props}) => {
             }
         })
         setChecked(val);
-        storeData('@storage_codeTypesSelected', val).then(r => console.log('Guardado...'));
+        storeData('@storage_codeTypesSelected', val)
+            .then(r => console.log('Guardado...'))
+            .catch(err => console.log(err))
     };
 
     return (
@@ -99,4 +96,5 @@ const BarcodesTypeSelection = ({props}) => {
         </>
     )
 };
+
 export default BarcodesTypeSelection;

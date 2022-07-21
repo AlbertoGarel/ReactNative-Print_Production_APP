@@ -1,10 +1,9 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {StyleSheet, View, Text, Dimensions} from "react-native";
 import TouchableIcon from "./TouchableIcon";
 import {exportddbbSVG, importddbbSVG} from "../assets/svg/svgContents";
 import {COLORS, shadowPlatform} from "../assets/defaults/settingStyles";
 import {importDataBase, sendDataBase} from "../data/FileSystemFunctions";
-import SpinnerSquares from "./SpinnerSquares";
 
 const ExportImportComponent = ({props}) => {
 
@@ -48,7 +47,6 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         paddingVertical: 5,
         marginVertical: 10,
-        // paddingHorizontal: 5,
         flexDirection: 'row',
         justifyContent: 'space-evenly',
         alignItems: 'center',
@@ -63,4 +61,5 @@ const styles = StyleSheet.create({
         color: COLORS.primary
     }
 })
+
 export default ExportImportComponent;

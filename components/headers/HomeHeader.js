@@ -1,6 +1,7 @@
 import React from 'react';
 import {Image, StyleSheet, Text, View, Dimensions} from 'react-native';
 import {COLORS} from "../../assets/defaults/settingStyles";
+import PropTypes from "prop-types";
 
 const {width} = Dimensions.get('window');
 
@@ -44,7 +45,6 @@ const HomeHeader = ({
 };
 const styles = StyleSheet.create({
     parent: {
-        // marginTop: Constants.statusBarHeight,
         flexDirection: 'column',
         justifyContent: 'flex-start',
         width: '100%',
@@ -73,4 +73,13 @@ const styles = StyleSheet.create({
         borderRadius: 50
     }
 })
+
+HomeHeader.propTypes = {
+    textprops: PropTypes.object.isRequired,
+    imageBg: PropTypes.string,
+    titleColor: PropTypes.string,
+    text: PropTypes.string.isRequired,
+    titleSecction: PropTypes.string.isRequired,
+};
+
 export default HomeHeader;

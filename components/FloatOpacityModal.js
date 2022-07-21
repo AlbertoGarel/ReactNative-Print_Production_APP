@@ -1,32 +1,14 @@
 import React from 'react';
 import {StyleSheet, View, Text, TouchableOpacity} from 'react-native';
-import HRtag from "./HRtag";
-import {COLORS} from "../assets/defaults/settingStyles";
 
 const FloatOpacityModal = ({setVisibleMenu, styled, child}) => {
     return (
         <View style={styles.list}>
             <TouchableOpacity
                 onPress={() => setVisibleMenu(false)}
-                style={{
-                    position: 'absolute',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    top: 20,
-                    right: 20,
-                    borderWidth: 3,
-                    width: 50,
-                    height: 50,
-                    borderRadius: 100,
-                    borderColor: 'white'
-                }}
+                style={styles.touchable}
             >
-                < Text style={{
-                    color: 'white',
-                    fontSize: 30,
-                    // fontFamily: 'Anton',
-                }}>X</Text>
+                <Text style={styles.textX}>X</Text>
             </TouchableOpacity>
             <View style={[styles.flatParent, {...styled}]}>
                 {child()}
@@ -53,5 +35,23 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         padding: 10
     },
+    touchable: {
+        position: 'absolute',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        top: 20,
+        right: 20,
+        borderWidth: 3,
+        width: 50,
+        height: 50,
+        borderRadius: 100,
+        borderColor: 'white'
+    },
+    textX: {
+        color: 'white',
+        fontSize: 30,
+    }
 });
+
 export default FloatOpacityModal;

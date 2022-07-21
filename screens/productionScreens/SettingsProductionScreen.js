@@ -7,7 +7,8 @@ import {
     Text,
     TouchableOpacity,
     Switch,
-    Alert, Dimensions
+    Alert,
+    Dimensions
 } from 'react-native';
 import {Picker} from '@react-native-picker/picker';
 import PagerView from 'react-native-pager-view';
@@ -52,18 +53,14 @@ import {
 } from "../../utils";
 import {genericInsertFunction, genericTransaction} from "../../dbCRUD/actionsFunctionsCrud";
 import CustomDateTimePicker from "../../components/FormComponents/CustomDateTimePicker";
-import * as yup from "yup";
 
-//SEARCH AND SELECT MINOR WEIGHT ROLL IN OTHER PRODUCTION
 const searchStatementAutoProdData_Table =
     `SELECT * FROM autopasters_prod_data
      INNER JOIN bobina_table ON autopasters_prod_data.bobina_fk = bobina_table.codigo_bobina
      WHERE bobina_table.autopaster_fk = ? AND bobina_table.gramaje_fk = ?
      AND bobina_table.papel_comun_fk = ? AND
      autopasters_prod_data.resto_previsto > 0 AND
-     autopasters_prod_data.resto_previsto = (SELECT MIN(autopasters_prod_data.resto_previsto) FROM autopasters_prod_data) AND
-     autopasters_prod_data.media_defined = ?;`;
-
+     autopasters_prod_data.media_defined = ? ORDER BY autopasters_prod_data.resto_previsto DESC;`;
 const searchStatementRoll =
     `SELECT * FROM bobina_table
      WHERE NOT EXISTS(SELECT 1 FROM autopasters_prod_data WHERE (autopasters_prod_data.bobina_fk = bobina_table.codigo_bobina))
@@ -90,9 +87,12 @@ const SettingsProductionScreen = () => {
     const navigation = useNavigation();
 
     let toastRef;
-    const showToast = (message) => {
+    const showToast = (message, isError = true) => {
+        if (!isError) {
+            toastRef.props.style.backgroundColor = '#00ff00';
+        }
         toastRef.show(message);
-    }
+    };
 
     //BASEDATA STATES
     const [papelComun, getPapelComun] = useState([]);
@@ -125,10 +125,9 @@ const SettingsProductionScreen = () => {
     const [nullCopiesByEdition, setNullCopiesByEdition] = useState(0);
     const [nullCopiesByTiradaPercentage, setNullCopiesByTiradaPercentage] = useState(0);
     const [nullCopiesByTirada, setNullCopiesByTirada] = useState(0);
-    const [isCheckedAutomaticEditions, setCheckedAutomaticEditions] = useState(false);
     const [isCheckedAutomaticAutopasters, setCheckedAutomaticAutopasters] = useState(false);
 
-    const [pagenumber, setPagenumber] = useState(1);
+    // const [pagenumber, setPagenumber] = useState(1);
     // REFS
     const pagerRef = useRef(null);
     const inputDateRef = useRef();
@@ -136,10 +135,10 @@ const SettingsProductionScreen = () => {
 
 
     function handlePageChange(pageNumber) {
+        // IMPORTANT
         //Method .setPage() re-render component. use setPageWithoutAnimation()
         pagerRef.current?.setPageWithoutAnimation(pageNumber);
         // pagerRef.current?.setPage(pageNumber);
-        // setPagenumber(pageNumber + 1);
     };
     //BACKGROUND PROP CONST
     const optionsSVG = {
@@ -232,60 +231,14 @@ const SettingsProductionScreen = () => {
                     setNullCopiesByEdition(parseInt(response.nullcopiesbyedition));
                     setNullCopiesByTiradaPercentage(parseInt(response.nullcopiesbydefault));
                 })
-                .catch(() => {
-                    //SE LLAMARÁ  @nullCopiesData CUANDO SE ACTIVE LA OPCIÓN, NO CUANDO INICIE LA VISTA.
-                    // showToast("Completa la configuracions de descartes en \"SETTINGS\"...")
+                .catch((err) => {
+                    console.log(err)
                 });
         });
 
-        //GET AND SET VALUES FOR AUTOMATICSETTINGSDATA, AUTOMATICSTADISTICS AND ENTER VALUE MANUALLY FOR NULLS.
-        // if (isCheckedAutomaticSettingsConf) {
-        //     console.log('dentro')
-        //     if (!nullCopiesByTiradaPercentage || !nullCopiesByEdition) {
-        //         showToast("Completa la configuracions de descartes en \"SETTINGS\"...")
-        //         setTimeout(() => navigation.navigate('Settings'), 2000);
-        //     } else {
-        //         let nullsByTir = ((parseInt(selectedTirada) * parseInt(nullCopiesByTiradaPercentage)) / 100);
-        //         let nullsByEd = parseInt(nullCopiesByEdition) * parseInt(selectedEditions);
-        //         let totalCalcSettingsNulls = nullsByTir + nullsByEd;
-        //         console.log(nullsByTir)
-        //         if (isNaN(nullsByTir)) {
-        //
-        //             if (isNaN(nullsByEd)) nullsByEd = '';
-        //             getselectedNulls(nullsByEd)
-        //             setNullCopiesByTirada(nullsByTir)
-        //         }else{
-        //             setNullCopiesByTirada(nullsByTir)
-        //         }
-        //         if (isNaN(nullsByEd)) {
-        //             getselectedNulls(nullsByTir);
-        //             setNullCopiesByTirada(nullsByTir)
-        //         }
-        //         if (!isNaN(nullsByTir) && !isNaN(nullsByEd)) {
-        //             getselectedNulls(totalCalcSettingsNulls)
-        //             setNullCopiesByTirada(nullsByTir)
-        //         }
-        //         // setCheckedAutomaticNulls(10000)
-        //     }
-        // }else{
-        //     //reset values
-        //     getselectedNulls('')
-        // }
-
-        /**
-         * WHEN PRODUCTION STATISTICS DATA EXISTS, CREATE LOGIC TO TAKE DATA FOR SELECT AUTOPASTERS AND NULLS. IMPORTANT!!!!
-         **/
-        //CODE HERE
-
         return unsubscribe;
     }, [
-        navigation,
-        // isCheckedAutomaticSettingsConf,
-        // selectedTirada,
-        // nullCopiesByEdition,
-        // nullCopiesByTiradaPercentage,
-        // selectedEditions,
-        // selectedLinProd,
+        navigation
     ]);
 
     useEffect(() => {
@@ -333,7 +286,6 @@ const SettingsProductionScreen = () => {
     const groupAuto = (obj, prodData) => {
         let getSelectedAutopasterswithrolls = [];
         const id = obj.id;
-        // const _enteras = obj['entera'].map(item => [id, item, 0]);
         const _enteras = obj.entera.map(item => [id, item, 0]);
         const _media = [id, obj.media, 1];
         if (!obj.media) {
@@ -349,24 +301,20 @@ const SettingsProductionScreen = () => {
                 let calcWeigth = {};
                 let dataRollInsert = [];
                 let queryParams = [item[1], selectedMedition, papelComun.filter(i => i.producto_id === selectedProduct)[0].papel_comun_fk, item[2]]
-                //alert(selectedProduct) CHANGE SELECTED PRODUCT FOR ID PAPEL COMÚN
-                // db.transaction(tx => {
+
                 await tx.executeSql(
                     searchStatementAutoProdData_Table,
-                    //params [autopasterID, gramajeFK, papelComunFK, isMedia]
                     queryParams,
                     (_, {rows: {_array}}) => {
                         const meditionVal = meditionDataDB.filter(item => item.medition_id === selectedMedition);
                         const SumTotalCopies = parseInt(prodData.nulls) + parseInt(prodData.tirada);
                         if (_array.length > 0) {
-                            console.log('comprobar bobinas1', _array)
                             // OK. INSERT 'CODIGO_BOBINA' ROLL IN autopasters_prod_data.
                             coefRoll = searchCoefTypeRoll(...meditionVal, ..._array);
                             nowRollWeight = _array[0].resto_previsto;
                             calcWeigth = individualProvidedWeightRollProduction(SumTotalCopies, nowRollWeight, coefRoll);
                             dataRollInsert = [item[0], item[1], _array[0].codigo_bobina, calcWeigth.rollweight, item[2], positionRoll]
-                            // console.log('dataRollInsert', dataRollInsert)
-                            // INSERT DATA.
+
                             genericInsertFunction(insertAutopastCode, dataRollInsert)
                                 .then(response => console.log('response POSITIVE COIL', response))
                                 .catch(err => console.log('err', err))
@@ -375,8 +323,6 @@ const SettingsProductionScreen = () => {
                             db.transaction(tx => {
                                 tx.executeSql(
                                     searchStatementRoll,
-                                    //params [autopasterID, gramajeFK, papelComunFK, isMedia]
-                                    // [item[0], ...queryParams],
                                     queryParams,
                                     (_, {rows: {_array}}) => {
                                         if (_array.length > 0) {
@@ -419,7 +365,7 @@ const SettingsProductionScreen = () => {
                 if (result.rowsAffected > 0) {
                     //LOOP INSERT DATA
                     groupAuto(toSendAutopastProd, toSendProd);
-                    showToast('Guardado con éxito.');
+                    showToast('Guardado con éxito.', false);
                     setTimeout(() => navigation.navigate('HomeStack'), 2000);
                     resetForm();
                 } else {
@@ -428,7 +374,6 @@ const SettingsProductionScreen = () => {
             })
             .catch(err => {
                 showToast('Error al guardar.')
-                console.log(err)
             })
     };
 
@@ -545,34 +490,21 @@ const SettingsProductionScreen = () => {
             ])
                 .then(response => {
                     if (!response.length > 0) {
-                        console.log(
-                            min, max, pagValue, selectedProduct, selectedEditions
-                        )
-                        console.log(response)
                         setCheckedAutomaticNulls(false)
                         return alert('No existen datos para calcular.');
                     } else {
                         const dif = response.reduce((acc, item) => {
                             return acc + (item.tiradabruta - item.ejemplares)
                         }, 0);
-                        // return dif / response.length
                         getselectedNulls(dif / response.length)
                     }
                 })
-                // .then(response => getselectedNulls(response))
                 .catch(err => console.log(err))
         }
         setCheckedAutomaticNulls(!isCheckedAutomaticNulls)
     };
 
     useEffect(() => {
-        // if (isNaN(parseInt(selectedTirada)) && (switchTirada || switchEditions)) {
-        //     setSwitchTirada(false);
-        //     setSwitchEditions(false);
-        //     // alert('fail')
-        //     return
-        // }
-        console.log('selected editions', selectedEditions)
         getselectedNulls('');
         let nullsByTir = ((parseInt(selectedTirada) * parseInt(nullCopiesByTiradaPercentage)) / 100);
         let nullsByEd = parseInt(nullCopiesByEdition) * parseInt(selectedEditions);
@@ -581,22 +513,19 @@ const SettingsProductionScreen = () => {
         if (isNaN(nullsByEd)) nullsByEd = 0;
 
         if (switchTirada) {
-            // if (isNaN(nullsByTir)) nullsByTir = 0;
             if (nullCopiesByTiradaPercentage === 0) {
                 setTimeout(() => navigation.navigate('SettingsStack'), 2000)
                 return alert('Complete "descarte de ejemplares" en el apartado "SETTINGS".')
             }
-            getselectedNulls(nullsByTir + parseInt(selectedTirada))
+            getselectedNulls(nullsByTir)
             setNullCopiesByTirada(nullsByTir);
         }
         if (switchEditions) {
-            // if (isNaN(nullsByEd)) nullsByEd = 0;
             if (nullCopiesByEdition === 0) {
                 setTimeout(() => navigation.navigate('SettingsStack'), 2000);
                 return alert('Complete "descarte de ejemplares" en el apartado "SETTINGS".')
             }
-            getselectedNulls(nullsByEd + parseInt(selectedTirada));
-
+            getselectedNulls(nullsByEd);
         }
     }, [selectedTirada, selectedEditions, switchTirada, switchEditions, isCheckedAutomaticNulls])
 
@@ -609,16 +538,13 @@ const SettingsProductionScreen = () => {
                 innerRef={fullproduction}
                 initialValues={{
                     inputDate: selectedDates,
-                    // tirada: selectedTirada === '' ? selectedTirada : parseInt(selectedTirada),
                     tirada: selectedTirada,
                     switchTirada: switchTirada,
                     pickerProduct: selectedProduct,
                     pickerPagination: selectedPagination,
                     pickerlinProd: selectedLinProd,
                     pickerMedition: selectedMedition,
-                    // inputEditions: selectedEditions === '' ? selectedEditions : parseInt(selectedEditions),
                     inputEditions: selectedEditions,
-                    // inputNulls: selectedNulls === '' ? selectedNulls : parseInt(selectedNulls),
                     inputNulls: selectedNulls,
                     customEntera: areEnteras,
                     customMedia: isMedia
@@ -672,10 +598,6 @@ const SettingsProductionScreen = () => {
                             <PagerView style={{flex: 1}}
                                        initialPage={0}
                                        ref={pagerRef}
-                                // scrollEnabled={true}
-                                // orientation={"horizontal"}
-                                // keyboardDismissMode={'none'}
-                                // showPageIndicator={true}
                             >
                                 <View>
                                     <View style={styles.contPrinc}>
@@ -732,18 +654,7 @@ const SettingsProductionScreen = () => {
                                                             color: 'red'
                                                         }}>{errors.pickerlinProd}</Text>
                                                     }
-                                                    <View style={{
-                                                        backgroundColor: COLORS.white,
-                                                        width: '100%',
-                                                        height: 60,
-                                                        padding: 5,
-                                                        borderRadius: 5,
-                                                        flexDirection: 'row',
-                                                        justifyContent: 'center',
-                                                        alignItems: 'center',
-                                                        borderWidth: .5,
-                                                        borderColor: COLORS.black,
-                                                    }}>
+                                                    <View style={styles.contPicker}>
                                                         <View style={styles.IconStyle}>
                                                             <SvgComponent
                                                                 svgData={lineaprodSVG}
@@ -762,10 +673,8 @@ const SettingsProductionScreen = () => {
                                                                 itemStyle={{fontFamily: 'Anton'}}
                                                                 mode={'dialog'}
                                                                 selectedValue={values.pickerlinProd}
-                                                                // selectedValue={selectedMeasurementMetod}
                                                                 onValueChange={(itemValue) => {
                                                                     //RESET PAGE STATUS ON CHANGE LINE PRODUCTION VALUES.
-                                                                    // getselectedPagination(0);
                                                                     if (itemValue > 0) {
                                                                         handlerChangeLineProd(itemValue);
                                                                         handleChange('pickerlinProd')
@@ -796,18 +705,7 @@ const SettingsProductionScreen = () => {
                                                             color: 'red'
                                                         }}>{errors.pickerPagination}</Text>
                                                     }
-                                                    <View style={{
-                                                        backgroundColor: COLORS.white,
-                                                        width: '100%',
-                                                        height: 60,
-                                                        padding: 5,
-                                                        borderRadius: 5,
-                                                        flexDirection: 'row',
-                                                        justifyContent: 'center',
-                                                        alignItems: 'center',
-                                                        borderWidth: .5,
-                                                        borderColor: COLORS.black,
-                                                    }}>
+                                                    <View style={styles.contPicker}>
                                                         <View style={styles.IconStyle}>
                                                             <SvgComponent
                                                                 svgData={paginationSVG}
@@ -817,7 +715,6 @@ const SettingsProductionScreen = () => {
                                                         </View>
                                                         <View style={{flex: 1, paddingLeft: 10}}>
                                                             <CustomPicker
-                                                                // ref={ProductoRef}
                                                                 style={{
                                                                     borderWidth: .5,
                                                                     borderColor: COLORS.black,
@@ -826,13 +723,11 @@ const SettingsProductionScreen = () => {
                                                                 itemStyle={{fontFamily: 'Anton'}}
                                                                 mode={'dialog'}
                                                                 selectedValue={values.pickerPagination}
-                                                                // selectedValue={selectedMeasurementMetod}
                                                                 onValueChange={(itemValue) => {
                                                                     if (itemValue > 0) {
                                                                         handleChange('pickerPagination')
                                                                         setFieldTouched('pickerPagination', true)
                                                                         setFieldValue('pickerPagination', itemValue)
-                                                                        //get Value for calc active autopasters before submit
                                                                         getselectedPagination(itemValue)
                                                                     } else {
                                                                         showToast("Debes escoger una opción válida...")
@@ -862,18 +757,7 @@ const SettingsProductionScreen = () => {
                                                             color: 'red'
                                                         }}>{errors.pickerProduct}</Text>
                                                     }
-                                                    <View style={{
-                                                        backgroundColor: COLORS.white,
-                                                        width: '100%',
-                                                        height: 60,
-                                                        padding: 5,
-                                                        borderRadius: 5,
-                                                        flexDirection: 'row',
-                                                        justifyContent: 'center',
-                                                        alignItems: 'center',
-                                                        borderWidth: .5,
-                                                        borderColor: COLORS.black,
-                                                    }}>
+                                                    <View style={styles.contPicker}>
                                                         <View style={styles.IconStyle}>
                                                             <SvgComponent
                                                                 svgData={productoSVG}
@@ -883,7 +767,6 @@ const SettingsProductionScreen = () => {
                                                         </View>
                                                         <View style={{flex: 1, paddingLeft: 10}}>
                                                             <CustomPicker
-                                                                // ref={ProductoRef}
                                                                 style={{
                                                                     borderWidth: .5,
                                                                     borderColor: COLORS.black,
@@ -892,7 +775,6 @@ const SettingsProductionScreen = () => {
                                                                 itemStyle={{fontFamily: 'Anton'}}
                                                                 mode={'dialog'}
                                                                 selectedValue={values.pickerProduct}
-                                                                // selectedValue={selectedMeasurementMetod}
                                                                 onValueChange={(itemValue) => {
                                                                     if (itemValue > 0) {
                                                                         handleChange('pickerProduct')
@@ -923,18 +805,7 @@ const SettingsProductionScreen = () => {
                                                             color: 'red'
                                                         }}>{errors.pickerMedition}</Text>
                                                     }
-                                                    <View style={{
-                                                        backgroundColor: COLORS.white,
-                                                        width: '100%',
-                                                        height: 60,
-                                                        padding: 5,
-                                                        borderRadius: 5,
-                                                        flexDirection: 'row',
-                                                        justifyContent: 'center',
-                                                        alignItems: 'center',
-                                                        borderWidth: .5,
-                                                        borderColor: COLORS.black,
-                                                    }}>
+                                                    <View style={styles.contPicker}>
                                                         <View style={styles.IconStyle}>
                                                             <SvgComponent
                                                                 svgData={meditionSVG}
@@ -944,7 +815,6 @@ const SettingsProductionScreen = () => {
                                                         </View>
                                                         <View style={{flex: 1, paddingLeft: 10}}>
                                                             <CustomPicker
-                                                                // ref={ProductoRef}
                                                                 style={{
                                                                     borderWidth: .5,
                                                                     borderColor: COLORS.black,
@@ -953,7 +823,6 @@ const SettingsProductionScreen = () => {
                                                                 itemStyle={{fontFamily: 'Anton'}}
                                                                 mode={'dialog'}
                                                                 selectedValue={values.pickerMedition}
-                                                                // selectedValue={selectedMeasurementMetod}
                                                                 onValueChange={(itemValue) => {
                                                                     if (itemValue > 0) {
                                                                         handleChange('pickerMedition')
@@ -1008,7 +877,6 @@ const SettingsProductionScreen = () => {
                                                     }}>{errors.tirada}</Text>
                                                 }
                                                 <CustomTextInput
-                                                    // _ref={inputTbrutaRef}
                                                     svgData={tirada2SVG}
                                                     svgWidth={50}
                                                     svgHeight={50}
@@ -1025,15 +893,12 @@ const SettingsProductionScreen = () => {
                                             </View>
                                             <View
                                                 style={[styles.swicthparent, {opacity: switchEditions || isCheckedAutomaticNulls ? .2 : 1}]}
-                                                // key={item.checkName + '/' + index}
                                             >
                                                 <Switch
                                                     style={{width: '10%'}}
-                                                    // key={item.checkName}
                                                     trackColor={{false: '#767577', true: '#ffff0080'}}
                                                     thumbColor={!switchTirada && !isCheckedAutomaticSettingsConf ? '#f4f3f4' : '#f5dd4b'}
                                                     ios_backgroundColor="#3e3e3e"
-                                                    // onValueChange={() => setCheckedAutomaticSettingsConf(!isCheckedAutomaticSettingsConf)}
                                                     onValueChange={() => {
                                                         if (isNaN(parseInt(selectedTirada)) || selectedTirada <= 0) {
                                                             alert('introduce una cantidad en "tirada prevista');
@@ -1042,8 +907,6 @@ const SettingsProductionScreen = () => {
                                                         }
                                                     }}
                                                     value={switchTirada}
-                                                    // chidren={item.checkName}
-                                                    // disabled={isCheckedAutomaticNulls}
                                                     disabled={switchEditions || isCheckedAutomaticNulls}
                                                 />
                                                 <Text
@@ -1053,9 +916,7 @@ const SettingsProductionScreen = () => {
                                                         fontSize: 13,
                                                         width: '90%'
                                                     }}
-                                                    // key={item.checkName + index}
                                                 >{switchTirada ?
-                                                    // 'Nulos por Tirada: 1000'
                                                     <>Nulos por tirada: <Text
                                                         style={{color: COLORS.primary}}>{selectedTirada > 0 ? nullCopiesByTirada : '¿ ?'}</Text> Ejemplares
                                                         ( <Text
@@ -1064,7 +925,7 @@ const SettingsProductionScreen = () => {
                                                     <>Usar valores de descarte de "SETTINGS" para <Text
                                                         style={{color: COLORS.primary}}>tirada</Text></>}
                                                 </Text>
-                                                {/*<Text>alf:{nullCopiesByTirada}</Text>*/}
+                                                <Text>alf:{nullCopiesByTirada}</Text>
                                             </View>
                                             <View style={{marginTop: 10}}>
                                                 {(errors.inputEditions && touched.inputEditions) &&
@@ -1075,7 +936,6 @@ const SettingsProductionScreen = () => {
                                                 }}>{errors.inputEditions}</Text>
                                                 }
                                                 <CustomTextInput
-                                                    // _ref={EdicionesRef}
                                                     svgData={edicionesSVG}
                                                     svgWidth={50}
                                                     svgHeight={50}
@@ -1093,11 +953,9 @@ const SettingsProductionScreen = () => {
                                             </View>
                                             <View
                                                 style={[styles.swicthparent, {opacity: switchTirada || isCheckedAutomaticNulls ? .2 : 1}]}
-                                                // key={item.checkName + '/' + index}
                                             >
                                                 <Switch
                                                     style={{width: '10%'}}
-                                                    // key={item.checkName}
                                                     trackColor={{false: '#767577', true: '#ffff0080'}}
                                                     thumbColor={!switchEditions && !isCheckedAutomaticSettingsConf ? '#f4f3f4' : '#f5dd4b'}
                                                     ios_backgroundColor="#3e3e3e"
@@ -1109,8 +967,6 @@ const SettingsProductionScreen = () => {
                                                         }
                                                     }}
                                                     value={switchEditions}
-                                                    // chidren={item.checkName}
-                                                    // disabled={isCheckedAutomaticNulls}
                                                     disabled={switchTirada || isCheckedAutomaticNulls}
                                                 />
                                                 <Text
@@ -1120,9 +976,7 @@ const SettingsProductionScreen = () => {
                                                         fontSize: 13,
                                                         width: '90%'
                                                     }}
-                                                    // key={item.checkName + index}
                                                 >{switchEditions ?
-                                                    // 'Nulos por Tirada: 1000'
                                                     <>Nulos por edición: <Text
                                                         style={{color: COLORS.primary}}>{nullCopiesByEdition}</Text> Ejemplares
                                                         x <Text
@@ -1142,7 +996,6 @@ const SettingsProductionScreen = () => {
                                                 }}>{errors.inputNulls}</Text>
                                                 }
                                                 <CustomTextInput
-                                                    // _ref={EdicionesRef}
                                                     svgData={nullsSVG}
                                                     svgWidth={50}
                                                     svgHeight={50}
@@ -1162,21 +1015,17 @@ const SettingsProductionScreen = () => {
                                                     }}
                                                     inputStyled={{color: isCheckedAutomaticNulls || isCheckedAutomaticSettingsConf ? COLORS.black : COLORS.dimgrey + '90'}}
                                                 />
-                                                {/*<Text>{selectedNulls}</Text>*/}
                                             </View>
                                             <View
                                                 style={[styles.swicthparent, {opacity: switchEditions || switchTirada ? .2 : 1}]}
-                                                // key={item.checkName + '/' + index}
                                             >
                                                 <Switch
                                                     style={{width: '10%'}}
-                                                    // key={item.checkName}
                                                     trackColor={{false: '#767577', true: '#ffff0080'}}
                                                     thumbColor={isCheckedAutomaticNulls ? '#f5dd4b' : '#f4f3f4'}
                                                     ios_backgroundColor="#3e3e3e"
                                                     onValueChange={() => handlerCalcAutomaticNulls()}
                                                     value={isCheckedAutomaticNulls}
-                                                    // chidren={item.checkName}
                                                     disabled={switchEditions || switchTirada}
                                                 />
                                                 <Text
@@ -1186,7 +1035,6 @@ const SettingsProductionScreen = () => {
                                                         fontSize: 13,
                                                         width: '90%'
                                                     }}
-                                                    // key={item.checkName + index}
                                                 >Usar estadísticas de producciones anteriores para calcular
                                                     ejemplares
                                                     "nulos" según ediciones y tirada</Text>
@@ -1216,21 +1064,16 @@ const SettingsProductionScreen = () => {
                                             explanation={'Selecciona fecha de producción y autopasters de manera automática o manual.'}
                                         />
                                         <View style={[styles.subCont, {justifyContent: 'flex-start'}]}>
-                                            {/*//form here*/}
                                             <View
                                                 style={styles.swicthparent}
-                                                // key={item.checkName + '/' + index}
                                             >
                                                 <Switch
                                                     style={{width: '10%'}}
-                                                    // key={item.checkName}
                                                     trackColor={{false: '#767577', true: '#ffff0080'}}
                                                     thumbColor={isCheckedAutomaticAutopasters ? '#f5dd4b' : '#f4f3f4'}
                                                     ios_backgroundColor="#3e3e3e"
                                                     onValueChange={handlerCheckAutopasterAutoSelected}
-                                                    // onValueChange={() => setCheckedAutomaticAutopasters(!isCheckedAutomaticAutopasters)}
                                                     value={isCheckedAutomaticAutopasters}
-                                                    // chidren={item.checkName}
                                                 />
                                                 <Text
                                                     style={{
@@ -1239,7 +1082,6 @@ const SettingsProductionScreen = () => {
                                                         fontSize: 13,
                                                         width: '90%'
                                                     }}
-                                                    // key={item.checkName + index}
                                                 >Usar estadísticas de producciones anteriores para elección de
                                                     autopasters.</Text>
                                             </View>
@@ -1266,7 +1108,6 @@ const SettingsProductionScreen = () => {
                                                             initialValueState={areEnteras}
                                                             notSelectable={isMedia}
                                                             _setState={setEnteras}
-                                                            // name={'customEntera'}
                                                         />
                                                     </View>
                                                     <View>
@@ -1289,7 +1130,6 @@ const SettingsProductionScreen = () => {
                                                             limitSelection={1}
                                                             initialValueState={[isMedia]}
                                                             _setState={setMedia}
-                                                            // name={'customMedia'}
                                                         />
                                                     </View>
                                                 </>
@@ -1345,9 +1185,6 @@ const SettingsProductionScreen = () => {
                                                 marginRight: 0,
                                                 opacity: !isValid ? .1 : 1
                                             }]}
-                                            // onPress={() => coeficienteSearch(values.inputRadio)}
-                                            // onPress={() => Alert.alert(values.inputRadio)}
-                                            // title="CALCULAR"
                                             color="#841584"
                                             accessibilityLabel="calcular resultado de bobina"
                                             onPress={handleSubmit}
@@ -1393,9 +1230,6 @@ const styles = StyleSheet.create({
         padding: 10,
         justifyContent: 'center',
     },
-    selfLeft: {
-        // alignSelf: 'start'
-    },
     touchable: {
         width: 120,
         height: 50,
@@ -1412,6 +1246,18 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'flex-start',
         alignItems: 'center',
+    },
+    contPicker: {
+        backgroundColor: COLORS.white,
+        width: '100%',
+        height: 60,
+        padding: 5,
+        borderRadius: 5,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: .5,
+        borderColor: COLORS.black,
     }
 });
 
@@ -1436,47 +1282,4 @@ const BoxError = () => {
                 entradas vacías.</Text>
         </View>
     )
-}
-
-const input = [
-    {"brand": "Dell", "model": "Precision",},
-    {"brand": "Apple", "model": "iMac Pro",},
-    {"brand": "Apple", "model": "MacBook Pro",},
-    {"brand": "HP", "model": "Z840",},
-    {"brand": "Apple", "model": "MacBook Pro",},
-    {"brand": "Apple", "model": "iMac",},
-]
-// const autopastersDataProduction =[
-// {
-//         "autopaster_fk": 5,
-//         "autopasters_prod_data_id": 1,
-//         "bobina_fk": 3057060377853,
-//         "media_defined": 0,
-//         "production_fk": 1635771082521,
-//         "resto_previsto": 184,
-//     },
-//     {
-//         "autopaster_fk": 10,
-//         "autopasters_prod_data_id": 2,
-//         "bobina_fk": 987654321,
-//         "media_defined": 0,
-//         "production_fk": 1635771082521,
-//         "resto_previsto": 84,
-//     },
-//     {
-//         "autopaster_fk": 5,
-//         "autopasters_prod_data_id": 3,
-//         "bobina_fk": 98765432112334444,
-//         "media_defined": 0,
-//         "production_fk": 163577108456560,
-//         "resto_previsto": 14,
-//     },
-// ]
-// const groupedBy = autopast.reduce((acc, item) => {
-//     acc[item.autopaster_fk] ?
-//         acc[item.autopaster_fk]['data'].push(item)
-//         :
-//         acc[item.autopaster_fk] = { title: item.autopaster_fk, data: [ item ] };
-//     return acc;
-//     }, {});
-// const result = Object.values(groupedBy);
+};

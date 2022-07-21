@@ -36,7 +36,6 @@ const IndividualCalculation = () => {
     const db = SQLite.openDatabase('bobinas.db');
     const elementPrevProdctionformikRef = useRef();
     const tiradaRef = useRef();
-    const EdicionesRef = useRef();
     const meditionStyleRef = useRef();
     const elementCalcBobinaFormikRef = useRef();
     const inputWeightRef = useRef();
@@ -98,7 +97,7 @@ const IndividualCalculation = () => {
             );
         });
     };
-    //elementCalTotalproduction()
+
     const [paginacionDataDB, getPaginationDataDB] = useState([]);
     const [selectedValuePaginacion, getSelectedPagination] = useState(0);
     const [productoDataDB, getProductoDataDB] = useState([]);
@@ -120,7 +119,6 @@ const IndividualCalculation = () => {
     useEffect(() => {
         let isActive = true;
 
-        //elementPrevProdction()
         db.transaction(tx => {
             tx.executeSql(
                 picker_medition_style,
@@ -134,7 +132,7 @@ const IndividualCalculation = () => {
                 }
             );
         });
-        //elementCalTotalproduction() pagination_table
+
         db.transaction(tx => {
             tx.executeSql(
                 picker_pagination,
@@ -148,7 +146,7 @@ const IndividualCalculation = () => {
                 }
             );
         });
-        //elementCalTotalproduction() producto_table
+
         db.transaction(tx => {
             tx.executeSql(
                 picker_producto,
@@ -171,7 +169,7 @@ const IndividualCalculation = () => {
     //RESET BUTTON
     const resetState_elementPrevProdction = () => {
         switch (switchValue) {
-            case 1://elementPrevProdction()
+            case 1:
                 //reset states
                 getselectedTirada('');
                 //reset to initial values
@@ -351,7 +349,6 @@ const IndividualCalculation = () => {
                                     </Text>
                                     <Text style={{fontSize: 16}}>
                                         {selectedTirada &&
-                                        // selectedEditions &&
                                         selectedValueMeasurementMetod ?
                                             Math.round(selectedTirada * selectedValueMeasurementMetod[0].full_value)
                                             :
@@ -375,7 +372,6 @@ const IndividualCalculation = () => {
                                     </Text>
                                     <Text style={{fontSize: 16}}>
                                         {selectedTirada &&
-                                        // selectedEditions &&
                                         selectedValueMeasurementMetod ?
                                             Math.round(selectedTirada * selectedValueMeasurementMetod[0].media_value)
                                             :
@@ -462,9 +458,6 @@ const IndividualCalculation = () => {
                                         margin: 5,
                                         opacity: !isValid ? .1 : 1
                                     }]}
-                                    // onPress={() => coeficienteSearch(values.inputRadio)}
-                                    // onPress={() => Alert.alert(values.inputRadio)}
-                                    // title="CALCULAR"
                                     color="#841584"
                                     accessibilityLabel="calcular resultado de bobina"
                                     onPress={handleSubmit}
@@ -630,7 +623,6 @@ const IndividualCalculation = () => {
                                             itemStyle={{fontFamily: 'Anton'}}
                                             mode={'dialog'}
                                             selectedValue={values.pickerProducto}
-                                            // selectedValue={selectedMeasurementMetod}
                                             onValueChange={(itemValue) => {
                                                 if (itemValue > 0) {
                                                     handleChange('pickerProducto')

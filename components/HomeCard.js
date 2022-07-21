@@ -22,21 +22,7 @@ const HomeCard = ({
     return (
         <TouchableOpacity
             title={title}
-            style={{
-                borderRadius: 20,
-                backgroundColor: COLORS.white,
-                shadowColor: COLORS.black,
-                shadowOffset: {width: 0, height: 2},
-                shadowOpacity: 0.8,
-                shadowRadius: 10,
-                elevation: 12,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                width: '100%',
-                height: '100%',
-            }}
+            style={styles.touchable}
             onPress={() => actionHandler(torender)}
         >
             <View style={[styles.contIco, {width: iconSize / .8}]}>
@@ -109,6 +95,21 @@ const styles = StyleSheet.create({
         marginTop: 8,
         marginBottom: 4,
         width: '100%'
+    },
+    touchable: {
+        borderRadius: 20,
+        backgroundColor: COLORS.white,
+        shadowColor: COLORS.black,
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.8,
+        shadowRadius: 10,
+        elevation: 12,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
+        height: '100%',
     }
 })
 

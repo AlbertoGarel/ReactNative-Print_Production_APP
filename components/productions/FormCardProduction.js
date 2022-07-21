@@ -1,7 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {StyleSheet, View, Text, TouchableOpacity, ToastAndroid, Alert, Picker} from 'react-native';
-import CustomDateTimePicker from "../FormComponents/CustomDateTimePicker";
-import {addDateSVG, meditionSVG, paginationSVG, productoSVG, tirada2SVG} from "../../assets/svg/svgContents";
+import {StyleSheet, View, Text, TouchableOpacity} from 'react-native';
 import CustomTextInput from "../FormComponents/CustomTextInput";
 import {COLORS} from "../../assets/defaults/settingStyles";
 import {Formik} from "formik";
@@ -11,6 +9,7 @@ import CustomPicker from "../FormComponents/CustomPicker";
 import SvgComponent from "../SvgComponent";
 import {timeNow} from "../../utils";
 import {storeData} from "../../data/AsyncStorageFunctions";
+import {Picker} from '@react-native-picker/picker';
 
 const FormCardProduction = ({
                                 dataPickerAutopaster,

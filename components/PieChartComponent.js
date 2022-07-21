@@ -81,13 +81,7 @@ const PieChartComponent = ({data, title, textStyle, width}) => {
         <>
             <Text style={textStyle}>Datos globales de consumo {title}</Text>
             <View
-                style={{
-                    width: '100%',
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                    paddingTop: 5
-                }}>
+                style={styles.contButtons}>
                 <View style={{flexDirection: 'row'}}>
                     <RoundButtonBattery labels={['Ejemplares', 'Kilogramos']} getValue={getStateRoundeBtn}/>
                 </View>
@@ -120,6 +114,13 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#C2C2C2', ...shadowPlatform
     },
-    textFlip: {color: 'white', fontSize: 12, fontFamily: 'Anton'}
+    textFlip: {color: 'white', fontSize: 12, fontFamily: 'Anton'},
+    contButtons: {
+        width: '100%',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        paddingTop: 5
+    }
 });
 export default PieChartComponent;

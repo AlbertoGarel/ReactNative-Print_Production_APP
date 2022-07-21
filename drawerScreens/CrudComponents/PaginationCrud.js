@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {Alert, StyleSheet, View, Text, TouchableOpacity} from 'react-native';
+import {StyleSheet, View, Text, TouchableOpacity} from 'react-native';
 import {paginationByID, updatePaginationByID, insertPagination} from "../../dbCRUD/actionsSQL";
 import * as SQLite from "expo-sqlite";
 import * as Yup from "yup";
@@ -79,10 +79,8 @@ const PaginationCrud = ({props}) => {
                                 }
                             })
                             .catch(err => {
-                                showToast('Error al actualizar')
-                                console.log(err)
-                            })
-                        console.log(values.pagination + ' , ' + props.registerID)
+                                showToast('Error al actualizar');
+                            });
                     }
                     if (props.typeform === 'CREAR') {
                         //row order: paginationid(ai) = null, pagination
@@ -96,11 +94,9 @@ const PaginationCrud = ({props}) => {
                                 }
                             })
                             .catch(err => {
-                                showToast('Error al crear registro')
-                                console.log(err)
+                                showToast('Error al crear registro');
                             })
-                        PaginationForm.current?.resetForm()
-                        console.log(values.pagination)
+                        PaginationForm.current?.resetForm();
                     }
                 }}
             >

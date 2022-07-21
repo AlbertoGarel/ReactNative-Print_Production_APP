@@ -1,6 +1,6 @@
 import React from 'react';
 import {Text, TouchableOpacity} from 'react-native';
-import {COLORS} from "../../assets/defaults/settingStyles";
+import PropTypes from "prop-types";
 
 const RoundedButton = ({label, onPress}) => {
     return (
@@ -17,6 +17,11 @@ const RoundedButton = ({label, onPress}) => {
             </Text>
         </TouchableOpacity>
     );
+};
+
+RoundedButton.propTypes = {
+    label: PropTypes.string.isRequired,
+    onPress: PropTypes.func.isRequired,
 };
 
 export default RoundedButton;

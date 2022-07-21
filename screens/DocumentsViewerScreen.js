@@ -1,5 +1,15 @@
 import React, {useEffect, useState} from 'react';
-import {Dimensions, SafeAreaView, SectionList, StyleSheet, Text, View, Alert} from 'react-native';
+import {
+    Dimensions,
+    SafeAreaView,
+    SectionList,
+    StyleSheet,
+    Text,
+    View,
+    Alert,
+    TouchableOpacity,
+    ImageBackground,
+} from 'react-native';
 import {
     deleteFile,
     diskcapacity,
@@ -12,24 +22,23 @@ import SvgComponent from "../components/SvgComponent";
 import {
     closeWindowSVG,
     pdfSVG,
-    sendDataSmartPhoneSVG,
-    trashSVG,
-    viewFileSVG
 } from "../assets/svg/svgContents";
-import {COLORS, shadowPlatform} from "../assets/defaults/settingStyles";
+import {COLORS} from "../assets/defaults/settingStyles";
 import HRtag from "../components/HRtag";
 import TouchableIcon from "../components/TouchableIcon";
 import {WebView} from 'react-native-webview';
 import CapacityInfoDraggable from "../components/CapacityInfoDraggable";
 import {setValueForInput} from "../utils";
+import seeFile from "../assets/images/seeFile.png";
+import smartphone from "../assets/images/smartphone-sending.png";
+import trash from "../assets/images/trashRed.png";
 
-const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
+const elementListHeight = 34;
 
-const DocumentsViewerScreen = ({navigation, route}) => {
+const DocumentsViewerScreen = () => {
 
     const [spinner, setSpinner] = useState(true);
-    const [files, getFiles] = useState([]);
     const [dataSection, getDataSection] = useState([]);
     const [reload, getReload] = useState(false);
     const [totalCapacity, getTotalCapacity] = useState({});
@@ -47,7 +56,6 @@ const DocumentsViewerScreen = ({navigation, route}) => {
         readFolder()
             .then(response => {
                 if (isMounted) {
-                    getFiles(response);
                     getDataSection(group(response));
                     setSpinner(false);
                     getReload(false);
@@ -87,26 +95,33 @@ const DocumentsViewerScreen = ({navigation, route}) => {
                     onPress: () => null,
                     style: 'cancel',
                 },
-                {text: 'OK', onPress: () => deleteFile(title).then(() => getReload(true))},
+                {
+                    text: 'OK', onPress: () => {
+                        setSpinner(true);
+                        deleteFile(title).then(() => {
+                            getReload(true)
+                            setSpinner(false)
+                        })
+                    }
+                },
             ]);
     };
 
     const Item = ({title}) => (
         <View style={styles.item}>
             <View style={styles.contItem}>
-                <SvgComponent svgData={pdfSVG} svgHeight={20} svgWidth={20}/>
                 <Text style={styles.title}>{title.split('_')[1]}</Text>
             </View>
             <View style={styles.contItem}>
-                <TouchableIcon handlerOnPress={() => handlerViewPdf(title)} heightSVG={30}
-                               WidthSVG={30}
-                               svgName={viewFileSVG}
-                               touchableStyle={styles.touchableStyle}/>
-                <TouchableIcon handlerOnPress={() => sendFile(title)} heightSVG={30} WidthSVG={30}
-                               svgName={sendDataSmartPhoneSVG} touchableStyle={styles.touchableStyle}/>
-                <TouchableIcon handlerOnPress={() => handlerDelete(title)} heightSVG={30} WidthSVG={30}
-                               svgName={trashSVG}
-                               touchableStyle={styles.touchableStyle}/>
+                <TouchableOpacity onPress={() => handlerViewPdf(title)} touchableStyle={styles.touchableStyle}>
+                    <ImageBackground resizeMode="cover" source={seeFile} style={styles.iconBackground}/>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => sendFile(title)} touchableStyle={styles.touchableStyle}>
+                    <ImageBackground resizeMode="cover" source={smartphone} style={styles.iconBackground}/>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => handlerDelete(title)} touchableStyle={styles.touchableStyle}>
+                    <ImageBackground resizeMode="cover" source={trash} style={styles.iconBackground}/>
+                </TouchableOpacity>
             </View>
         </View>
     );
@@ -135,7 +150,12 @@ const DocumentsViewerScreen = ({navigation, route}) => {
         <SafeAreaView style={styles.container}>
             {Object.keys(totalCapacity).length > 0 && <CapacityInfoDraggable totalCapacity={totalCapacity}/>}
             <SectionList
-                extraData={reload}
+                initialNumToRender={20}
+                getItemLayout={(dataSection, index) => ({
+                    index,
+                    length: elementListHeight, // itemHeight is a placeholder for your amount
+                    offset: index * elementListHeight,
+                })}
                 stickySectionHeadersEnabled
                 ItemSeparatorComponent={() => <HRtag borderColor={'white'} borderWidth={2} margin={1}/>}
                 sections={dataSection}
@@ -145,7 +165,10 @@ const DocumentsViewerScreen = ({navigation, route}) => {
             />
             {viewPDFelement.length > 0 && viewPdfContainer && <View style={styles.contwebView}>
                 <View style={styles.buttonCloseCont}>
-                    <TouchableIcon handlerOnPress={() => setViewPdfContainer(!viewPdfContainer)} heightSVG={30}
+                    <TouchableIcon handlerOnPress={() => {
+                        setViewPdfContainer(!viewPdfContainer)
+                        setViewPDFelement('')
+                    }} heightSVG={30}
                                    WidthSVG={30}
                                    svgName={closeWindowSVG}
                                    touchableStyle={styles.touchableStyle}/>
@@ -165,13 +188,13 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: COLORS.white
-        // paddingTop: StatusBar.currentHeight,
     },
     item: {
         backgroundColor: COLORS.whitesmoke,
         padding: 5,
         flexDirection: 'row',
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
+        height: elementListHeight
     },
     header: {
         fontSize: 20,
@@ -221,6 +244,15 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
         backgroundColor: COLORS.primary + 90,
         padding: 3
+    },
+    iconBackground: {
+        display: 'flex',
+        flexDirection: 'row',
+        margin: 2,
+        width: 30,
+        height: 30,
+        marginHorizontal: 5,
     }
 })
+
 export default DocumentsViewerScreen;

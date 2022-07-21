@@ -3,6 +3,7 @@ import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {COLORS} from "../../assets/defaults/settingStyles";
 import SvgComponent from "../SvgComponent";
 import {deleteAll} from "../../assets/svg/svgContents";
+import PropTypes from 'prop-types';
 
 const ResetButtonForm = ({resetState_elementPrevProdction, _style}) => {
 
@@ -66,4 +67,10 @@ const styles = StyleSheet.create({
         textTransform: 'uppercase'
     }
 });
+
+ResetButtonForm.propTypes = {
+    resetState_elementPrevProdction: PropTypes.func,
+    _style: PropTypes.object,
+};
+
 export default ResetButtonForm;

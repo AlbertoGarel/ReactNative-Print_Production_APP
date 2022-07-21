@@ -27,7 +27,6 @@ const StackedBartChartComponent = ({data, width, textStyle}) => {
         let isMounted = true;
         if (data) {
             const grouped = data.sort((a, b) => Date.parse(b.fechaproduccion) - Date.parse(a.fechaproduccion)).reduce((acc, item, index) => {
-                // let day = item.fechaproduccion.slice(length - 2, length);
                 let mes = setValueForInput(item.fechaproduccion);
                 let year = item.fechaproduccion.slice(0, 4);
                 if (index === 0) {
@@ -122,14 +121,7 @@ const StackedBartChartComponent = ({data, width, textStyle}) => {
                             },
                         }}
                     />
-                    <View style={{
-                        width: width / 2,
-                        height: 'auto',
-                        backgroundColor: 'transparent',
-                        position: 'absolute',
-                        right: 10,
-                        borderRadius: 5
-                    }}>
+                    <View style={{...styles.contData, width: width / 2}}>
                         <View style={styles.centeredView}>
                             <Modal
                                 animationType="slide"
@@ -138,28 +130,13 @@ const StackedBartChartComponent = ({data, width, textStyle}) => {
                                 onRequestClose={() => handlerSelectedItem}
                             >
                                 <View style={styles.centeredView}>
-                                    <View style={[styles.modalView, {
-                                        width: width - 20,
-                                        maxHeight: 400,
-                                        overflow: 'hidden',
-                                        paddingVertical: 5
-                                    }]}>
-                                        <View style={{
-                                            width: '100%',
-                                            display: 'flex',
-                                            flexDirection: 'row',
-                                            justifyContent: 'flex-end',
-                                            alignItems: 'center'
-                                        }}>
+                                    <View style={[styles.modalView, {width: width - 20}]}>
+                                        <View style={styles.contTouchable}>
                                             <TouchableOpacity
                                                 style={[styles.buttonClose, styles.rowCenter]}
                                                 onPress={() => setModalVisible(!modalVisible)}
                                             >
-                                                <Text style={{
-                                                    fontSize: 12,
-                                                    fontFamily: 'Anton',
-                                                    marginRight: 5
-                                                }}>CERRAR</Text>
+                                                <Text style={styles.closetext}>CERRAR</Text>
                                                 <View style={[styles.viewX, styles.rowCenter]}>
                                                     <Text style={styles.textStyle}>X</Text>
                                                 </View>
@@ -233,6 +210,9 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     modalView: {
+        maxHeight: 400,
+        overflow: 'hidden',
+        paddingVertical: 5,
         backgroundColor: "white",
         borderRadius: 10,
         padding: 5,
@@ -302,6 +282,25 @@ const styles = StyleSheet.create({
     },
     textInfoColor2: {
         color: COLORS.whitesmoke
+    },
+    contData: {
+        height: 'auto',
+        backgroundColor: 'transparent',
+        position: 'absolute',
+        right: 10,
+        borderRadius: 5
+    },
+    contTouchable: {
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        alignItems: 'center'
+    },
+    closetext: {
+        fontSize: 12,
+        fontFamily: 'Anton',
+        marginRight: 5
     }
 })
 export default StackedBartChartComponent;

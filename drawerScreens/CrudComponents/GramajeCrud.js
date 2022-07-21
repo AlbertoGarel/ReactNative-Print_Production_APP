@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {Alert, StyleSheet, View, Text, TouchableOpacity} from 'react-native';
+import {StyleSheet, View, Text, TouchableOpacity} from 'react-native';
 import {gramajeByID, updategramajeByID, insertGramaje} from "../../dbCRUD/actionsSQL";
 import * as SQLite from "expo-sqlite";
 import * as Yup from "yup";
@@ -80,9 +80,7 @@ const GramajeCrud = ({props}) => {
                             })
                             .catch(err => {
                                 showToast('Error al actualizar')
-                                console.log(err)
                             })
-                        console.log(values.gramaje + ' , ' + props.registerID)
                     }
                     if (props.typeform === 'CREAR') {
                         // row order: gramajeID(ai) = null, gramaje
@@ -97,10 +95,8 @@ const GramajeCrud = ({props}) => {
                             })
                             .catch(err => {
                                 showToast('Error al crear registro')
-                                console.log(err)
                             })
                         gramajeForm.current?.resetForm()
-                        console.log(values.gramaje)
                     }
                 }}
             >
@@ -187,4 +183,5 @@ const styles = StyleSheet.create({
         color: COLORS.white
     }
 });
+
 export default GramajeCrud;

@@ -1,16 +1,16 @@
 import React from 'react';
-import {StyleSheet, View, Text, TouchableHighlight, Modal, Alert, TouchableOpacity, SafeAreaView} from 'react-native';
+import {StyleSheet, View, Text, TouchableHighlight, Modal} from 'react-native';
 import {COLORS} from "../../assets/defaults/settingStyles";
 import {Feather as Icon} from "@expo/vector-icons";
 import {LinearGradient} from "expo-linear-gradient";
 import BgComponent from "../../components/BackgroundComponent/BgComponent";
-import {logoNotText, semicircle2} from "../../assets/svg/svgContents";
+import {logoNotText} from "../../assets/svg/svgContents";
 import {Dimensions} from "react-native";
 
-const ModalCRUD = ({modal, _onPress, header, crud, form, typeForm}) => {
+const ModalCRUD = ({modal, _onPress, header, form, typeForm}) => {
 
-    const warningcolor = ["#4486b365", "#4486b365" , "#fff"];
-    const successcolor = ["#ff800065", "#ff800065" , "#fff"];
+    const warningcolor = ["#4486b365", "#4486b365", "#fff"];
+    const successcolor = ["#ff800065", "#ff800065", "#fff"];
     const windowHeight = Dimensions.get('window').height;
 
     //BACKGROUND PROP CONST
@@ -26,9 +26,6 @@ const ModalCRUD = ({modal, _onPress, header, crud, form, typeForm}) => {
             presentationStyle="overFullScreen"
             animationType="slide"
             visible={modal}
-            // onShow={() => {
-            //     Alert.alert('Modal has been opened.');
-            // }}
             onRequestClose={() => {
                 _onPress('REFRESHDATATABLE');
             }}
@@ -45,7 +42,6 @@ const ModalCRUD = ({modal, _onPress, header, crud, form, typeForm}) => {
             />
             <View style={{
                 flex: 1,
-                // backgroundColor: COLORS.colorSupportfiv + 70,
                 borderRadius: 10,
                 padding: 20,
             }}>
@@ -54,7 +50,7 @@ const ModalCRUD = ({modal, _onPress, header, crud, form, typeForm}) => {
                     form ?
                         form
                         :
-                        <Text>NAAAAADDAAAAAAA</Text>
+                        <Text>Sin contenido</Text>
                 }
                 {/*CLOSE BUTTON*/}
                 <TouchableHighlight
@@ -97,4 +93,5 @@ const styles = StyleSheet.create({
         opacity: 0.95
     }
 });
+
 export default ModalCRUD;

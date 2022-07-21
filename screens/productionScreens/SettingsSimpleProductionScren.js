@@ -1,10 +1,8 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {
-    Alert,
     View,
     Text,
     StyleSheet,
-    Button,
     SafeAreaView,
     TouchableOpacity,
     ScrollView,
@@ -14,12 +12,9 @@ import {
 import {useNavigation} from '@react-navigation/native';
 import SvgComponent from "../../components/SvgComponent";
 import {
-    configSVG,
-    editSVG,
     settingspaperSVG,
     paginationSVG,
     productoSVG,
-    papelComunSVG,
     tirada2SVG, addDateSVG
 } from "../../assets/svg/svgContents";
 import {COLORS} from "../../assets/defaults/settingStyles";
@@ -28,7 +23,7 @@ import {Formik} from "formik";
 import * as Yup from "yup";
 import {FormYupSchemas} from "../../components/FormComponents/YupSchemas";
 import {Fontisto as Icon} from "@expo/vector-icons";
-import {getDatas, removeValue, storeData} from "../../data/AsyncStorageFunctions";
+import {getDatas, storeData} from "../../data/AsyncStorageFunctions";
 import {Dimensions} from 'react-native';
 import BgComponent from "../../components/BackgroundComponent/BgComponent";
 import CustomDateTimePicker from "../../components/FormComponents/CustomDateTimePicker";
@@ -56,26 +51,17 @@ const SettingsSimpleProductionScreen = () => {
 
     const [selectedValuePaginacion, getSelectedPagination] = useState('');
     const [selectedValueProduct, getSelectedvalueProduct] = useState('');
-    // const [selectedTiradaBruta, getSelectedTiradaBruta] = useState(0);
     const [selectedCoeficiente, getSelectedCoeficiente] = useState('');
     const [selectedDate, getSelectedDate] = useState('');
 
     const SchemaElementCalTotalproduction = Yup.object().shape({
-        // inputTirBruta: FormYupSchemas.inputTirBruta,
         inputProduct: FormYupSchemas.whitespaceandchars,
-        // inputPagination: FormYupSchemas.pag,
         inputPagination: Yup.number().required('Requerido').test('inputPagination', 'Paginción errónea.',
             (value) => (value / 16) % 1 === 0 || ((value / 16) - .5) % 1 === 0
         ),
         inputCoef: FormYupSchemas.medVal,
         inputDate: FormYupSchemas.dateReg
-    })
-
-    useEffect(() => {
-        // getDatas('@simpleProdData')
-        //     .then(r => getObjSaved([...r]))
-        //     .catch(err=>console.log(err))
-    }, [])
+    });
 
     const navigation = useNavigation();
 
@@ -102,9 +88,7 @@ const SettingsSimpleProductionScreen = () => {
                     .then(r => bottomToast('Guardando...'))
                     .catch(err => bottomToast('error al guardar...'))
             })
-            .catch(err => {
-                // Alert.alert('error')
-                // removeValue('@simpleProdData').then(r => console.log(''))
+            .catch(() => {
                 obj.orderID = 0
                 getSaveObject = [obj];
                 storeData('@simpleProdData', getSaveObject)
@@ -456,4 +440,5 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     }
 });
+
 export default SettingsSimpleProductionScreen;

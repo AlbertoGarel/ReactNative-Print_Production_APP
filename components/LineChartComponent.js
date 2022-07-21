@@ -45,30 +45,16 @@ const LineChartComponent = ({data, textStyle}) => {
     return (
         <View>
             <View style={styles.viewInputSelect}>
-                <View style={{width: '100%', justifyContent: 'flex-start', alignItems: 'center'}}>
+                <View style={styles.textContainer}>
                     <Text style={[textStyle, styles.text]}>Ejemplares Efectivos y Nulos por mes.</Text>
                 </View>
-                <View style={{
-                    width: '100%',
-                    flexDirection: 'row',
-                    flexWrap: 'wrap',
-                    justifyContent: 'space-evenly',
-                    alignItems: 'center'
-                }}>
+                <View style={styles.parentButtons}>
                     <RoundButtonBattery getValue={handlervalueLineChart} labels={['estandar', 'todos']}/>
-                    <View style={{
-                        width: '48%',
-                        borderWidth: 1,
-                        borderColor: COLORS.white,
-                        margin: 3,
-                        borderRadius: 5,
-                    }}>
+                    <View style={styles.contPicker}>
                         {formatDataState.length > 0 ? <CustomPicker
-                                // ref={ProductoRef}
                                 mode="dialog"
                                 prompt={'Escoge una opción'}
                                 style={{
-                                    // borderWidth: .5,
                                     borderColor: COLORS.black,
                                     backgroundColor: 'transparent',
                                     borderWidth: 2
@@ -147,25 +133,9 @@ const LineChartComponent = ({data, textStyle}) => {
                             return tooltipPos.visible ? (
                                 <ForeignObject x={tooltipPos.x} y={tooltipPos.y}>
                                     <View
-                                        style={{
-                                            width: 70,
-                                            flexDirection: 'row',
-                                            backgroundColor: 'white',
-                                            borderTopRightRadius: 10,
-                                            borderBottomRightRadius: 10,
-                                            borderBottomLeftRadius: 10,
-                                            borderWidth: 2,
-                                            borderColor: '#aaa',
-                                            display: 'flex',
-                                            justifyContent: 'center'
-                                        }}>
+                                        style={styles.decorator}>
                                         <Text
-                                            style={{
-                                                color: 'black',
-                                                fontSize: 16,
-                                                fontWeight: 'bold',
-                                                textAlign: 'center'
-                                            }}>
+                                            style={styles.textDecorator}>
                                             {tooltipPos.value}
                                         </Text>
                                     </View>
@@ -206,7 +176,7 @@ const styles = StyleSheet.create({
         flexWrap: "wrap",
         justifyContent: 'space-evenly',
         alignItems: 'center',
-        overflow: 'hidden',
+        overflow: 'hidden'
     },
     text: {
         flexWrap: "wrap"
@@ -232,6 +202,43 @@ const styles = StyleSheet.create({
     },
     color2: {
         color: '#fafafa'
+    },
+    textContainer: {
+        width: '100%',
+        justifyContent: 'flex-start',
+        alignItems: 'center'
+    },
+    parentButtons: {
+        width: '100%',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-evenly',
+        alignItems: 'center'
+    },
+    contPicker: {
+        width: '48%',
+        borderWidth: 1,
+        borderColor: COLORS.white,
+        margin: 3,
+        borderRadius: 5,
+    },
+    decorator: {
+        width: 70,
+        flexDirection: 'row',
+        backgroundColor: 'white',
+        borderTopRightRadius: 10,
+        borderBottomRightRadius: 10,
+        borderBottomLeftRadius: 10,
+        borderWidth: 2,
+        borderColor: '#aaa',
+        display: 'flex',
+        justifyContent: 'center'
+    },
+    textDecorator: {
+        color: 'black',
+        fontSize: 16,
+        fontWeight: 'bold',
+        textAlign: 'center'
     }
 });
 export default LineChartComponent;
@@ -245,11 +252,11 @@ const getDataForChart = (formattedPropsData, pickerVal, valNumButton = 0) => {
             ObjectData.data2.push(item.ejemplares);
         }
     });
-    //
+
     ObjectData.labels.reverse();
     ObjectData.data1.reverse();
     ObjectData.data2.reverse();
-    //
+
     if (valNumButton === 0 && ObjectData.labels.length > 7) {
         ObjectData.labels = ObjectData.labels.slice(ObjectData.labels.length - 7, ObjectData.labels.length);
         ObjectData.data1 = ObjectData.data1.slice(ObjectData.labels.length - 7, ObjectData.labels.length);

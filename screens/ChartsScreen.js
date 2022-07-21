@@ -129,7 +129,7 @@ const ChartsScreen = () => {
         if (active === newIndex) {
             animationActive = true;
         }
-        if (active != newIndex && animationActive) {
+        if (active !== newIndex && animationActive) {
             setActive(newIndex)
         }
     }
@@ -194,7 +194,8 @@ const ChartsScreen = () => {
                                             bottom: 0,
                                             borderRadius: 16,
                                         }}/>
-                                        <PieChartComponent data={item.data} title={item.title} textStyle={styles.titlegraf} width={width}/>
+                                        <PieChartComponent data={item.data} title={item.title}
+                                                           textStyle={styles.titlegraf} width={width}/>
                                     </View>
                                     <View style={styles.cont2} {...panResponderON.panHandlers}>
                                         <LinearGradient colors={['#fb8c00', '#ffa726']} style={{
@@ -205,7 +206,8 @@ const ChartsScreen = () => {
                                             bottom: 0,
                                             borderRadius: 16,
                                         }}/>
-                                        <StackedBartChartComponent data={item.data} width={width} textStyle={styles.titlegraf}/>
+                                        <StackedBartChartComponent data={item.data} width={width}
+                                                                   textStyle={styles.titlegraf}/>
                                     </View>
                                     <View style={styles.cont3} {...panResponderOFF.panHandlers}>
                                         <LinearGradient colors={['#ffa726', '#fb8c00']} style={{
@@ -303,45 +305,3 @@ const styles = StyleSheet.create({
     }
 })
 export default ChartsScreen;
-
-//                 <ScrollView horizontal={true}>
-//                     <ContributionGraph
-//                         squareSize={20}
-//                         gutterSize={5}
-//                         showMonthLabels={true}
-//                         // showOutOfRangeDays={false}
-//                         onDayPress={(value) => console.log(value)}
-//                         values={[
-//                             {date: "2017-01-02", count: 1},
-//                             {date: "2017-01-03", count: 2},
-//                             {date: "2017-01-04", count: 3},
-//                             {date: "2017-01-05", count: 4},
-//                             {date: "2017-01-06", count: 5},
-//                             {date: "2017-01-30", count: 2},
-//                             {date: "2017-01-31", count: 3},
-//                             {date: "2017-03-01", count: 2},
-//                             {date: "2017-04-02", count: 4},
-//                             {date: "2017-03-05", count: 2},
-//                             {date: "2017-02-30", count: 4},
-//                             {date: "2017-04-30", count: 4},
-//                             {date: "2017-05-30", count: 4},
-//                             {date: "2017-06-30", count: 4},
-//                             {date: "2017-07-30", count: 4},
-//                             {date: "2017-08-30", count: 4},
-//                             {date: "2017-09-30", count: 4},
-//                             {date: "2017-10-30", count: 4},
-//                             {date: "2017-11-30", count: 4},
-//                             {date: "2017-12-30", count: 4},
-//                         ]}
-//                         endDate={new Date("2017-12-31")}
-//                         numDays={365}
-//                         width={115 * 12}
-//                         height={250}
-//                         chartConfig={{
-//                             backgroundColor: "#e26a00",
-//                             backgroundGradientFrom: "#fb8c00",
-//                             backgroundGradientTo: "#ffa726",
-//                             color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-//                         }}
-//                     />
-//                 </ScrollView>

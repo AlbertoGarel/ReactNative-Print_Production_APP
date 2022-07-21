@@ -57,7 +57,6 @@ const TableViewwCommonScreen = ({props}) => {
                         modal={modal}
                         disable={props.disable}
                         typeform={props.typeform}
-                        // deleteByID={deleteByID}
                     />
                 </View>
                 <ModalCRUD
@@ -79,7 +78,6 @@ const styles = StyleSheet.create({
         paddingLeft: 10,
         paddingRight: 10,
         paddingBottom: 10,
-
     },
     image: {
         flex: 1,

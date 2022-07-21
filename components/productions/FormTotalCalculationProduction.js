@@ -36,7 +36,7 @@ const FormTotalCalculationProduction = ({
     }, [renderNowItem, objsaved]);
 
     const totalTirada = (coefVal, paginVal, consumptionVal) => {
-        if (!isNaN(consumptionVal) && consumptionVal > 0 ) {
+        if (!isNaN(consumptionVal) && consumptionVal > 0) {
             let result = coefVal * paginVal * consumptionVal;
             getCalculationConsumptionTirada(result);
             getInputTiradaError(false);
@@ -107,16 +107,7 @@ const FormTotalCalculationProduction = ({
                 </View>
             </View>
             <View style={styles.parentForm}>
-                <View style={{
-                    backgroundColor: COLORS.white,
-                    borderWidth: 2,
-                    borderColor: COLORS.primary,
-                    borderRadius: 70,
-                    marginTop: -40,
-                    marginBottom: 10,
-                    alignSelf: 'center',
-                    elevation: 12
-                }}>
+                <View style={styles.subparentForm}>
                     <Image
                         style={[styles.image, {backgroundColor: 'transparent'}]}
                         source={require('../../assets/images/splash/Logo_AlbertoGarel.png')}
@@ -182,10 +173,19 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         overflow: 'hidden',
     },
+    subparentForm: {
+        backgroundColor: COLORS.white,
+        borderWidth: 2,
+        borderColor: COLORS.primary,
+        borderRadius: 70,
+        marginTop: -40,
+        marginBottom: 10,
+        alignSelf: 'center',
+        elevation: 12
+    },
     image: {
         width: 50,
         height: 50,
-        // position: 'absolute',
     },
     title: {
         color: '#696969',

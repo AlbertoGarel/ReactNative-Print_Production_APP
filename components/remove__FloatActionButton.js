@@ -3,12 +3,11 @@ import {Dimensions, StyleSheet, TouchableOpacity, View} from "react-native";
 import {Feather as Icon} from "@expo/vector-icons";
 import {COLORS} from '../assets/defaults/settingStyles';
 
-const FloatActionButton = ({
+const Remove__FloatActionButton = ({
                                iconName,
                                iconSize,
                                iconColor,
-                               bgColor,
-                               heightCalc
+                               bgColor
                            }) => {
 
     return (
@@ -41,10 +40,10 @@ const styles = StyleSheet.create({
     }
 })
 
-export default FloatActionButton;
+export default Remove__FloatActionButton;
 
 // EXAMPLE FOR USE
-// <FloatActionButton
+// <Remove__FloatActionButton
 //     iconName={"settings"}
 //     iconSize={40}
 //     iconColor={COLORS.white}

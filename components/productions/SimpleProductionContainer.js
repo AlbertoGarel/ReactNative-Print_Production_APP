@@ -149,7 +149,6 @@ const SimpleProductionContainer = ({
                         </View>
                         <TouchableOpacity
                             onPress={() => handlerEditCard('', true)}
-                            // onPress={() => Alert.alert('hecho')}
                         >
                             <View style={{
                                 width: 50,
@@ -192,7 +191,6 @@ const SimpleProductionContainer = ({
                                 display: 'flex',
                                 flexDirection: 'row',
                                 justifyContent: 'space-around',
-                                // paddingBottom: 15
                             }}>
                                 <Text style={{color: 'black', fontFamily: 'Anton', fontSize: 15}}>Paginación: <Text
                                     style={{color: 'white', fontSize: 18}}>{productToRender.pagination}</Text></Text>
@@ -201,7 +199,6 @@ const SimpleProductionContainer = ({
                             </View>
                             <Extrainfo
                                 productToRender={productToRender}
-                                getProductToRender={getProductToRender}
                                 updateGetStorage={updateGetStorage}
                             />
                         </>

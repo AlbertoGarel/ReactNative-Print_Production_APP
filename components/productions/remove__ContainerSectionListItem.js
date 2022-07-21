@@ -7,6 +7,8 @@ import {genericTransaction, genericUpdatefunction} from "../../dbCRUD/actionsFun
 import FullCardProduction from "./FullCardProduction";
 import {cautionSVG, icon360SVG} from "../../assets/svg/svgContents";
 import SvgComponent from "../SvgComponent";
+import PropTypes from "prop-types";
+import BgComponent from "../BackgroundComponent/BgComponent";
 
 //[codigoBobinaFK, productionFK]
 const innerBobinaTableAndProductData =
@@ -16,7 +18,7 @@ const innerBobinaTableAndProductData =
      AND autopasters_prod_data.bobina_fk = bobina_table.codigo_bobina
      `;
 
-const ContainerSectionListItem = ({
+const Remove__ContainerSectionListItem = ({
                                       item,
                                       itemData,
                                       setStateForRadius,
@@ -177,4 +179,10 @@ const styles = StyleSheet.create({
         // textDecorationLine: 'underline'
     }
 })
-export default ContainerSectionListItem;
+
+Remove__ContainerSectionListItem.propTypes = {
+    svgOptions: PropTypes.object.isRequired,
+    styleOptions: PropTypes.object.isRequired,
+};
+
+export default Remove__ContainerSectionListItem;

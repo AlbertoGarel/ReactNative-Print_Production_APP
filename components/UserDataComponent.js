@@ -10,7 +10,6 @@ import {getDatas, storeData} from "../data/AsyncStorageFunctions";
 
 const UserDataComponent = ({props}) => {
 
-    const UserNameRef = useRef();
     const UserDataFormRef = useRef();
 
     const [userNameState, setUserNameState] = useState('');
@@ -58,11 +57,13 @@ const UserDataComponent = ({props}) => {
                         enterprise: values.enterprisename,
                         email: values.email
                     })
-                        .then(store => {
+                        .then(() => {
                             props.showToast('guardando...');
                         })
                         .catch(err => {
-                            console.log(err)
+                            if (__DEV__) {
+                                console.log(err)
+                            }
                         })
                 }}
             >
@@ -78,7 +79,6 @@ const UserDataComponent = ({props}) => {
                     <>
                         <View style={{
                             width: Dimensions.get('window').width - 20,
-                            // backgroundColor: 'red',
                             paddingTop: 10,
                             paddingBottom: 10,
                         }}>
@@ -87,7 +87,6 @@ const UserDataComponent = ({props}) => {
                                 style={styles.stylErrors}>{errors.username}</Text>
                             }
                             <CustomTextInput
-                                // _ref={UserNameRef}
                                 svgData={userSVG}
                                 svgWidth={50}
                                 svgHeight={50}
@@ -104,7 +103,6 @@ const UserDataComponent = ({props}) => {
                                 style={styles.stylErrors}>{errors.enterprisename}</Text>
                             }
                             <CustomTextInput
-                                // _ref={UserNameRef}
                                 svgData={enterpriseSVG}
                                 svgWidth={50}
                                 svgHeight={50}
@@ -121,7 +119,6 @@ const UserDataComponent = ({props}) => {
                                 style={styles.stylErrors}>{errors.email}</Text>
                             }
                             <CustomTextInput
-                                // _ref={UserNameRef}
                                 svgData={emailSVG}
                                 svgWidth={45}
                                 svgHeight={45}
@@ -134,19 +131,7 @@ const UserDataComponent = ({props}) => {
                                 _defaultValue={values.email}
                             />
                             <TouchableOpacity
-                                style={{
-                                    width: 100,
-                                    height: 50,
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    backgroundColor: COLORS.colorSupportfiv,
-                                    borderRadius: 5,
-                                    borderWidth: 2,
-                                    borderColor: COLORS.white,
-                                    alignSelf: 'flex-end',
-                                    margin: 5,
-                                    opacity: !isValid ? .1 : 1
-                                }}
+                                style={{...styles.touchable, opacity: !isValid ? .1 : 1}}
                                 color="#841584"
                                 accessibilityLabel="calcular resultado de bobina"
                                 onPress={handleSubmit}
@@ -155,15 +140,7 @@ const UserDataComponent = ({props}) => {
                             >
                                 <Text style={{color: COLORS.white, fontFamily: 'Anton', fontSize: 20}}>Guardar</Text>
                             </TouchableOpacity>
-                            <Text style={{
-                                paddingLeft: 5,
-                                paddingRight: 5,
-                                borderRadius: 5,
-                                backgroundColor: '#ffffff',
-                                color: COLORS.warning,
-                                fontFamily: 'Anton',
-                                alignSelf: 'flex-start'
-                            }}>* Datos
+                            <Text style={styles.textStorage}>* Datos
                                 almacenados en
                                 local.</Text>
                         </View>
@@ -178,7 +155,7 @@ const styles = StyleSheet.create({
     text: {
         color: 'green'
     },
-    stylErrors:{
+    stylErrors: {
         alignSelf: 'center',
         // borderRadius: 5,
         width: '95%',
@@ -186,6 +163,27 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         color: 'red',
         paddingLeft: 10
+    },
+    touchable: {
+        width: 100,
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: COLORS.colorSupportfiv,
+        borderRadius: 5,
+        borderWidth: 2,
+        borderColor: COLORS.white,
+        alignSelf: 'flex-end',
+        margin: 5,
+    },
+    textStorage: {
+        paddingLeft: 5,
+        paddingRight: 5,
+        borderRadius: 5,
+        backgroundColor: '#ffffff',
+        color: COLORS.warning,
+        fontFamily: 'Anton',
+        alignSelf: 'flex-start'
     }
 });
 

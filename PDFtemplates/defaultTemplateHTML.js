@@ -74,9 +74,9 @@ const htmlDefaultTemplate = (dataProduction, dataUserAndEnterprise, prodResult, 
           <div id="cardRightRow" class="column">
             <div id="cardCode" class="centerCenter border pad3">`
 
-            e.codepathSVG.length > 0 ?
+            e.codepathSVG.length ?
                 cardsToString += `<div class="centerColumn" style="overflow: hidden"><svg style="width: 100%; height: 40px" viewBox="0 0 200 20" fill="#000000">
-                    <path d="${e.codepathSVG}" />
+                    <path style="transform: scaleX(4)" d="${e.codepathSVG}" />
                 </svg>
                 <p style="text-align: center; font-size: 20px">${e.codigo_bobina}</p></div>`
                 :

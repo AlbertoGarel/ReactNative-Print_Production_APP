@@ -46,9 +46,10 @@ const SplashScreen = () => {
             </View>
             <Animated.Image // Special animatable View
                 style={{
+                    resizeMode: 'contain',
                     opacity: fadeAnim, // Bind opacity to animated value
                     width: screenWidth,
-                    height: 300,
+                    height: screenHeight / 2,
                 }}
                 source={require('../assets/images/splash/logo_PrintingAPP.png')}
             />

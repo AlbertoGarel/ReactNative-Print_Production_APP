@@ -5,10 +5,7 @@ import {COLORS} from "../assets/defaults/settingStyles";
 
 const MultipleSwitchSelector = ({
                                     label_values,
-                                    title,
                                     handler,
-                                    textColor,
-                                    buttonColor
                                 }) => {
 
     return (
@@ -20,7 +17,6 @@ const MultipleSwitchSelector = ({
                             textColor={COLORS.primary}
                             buttonColor={COLORS.primary}
             />
-
         </View>
     );
 };
@@ -39,4 +35,5 @@ const styles = StyleSheet.create({
         textShadowRadius: 1
     }
 });
+
 export default MultipleSwitchSelector;

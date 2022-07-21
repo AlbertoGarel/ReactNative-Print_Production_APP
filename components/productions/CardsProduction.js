@@ -62,7 +62,7 @@ const CardsProduction = ({item, updateGetStorage, productToRenderId, handlerEdit
 
                 thisProduct[0].cards = [...restDataCards, ...thisDataCards];
                 const allItems = [...restOfproducts, ...thisProduct];
-                storeData('@simpleProdData', allItems).then(r => console.log(r));
+                storeData('@simpleProdData', allItems).then(r => console.log('stored'));
                 updateGetStorage();
             } else {
                 db.transaction(tx => {
@@ -79,14 +79,14 @@ const CardsProduction = ({item, updateGetStorage, productToRenderId, handlerEdit
 
                                 thisProduct[0].cards = [...restDataCards, ...thisDataCards];
                                 const allItems = [...restOfproducts, ...thisProduct];
-                                storeData('@simpleProdData', allItems).then(r => console.log(r));
+                                storeData('@simpleProdData', allItems).then(r => console.log('transaction', r));
                                 updateGetStorage();
                             } else {
                                 console.log('(elementCalcBobina)Error al conectar base de datos en IndividualCalculation Component');
                             }
                         }
                     );
-                });
+                }, err => console.log(error));
             }
             //next code
         })
@@ -122,8 +122,8 @@ const CardsProduction = ({item, updateGetStorage, productToRenderId, handlerEdit
             fontFamily: 'Anton'
         },
         name: 'id',
-        _onChangeText: text => paperRollConsummption(text, setStateRadius),
-        _onBlur: () => calcPaperRollConsummption(radiusState, item.id),
+        _onChangeText: text => setStateRadius(paperRollConsummption(text)),
+        _onEndEditing: () => calcPaperRollConsummption(radiusState, item.id),
         _value: radiusState.toString(),
         _defaultValue: radiusState.toString()
     };

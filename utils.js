@@ -1,14 +1,48 @@
 import {Alert} from "react-native";
 import {genericTransaction, genericUpdatefunction, genericUpdateFunctionConfirm} from "./dbCRUD/actionsFunctionsCrud";
-import * as SQLite from "expo-sqlite";
-import {autopaster_prod_data_insert, autopasters_prod_table_by_production} from "./dbCRUD/actionsSQL";
+import {autopaster_prod_data_insert, dataProductSelectedAllInfo} from "./dbCRUD/actionsSQL";
+import * as MailComposer from 'expo-mail-composer';
 
-const db = SQLite.openDatabase('bobinas.db');
+// SQL SENTENCES FOR UTILS FUNCTIONS
+const autopasters_prod_data_update =
+    `UPDATE autopasters_prod_data
+    SET bobina_fk = ?, resto_previsto = ?
+    WHERE production_fk = ? AND autopaster_fk = ?;`
+;
+const select_all_rolls_by_production_and_autopaster =
+    `SELECT * FROM autopasters_prod_data
+     INNER JOIN bobina_table ON bobina_table.codigo_bobina = autopasters_prod_data.bobina_fk
+     WHERE autopasters_prod_data.production_fk = ?
+     AND autopasters_prod_data.autopaster_fk = ?
+     `
+;
+const insertReplace =
+    `INSERT OR REPLACE INTO bobina_table (codigo_bobina, peso_ini, peso_actual, radio_actual, papel_comun_fk, autopaster_fk, gramaje_fk, media, codeType)
+     VALUES (?,?,?,?,?,?,?,?,?)`
+;
+const UPDATE_PROMISES_ALL =
+    `UPDATE autopasters_prod_data SET
+     position_roll = ?, resto_previsto = ?
+     WHERE production_fk = ? AND bobina_fk = ?;`
+;
+
+/**
+ *   hour : minutes : seconds : milliseconds
+ *
+ *   @return hour, minutes, seconds, and milliseconds
+ *
+ **/
 export const timeNow = () => {
     let now = new Date();
     return now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds() + '.' + now.getMilliseconds();
 };
 
+/**
+ *   year / month / day
+ *
+ *   @return year, month and day
+ *
+ **/
 export const formatDateYYMMDD = () => {
     let date = new Date()
 
@@ -23,44 +57,69 @@ export const formatDateYYMMDD = () => {
     }
 }
 
-export const paperRollConsummption = (radius, _setState) => {
+/**
+ *   year / month / day
+ *
+ *   @return year, month and day
+ *
+ **/
+export const paperRollConsummption = (radius) => {
     let defradius = 0;
     let char = radius.charAt(radius.length - 1);
+
     if (isNaN(radius)) {
-        // let char = radius.charAt(radius.length - 1);
-        let deleteBadChar = radius.split(char, radius.length - 1)[0];
+        let deleteBadChar = radius.substr(char, radius.length - 1);
         if (deleteBadChar === undefined) {
             defradius = '';
         } else {
             defradius = deleteBadChar;
         }
-        Alert.alert('introduce caracter numérico o punto para decimales.');
+        Alert.alert('introduce caracter numérico.');
     } else {
+        if (radius < 0) {
+            defradius = null
+        }
         if (radius > 60) {
             defradius = radius.charAt(radius.length);
         } else {
-            defradius = radius;
+            defradius = Math.round(radius);
         }
     }
-    // _setState(defradius);
     return defradius
 }
 
+/**
+ *  integer for full roll or float for 1/2 roll
+ *
+ *  @return integer or float.
+ *
+ *  @param pagination: integer (pagination value)
+ *
+ **/
 export const numberOfAutopasters = (pagination) => {
     return Math.round(pagination / 16);
 };
 
+/**
+ *  Identifies if autopaster is for 1/2 roll or full roll.
+ *
+ *  @return javascript object {media: , entera: }.
+ *
+ *  @param num: integer (pagination value)
+ *
+ **/
 export const identifyAutopasters = (num) => {
-    const whithMedia = num / 16
+    const whithMedia = num / 16;
     if (whithMedia % 1 === 0) {
-        //asignará autopasters según preferencia sin incluir el definido como media
+        //Assign autopasters according to preference without including the one defined as average
         return {media: 0, entera: whithMedia}
     } else if (whithMedia % 1 === .5) {
-        //asignará autopasters según preferencia incluyendo el definido como media
+        //Assign autopasters according to preference including the one defined as average
         // value 1 for media and defAutopasters - .5 for calc 'entera'.
         return {media: 1, entera: whithMedia - .5}
     }
 };
+
 /**
  *  Calculate weight and copies.
  *
@@ -73,24 +132,19 @@ export const identifyAutopasters = (num) => {
  *  @param pesoBob: integer (weight roll)
  *  @param coef: integer (coefficient for roll radius)
  *
- * */
+ */
 export const individualProvidedWeightRollProduction = (numProd, pesoBob, coef) => {
     const returnObject = {rollweight: 0, copies: 0};
-    console.log('---------------- params ---------------', `numprod:${numProd} * pesoBob:${pesoBob} * coef:${coef}`)
-    // const res = Math.round((pesoBob / coef) - numProd); REPASAR CÁLCULOS....
     const res = Math.round((pesoBob / coef) - numProd);
-    console.log('----------------res ---------------', res)
+
     if (res > 0) {
         returnObject.rollweight = Math.round(pesoBob - (numProd * coef));
         returnObject.copies = Math.round((pesoBob - (numProd * coef)) / coef);
-        console.log('-------res > 0 ----------', returnObject)
     } else {
         const calcWeight = Math.round(Math.abs(res) * coef);
-        const calcEjem = Math.round(calcWeight / coef);
-        returnObject.copies = calcEjem;
-        console.log('-------res < 0 ----------', returnObject)
+        returnObject.copies = Math.round(calcWeight / coef);
     }
-    console.log('----------------------------------aaa--------------------------------------------------------', returnObject)
+
     return returnObject;
 };
 
@@ -102,37 +156,36 @@ export const individualProvidedWeightRollProduction = (numProd, pesoBob, coef) =
  *  @param meditionStyle: javascript object {}
  *  @param foundRoll: javascript object {}
  *
- * */
+ */
 export const searchCoefTypeRoll = (meditionStyle, foundRoll) => {
-    //media === 0 (widthwhole roll) / media === 1 (width half roll)
-    const selectedCoef = foundRoll.media ? meditionStyle.media_value : meditionStyle.full_value;
-    return selectedCoef;
+    return foundRoll.media ? meditionStyle.media_value : meditionStyle.full_value;
 };
+
 /**
  *  Group items with same key value.
  *
  *  @return grouped javascript object.
  *
  *  @param arrayToGroup: array javascript object {}
- *  @param key: string of key.
+ *  @param objKey: string of key.
  *
- * */
+ */
 export const groupBy = (arrayToGroup, objKey) => {
-    //Creamos un nuevo objeto donde vamos a almacenar por autopasters.
+    //We create a new object where we are going to store by autopasters.
     let nuevoObjeto = {}
-    //Recorremos el arreglo
+    //We go through the arrangement
     arrayToGroup.forEach(x => {
-        //Si el autopaster no existe en nuevoObjeto entonces
-        //lo creamos e inicializamos el arreglo de autopasters.
+        //If the autopaster does not exist in newObject then we create it and initialize the autopaster arrangement.
         if (!nuevoObjeto.hasOwnProperty(x[objKey])) {
             nuevoObjeto[x[objKey]] = []
         }
 
-        //Agregamos los datos de las bobinas registradas en autopasters.
+        //We aggregate the data of the coils recorded in autopasters.
         nuevoObjeto[x[objKey]].push(x);
     });
     return nuevoObjeto;
 };
+
 /**
  *  Sum the values of a chosen key common to all of them. .
  *
@@ -141,10 +194,11 @@ export const groupBy = (arrayToGroup, objKey) => {
  *  @param arrObject: array javaScript object {}
  *  @param objKey: string of key.
  *
- * */
+ */
 export const calcValues = (arrObject, objKey) => {
     return arrObject.reduce((acc, sec) => acc + sec[objKey], 0);
 }
+
 /**
  *  Extracts the number of kilos of barcode type 128
  *
@@ -152,10 +206,11 @@ export const calcValues = (arrObject, objKey) => {
  *
  *  @param data: integer
  *
- * */
+ */
 export const OriginalWeight = (data) => {
     return Math.abs((data).toString().substring(8, 12))
 };
+
 /**
  *  orders rolls and calculates kilos consumed of each one
  *
@@ -166,19 +221,32 @@ export const OriginalWeight = (data) => {
  *  @param gramajeValues: javaScript object {}
  *  @param productionID: integer
  *
- * */
+ */
 export const CalcPrevConsKilosRollsAutopaster = (arrObjects, tiradaTotal, gramajeValues, productionID) => {
-    //2º Ordenar de menor a mayor los que quedan por posición y recalcular kilos previsto.
+    //Order from lowest to highest those that remain by position and recalculate kilos planned.
     const orderedItems = arrObjects.sort((a, b) => a.position - b.position);
-    //3º calcular kilos consumidos por cada uno y asignar posición.
+    //Calculate kilos consumed by each one and assign position.
     let isMedia = orderedItems[0].ismedia ? gramajeValues.media : gramajeValues.entera;
     let kilosPrev = Math.round(tiradaTotal * isMedia);
-    // alert(kilosPrev)
     let updatedItems = [];
     let calc_kilosPrev = kilosPrev;
+
     orderedItems.forEach((item, index) => {
+        let kilos = null;
         let indice = index + 1;
-        let kilos = calc_kilosPrev > item.peso_actual ? 0 : Math.abs(calc_kilosPrev - item.peso_actual);
+
+        if (item.rest_antProd !== null) {
+            kilos = calc_kilosPrev > item.rest_antProd ? 0 : Math.abs(calc_kilosPrev - item.rest_antProd);
+            calc_kilosPrev = calc_kilosPrev >= 0 && calc_kilosPrev >= item.rest_antProd
+                ? calc_kilosPrev - item.rest_antProd
+                : 0
+        } else {
+            kilos = calc_kilosPrev > item.peso_actual ? 0 : Math.abs(calc_kilosPrev - item.peso_actual);
+            calc_kilosPrev = calc_kilosPrev >= 0 && calc_kilosPrev >= item.peso_actual
+                ? calc_kilosPrev - item.peso_actual
+                : 0
+        }
+
         updatedItems.push([
                 indice,
                 kilos,
@@ -188,22 +256,24 @@ export const CalcPrevConsKilosRollsAutopaster = (arrObjects, tiradaTotal, gramaj
         );
         item.position_roll = index + 1;
         item.resto_previsto = kilos;
-        calc_kilosPrev = calc_kilosPrev >= 0 && calc_kilosPrev >= item.peso_actual
-            ? calc_kilosPrev - item.peso_actual
-            : 0
     });
+
     const kilosNeededState = orderedItems.reduce((acc, i) => {
-        // return acc + i.peso_actual
-        acc = acc + i.peso_actual;
+        if (i.rest_antProd !== null) {
+            acc = acc + i.rest_antProd;
+        } else {
+            acc = acc + i.peso_actual;
+        }
         return acc - kilosPrev
-    }, 0)
-    console.log('-------------------r------------r--------------r-----------r-', updatedItems)
+    }, 0);
+
     return {
         updatedItemsForPromises: updatedItems,
         updatedItemsForSection: orderedItems,
         kilosNeedeState: kilosNeededState
     };
-}
+};
+
 /**
  *  set string name barcode type for BBDD row.
  *
@@ -211,7 +281,7 @@ export const CalcPrevConsKilosRollsAutopaster = (arrObjects, tiradaTotal, gramaj
  *
  *  @param type: string / integer (barcodeType scanned)
  *
- * */
+ */
 export const typeBarcodeFilter = (type) => {
     switch (type) {
         case 128:
@@ -259,6 +329,14 @@ export const typeBarcodeFilter = (type) => {
     }
 }
 
+/**
+ *  return month.
+ *
+ *  @return string month.
+ *
+ *  @param date: string ("yy-mm-dd")
+ *
+ */
 export const setValueForInput = (date) => {
     let sub = '';
     if (date.includes('-')) {
@@ -298,6 +376,14 @@ export const setValueForInput = (date) => {
     }
 }
 
+/**
+ *  Create and grouped string dates ("month year").
+ *
+ *  @return array of javascript objects.
+ *
+ *  @param arr: array of dates.
+ *
+ */
 export const setFormatDAta = async (arr) => {
     try {
         const newData = await arr.reduce((acc, item) => {
@@ -317,6 +403,7 @@ export const setFormatDAta = async (arr) => {
         alert('fallo en getLabels')
     }
 };
+
 /**
  *  Compare two arrays.
  *
@@ -325,7 +412,7 @@ export const setFormatDAta = async (arr) => {
  *
  * @return true/false type: boolean
  *
- * */
+ */
 export const arrayEquals = (a, b) => {
     return Array.isArray(a) &&
         Array.isArray(b) &&
@@ -334,8 +421,16 @@ export const arrayEquals = (a, b) => {
         a.every((val, index) => val === b[index]);
 }
 
-export async function groupedAutopasters(data) {
-    console.log('---------------------------groupedautopasters----------------------------------', data)
+/**
+ *  Groups rolls by ayutopaster, calculates existing kilos by autopaster and updates predictions in database.
+ *
+ * @param data type: array of elements.
+ * @param production_id type: integer.
+ *
+ * @return true/false type: boolean
+ *
+ */
+export async function groupedAutopasters(data, production_id) {
     const innerBobinaTableAndProductData =
         `SELECT * FROM autopasters_prod_data
      INNER JOIN bobina_table ON bobina_table.codigo_bobina = ?
@@ -347,9 +442,10 @@ export async function groupedAutopasters(data) {
         SELECT a.resto_previsto AS 'rest_antProd' FROM autopasters_prod_data a
      INNER JOIN bobina_table ON bobina_table.codigo_bobina = ?
      WHERE a.production_fk < ?
-     AND a.bobina_fk = bobina_table.codigo_bobina ORDER BY a.production_fk ASC LIMIT 1        
+     AND a.bobina_fk = bobina_table.codigo_bobina ORDER BY a.production_fk DESC LIMIT 1        
         `
     try {
+        const prodData = await genericTransaction(dataProductSelectedAllInfo, [production_id]);
         const extraData = {
             toSend: false,
             weightEnd: null,
@@ -358,64 +454,60 @@ export async function groupedAutopasters(data) {
         }
         const groupedForSectionList = data.reduce(async (acc, item) => {
             acc = await acc;
-            let f = await genericTransaction(innerBobinaTableAndProductData, [item.bobina_fk ? item.bobina_fk : 0, item.production_fk])
-            let last = await genericTransaction(selectLastRestoPrev, [item.bobina_fk ? item.bobina_fk : 0, item.production_fk])
-            f = {...f, rest_antProd: last.length > 0 ? last[0].rest_antProd : null}
+            // check if roll exists in autopaster
+            let rollInDatabase = await genericTransaction(innerBobinaTableAndProductData, [item.bobina_fk ? item.bobina_fk : 0, item.production_fk])
+            if (rollInDatabase.length) {
+                // if exist, add rest_andProd value
+                let last = await genericTransaction(selectLastRestoPrev, [item.bobina_fk ? item.bobina_fk : 0, item.production_fk])
+                rollInDatabase[0].rest_antProd = last.length > 0 ? last[0].rest_antProd : null;
+            }
+            // if it exists, we add item with extradata. If it doesn't exist just extradata.
             acc[item.autopaster_fk] ?
-                acc[item.autopaster_fk]['data'].push({...f[0], ...extraData})
+                acc[item.autopaster_fk]['data'].push(rollInDatabase.length ? {...rollInDatabase[0], ...extraData} : extraData)
                 :
                 acc[item.autopaster_fk] = {
                     title: item.autopaster_fk,
-                    data: [{...f[0], ...extraData}]
-                };
-            acc[item.autopaster_fk].data.sort((a, b) => a.position_roll - b.position_roll);
+                    data: rollInDatabase.length ? [{...rollInDatabase[0], ...extraData}] : [extraData]
+                }
+
+            if (rollInDatabase.length) {
+                //if exist, calculate weight.
+                const calc = await CalcPrevConsKilosRollsAutopaster(
+                    acc[item.autopaster_fk].data,
+                    (prodData[0].tirada + prodData[0].nulls),
+                    {media: prodData[0].media_value, entera: prodData[0].full_value},
+                    production_id
+                );
+
+                acc[item.autopaster_fk].data = [...calc.updatedItemsForSection];
+                // update items in BBDD.
+                let promisesALLforUpdateItems = [];
+                calc.updatedItemsForPromises.forEach(i => {
+                    promisesALLforUpdateItems.push(genericUpdateFunctionConfirm(UPDATE_PROMISES_ALL, i));
+                })
+                await Promise.all(promisesALLforUpdateItems)
+            }
             return acc;
         }, {});
+
         return Object.values(await groupedForSectionList);
     } catch (err) {
         console.log(err)
     }
-};
+}
 
-export const callToSetData = (arrBobinasID, productionID) => {
-    // let dataForStatePromise = [];
-    // try {
-
-    if (!arrBobinasID === null) {
-//[codigoBobinaFK, productionFK]
-        const innerBobinaTableAndProductData =
-            `SELECT * FROM autopasters_prod_data
-     INNER JOIN bobina_table ON bobina_table.codigo_bobina = ?
-     WHERE autopasters_prod_data.production_fk = ?
-     AND autopasters_prod_data.bobina_fk = bobina_table.codigo_bobina
-     `;
-        return genericTransaction(innerBobinaTableAndProductData, [arrBobinasID, productionID])
-        // .then(response => {
-        //     return {
-        //         ...response[0],
-        //         autopaster: response[0].autopaster_fk,
-        //         bobinaID: response[0].bobina_fk || 0,
-        //         radiusIni: response[0].radio_actual,
-        //         radius: '',
-        //         weightIni: response[0].peso_ini,
-        //         weightAct: response[0].peso_actual,
-        //         weightEnd: null,
-        //         ismedia: response[0].media,
-        //         toSend: false,
-        //         position: response[0].position_roll,
-        //     }
-        // })
-    } else {
-        return ''
-    }
-    // } catch (e) {
-    //     console.log(e)
-    // }
-};
-
-export async function searchItems(autopasterID, sectionListState) {
-    try {
-        return await sectionListState.reduce((acc, item) => {
+/**
+ *  search roll in production.
+ *
+ * @param autopasterID type: integer.
+ * @param sectionListState type: array of grouped production javascript object.
+ *
+ * @return javascript object ({toUpdate: element, others: other elements of production})
+ *
+ */
+export function searchItems(autopasterID, sectionListState) {
+    return new Promise((resolve, reject) => {
+        const reducer = sectionListState.reduce((acc, item) => {
             if (item.title === autopasterID) {
                 acc.toUpdate = item
             } else {
@@ -423,11 +515,20 @@ export async function searchItems(autopasterID, sectionListState) {
             }
             return acc;
         }, {toUpdate: '', others: ''});
-    } catch (err) {
-        console.log(err)
-    }
+        resolve(reducer);
+    })
 };
 
+/**
+ *  Delete roll in production.
+ *
+ * @param response type: javsacript object ({toUpdate: element, others: other elements of production})
+ * @param rollID type: integer.
+ * @param productionData type: array of grouped production javascript object.
+ *
+ * @return javascript object {updateItemsForSectionList: sectionList data [{data: [], title: integer}] , updateKilosNeededState: {data: kg, title: autopaster_ID}})
+ *
+ */
 export async function deleteItem(response, rollID, productionData) {
     const DELETE_ItemFromAutopasterSQL =
         `DELETE FROM autopasters_prod_data
@@ -435,10 +536,6 @@ export async function deleteItem(response, rollID, productionData) {
     const UPDATE_ItemFromAutopasterSQL =
         `UPDATE autopasters_prod_data SET
         bobina_fk = ?, resto_previsto = ?
-        WHERE production_fk = ? AND bobina_fk = ?;`;
-    const UPDATE_PROMISES_ALL =
-        `UPDATE autopasters_prod_data SET
-        position_roll = ?, resto_previsto = ?
         WHERE production_fk = ? AND bobina_fk = ?;`;
     try {
         const {toUpdate, others} = await response;
@@ -481,129 +578,154 @@ export async function deleteItem(response, rollID, productionData) {
                 data: forPromisesAllforUpdate.updatedItemsForSection,
                 title: forPromisesAllforUpdate.updatedItemsForSection[0].autopaster_fk
             };
-            // updateKilosNeededState = forPromisesAllforUpdate.kilosNeedeState.reduce((acc, i) => acc + i.peso_actual, 0);
             updateKilosNeededState = forPromisesAllforUpdate.kilosNeedeState
-            // updatedItemsForPromises: updatedItems,
-            //     updatedItemsForSection: [...orderedItems],
-            //     kilosNeedeState: kilosNeededState
         }
-        return await genericTransaction(...paramsAction)
+        return await genericUpdateFunctionConfirm(...paramsAction)
             .then(rowsAffected => {
+                alert(rowsAffected)
                 if (rowsAffected === 1 && updatedGroup.data > 1) {
-                    return Promise.all(...promisesALLforUpdateItems)
+                    return Promise.all(promisesALLforUpdateItems)
                 }
                 if (rowsAffected === 1 && updatedGroup.data === 1) {
                     return true
                 }
             })
             .then(() => {
-                // [...others, updatedGroup].sort((a, b) => a.title - b.title)
-                console.log('updateItemsForSectionListupdateItemsForSectionListupdateItemsForSectionListupdateItemsForSectionList', updateItemsForSectionList)
                 return {
                     updateItemsForSectionList: [...others, updateItemsForSectionList].sort((a, b) => a.title - b.title),
                     updateKilosNeededState: updateKilosNeededState
                 }
             })
-            .catch(err => console.log(err))
     } catch (err) {
-        console.log(err)
+        console.log('in utils', err)
     }
 };
 
-// //UPDATE ROLL STATE FOR SEND DATA TO DDBB.
-export async function updatedataRollState(rollID, radiusState, items, maxRadiusValue, coefficientDDBB) {
-    if (radiusState > maxRadiusValue) {
-        Alert.alert('¡¡Error!!', `El radio máximo registrado en base de datos es ${maxRadiusValue} cm. Has introducido ${radiusState}.`
-        );
-        items.toUpdate.data[0].radiusEnd = '';
-        items.toUpdate.data[0].weightEnd = '';
-        items.toUpdate.data[0].toSend = false;
-        return {
-            sectionListUpdate: [...items.others, items.toUpdate].sort((a, b) => a.title - b.title),
-            initCalc: false
-        };
-    } else if (radiusState === '' || radiusState === ' ' || isNaN(radiusState)) {
-        Alert.alert(`Introduce un valor para realizar el cálculo.`);
-        // throw error;
-        items.toUpdate.data[0].radiusEnd = '';
-        items.toUpdate.data[0].weightEnd = '';
-        items.toUpdate.data[0].toSend = false;
-        return {
-            sectionListUpdate: [...items.others, items.toUpdate].sort((a, b) => a.title - b.title),
-            initCalc: false
-        };
-    } else {
-        const itemToUpdate = items.toUpdate.data.filter(i => i.bobina_fk === rollID);
-        // if initial radius (new roll) is null, set max value for radius.
-        const radiusNull = itemToUpdate[0].radio_actual ? itemToUpdate[0].radio_actual : maxRadiusValue;
-        // ITEM DATA DEFAULT.
-        let end_weight = itemToUpdate[0].weightEnd;
-        let end_radius = itemToUpdate[0].radiusEnd;
-        let to_send = false;
-        // if (parseInt(radiusState) === 0 || radiusState === '' || radiusState === ' ') {
-        if (parseInt(radiusState) === 0) {
-            if (end_weight > itemToUpdate[0].peso_actual) {
-                Alert.alert(`Error al introducir radio de bobina.`);
-                end_radius = '';
-                end_weight = '';
-                to_send = false;
-            } else {
-                end_radius = 0;
-                end_weight = 0;
-                to_send = true;
-            }
+/**
+ *  To update roll in production and data base and return boolean for initiate production calculate.
+ *
+ * @param rollID type: integer.
+ * @param radiusState type: integer
+ * @param items type: javascript object (roll element).
+ * @param maxRadiusValue type: integer.
+ * @param coefficientDDBB type: integer || float.
+ * @param kilosNeeded type: array javascript object {sutopaster_id: integer, kilosNeeded: positive integer || negative integer}
+ *
+ * @return javascript object {sectionListUpdate: sectionList data [{ data: [], title: integer}] , initCalc: boolean })
+ *
+ */
+export function updatedataRollState(rollID, radiusState, items, maxRadiusValue, coefficientDDBB, kilosNeeded) {
+    return new Promise((resolve, reject) => {
+        if (radiusState > maxRadiusValue) {
+            Alert.alert('¡¡Error!!', `El radio máximo registrado en base de datos es ${maxRadiusValue} cm. Has introducido ${radiusState}.`
+            );
+            items.toUpdate.data[0].radiusEnd = '';
+            items.toUpdate.data[0].weightEnd = '';
+            items.toUpdate.data[0].toSend = false;
+            resolve({
+                sectionListUpdate: [...items.others, items.toUpdate].sort((a, b) => a.title - b.title),
+                initCalc: false
+            })
+        } else if (radiusState === '' || radiusState === ' ' || isNaN(radiusState)) {
+            Alert.alert(`Introduce un valor para realizar el cálculo.`);
+            items.toUpdate.data[0].radiusEnd = '';
+            items.toUpdate.data[0].weightEnd = '';
+            items.toUpdate.data[0].toSend = false;
+            resolve({
+                sectionListUpdate: [...items.others, items.toUpdate].sort((a, b) => a.title - b.title),
+                initCalc: false
+            })
         } else {
-            //SELECT COEFFICIENT
-            const coef = coefficientDDBB.filter(item => item.medida === parseInt(radiusState));
-            //calculate data for state
-            //update state
-            //THAT'S RIGHT
-            end_radius = radiusState;
-            to_send = true;
-            end_weight = Math.round(coef[0].coeficiente_value * itemToUpdate[0].peso_ini);
-            if (end_weight > itemToUpdate[0].peso_actual ||
-                radiusState > radiusNull) {
-                //IF THE INITIAL WEIGHT IS LESS THAN THE CALCULATED WEIGHT OR
-                // THE FINAL WEIGHT CALCULATION BY MEANS OF YOUR RADIO RESULTS
-                // TO BE LESS THAN YOUR INITIAL WEIGHT RETURN NULL.
-                Alert.alert('¡¡Error!!', `Último radio conocido en ${radiusNull} cm. Has introducido ${radiusState} y excede del peso real de la bobina. Comprueba que has medido correctamente.`)
-                end_radius = '';
-                end_weight = null;
-                to_send = false;
+            const itemToUpdate = items.toUpdate.data.filter(i => i.bobina_fk === rollID);
+            // if initial radius (new roll) is null, set max value for radius.
+            const radiusNull = itemToUpdate[0].radio_actual ? itemToUpdate[0].radio_actual : maxRadiusValue;
+            // ITEM DATA DEFAULT.
+            let end_weight = itemToUpdate[0].weightEnd;
+            let end_radius = itemToUpdate[0].radiusEnd;
+            let to_send = false;
+
+            if (parseInt(radiusState) === 0) {
+                if (end_weight > itemToUpdate[0].peso_actual) {
+                    Alert.alert(`Error al introducir radio de bobina.`);
+                    end_radius = '';
+                    end_weight = '';
+                    to_send = false;
+                } else {
+                    end_radius = 0;
+                    end_weight = 0;
+                    to_send = true;
+                }
+            } else {
+                //SELECT COEFFICIENT
+                const coef = coefficientDDBB.filter(item => item.medida === parseInt(radiusState));
+                //calculate data for state
+                //update state
+                //THAT'S RIGHT
+                end_radius = radiusState;
+                to_send = true;
+                end_weight = Math.round(coef[0].coeficiente_value * itemToUpdate[0].peso_ini);
+                if (end_weight > itemToUpdate[0].peso_actual ||
+                    radiusState > radiusNull) {
+                    //IF THE INITIAL WEIGHT IS LESS THAN THE CALCULATED WEIGHT OR
+                    // THE FINAL WEIGHT CALCULATION BY MEANS OF YOUR RADIO RESULTS
+                    // TO BE LESS THAN YOUR INITIAL WEIGHT RETURN NULL.
+                    Alert.alert('¡¡Error!!', `Último radio conocido en ${radiusNull} cm. Has introducido ${radiusState} y excede del peso real de la bobina. Comprueba que has medido correctamente.`)
+                    end_radius = '';
+                    end_weight = null;
+                    to_send = false;
+                }
             }
+
+            const updateLoop = items.toUpdate.data.reduce((acc, item) => {
+                acc.data = item.bobina_fk === rollID
+                    ? [
+                        ...acc.data,
+                        {
+                            ...item,
+                            radiusEnd: end_radius, toSend: to_send, weightEnd: end_weight
+                        }]
+                    : [...acc.data, item]
+                return acc;
+            }, {data: [], title: items.toUpdate.title});
+
+            const toReturn = [...items.others, updateLoop].sort((a, b) => a.title - b.title);
+            const validforcalc = validForCalc(toReturn, kilosNeeded)
+
+            resolve({sectionListUpdate: toReturn, initCalc: validforcalc});
         }
+    })
+}
 
-        const updateLoop = items.toUpdate.data.reduce((acc, item) => {
-            acc.data = item.bobina_fk === rollID
-                ? [
-                    ...acc.data,
-                    {
-                        ...item,
-                        radiusEnd: end_radius, toSend: to_send, weightEnd: end_weight
-                    }]
-                : [...acc.data, item]
-            return acc;
-        }, {data: [], title: items.toUpdate.title});
-        // console.log('itemmmmm ', updateLoop)
-        // console.log('itemmmmm others', items.others)
-        const toReturn = [...items.others, updateLoop].sort((a, b) => a.title - b.title);
-        const validforcalc = validForCalc(toReturn)
-
-        return {sectionListUpdate: toReturn, initCalc: validforcalc};
-    }
-};
-
-export function validForCalc(arrItems) {
+/**
+ *  Checks whether conditions for calculating production results are met.
+ *
+ *  @params arrItems type: array sectionList for data.
+ *  @params kilosNeeded type: array of calculation of current kilograms by autopaster.
+ *
+ *  @returns type: boolean
+ */
+export function validForCalc(arrItems, kilosNeeded) {
     const values = [];
     arrItems.forEach(item => {
         item.data.forEach(i => {
             values.push(i.toSend);
         })
     })
-    return values.every(value => value === true);
+    const negativeValues = kilosNeeded.find(element => element.kilosNeeded < 0)
+    return values.every(value => value === true) && !negativeValues;
 };
 
-//CHECK IF THERE IS A ROLL IN THE PRODUCTION TABLE AND THE REEL TABLE TO ADD IN THIS PRODUCTION.
+/**
+ *  Scan barcode and determine if it exists in the database or is a new record. ADD ROLL IN PRODUCTION.
+ *
+ *  @param scanned type: javascript object - {scannedCode, codeType}
+ *  @param autopasterID type: integer - autopaster id.
+ *  @param itemsState type: array - data array state of sectionList.
+ *  @param productionData type: javascript object - production data.
+ *  @param autopasterLineProdData type: array javascript object - production line data.
+ *
+ *  @returns type: array -
+ */
 export async function getScannedCode(scanned, autopasterID, itemsState, productionData, autopasterLineProdData) {
     try {
         let {scannedCode, codeType} = scanned;
@@ -611,10 +733,7 @@ export async function getScannedCode(scanned, autopasterID, itemsState, producti
             return alert('El valor numérico del código de barras no tiene el formato esperado de 16 cifras.')
         }
         scannedCode = parseInt(scannedCode);
-        // const registerDadataOfBBDD = autopasterLineProdData.filter(item => item.autopaster_id === autopasterID);
-        // let change_media_type = (productionData.paginacion_value / 16) % 1 === 0 ? 0 : 1;
-        console.log('autopasterLineProdData', autopasterLineProdData)
-        let change_media_type = autopasterLineProdData.filter(i=> i.autopaster_fk === autopasterID)[0].media_defined;
+        let change_media_type = autopasterLineProdData.filter(i => i.autopaster_fk === autopasterID)[0].media_defined;
         const existInProduction = await genericTransaction(
             "SELECT * FROM autopasters_prod_data WHERE production_fk = ? AND media_defined = ?",
             [productionData.produccion_id, change_media_type]
@@ -641,16 +760,14 @@ export async function getScannedCode(scanned, autopasterID, itemsState, producti
                 actualWeight: existInDDBB[0].peso_actual,
                 radius: existInDDBB[0].radio_actual,
                 commonRole: existInDDBB[0].papel_comun_fk,
-                autopaster: autopasterID,//change autopaster original for scanned
+                autopaster: autopasterID,
                 grama: existInDDBB[0].gramaje_fk,
                 isMedia: existInDDBB[0].media,
                 codeType: existInDDBB[0].codeType
             }
-            return [regNewRoll, actionBBDD, text];
         } else {
             text = `REGISTRO DE BOBINA:\n ¿ES NUEVA?`;
             const OrWeight = OriginalWeight(scannedCode);
-            const isMedia = change_media_type;
             regNewRoll = {
                 scanCode: scannedCode,
                 originalWeight: OrWeight,
@@ -659,54 +776,53 @@ export async function getScannedCode(scanned, autopasterID, itemsState, producti
                 commonRole: productionData.papel_comun_id,
                 autopaster: autopasterID,
                 grama: productionData.gramaje_id,
-                isMedia: isMedia,
+                isMedia: change_media_type,
                 codeType: codeType
-                // codeType: setCodeType // ADD ROW IN BBDD
             }
-            return [regNewRoll, actionBBDD, text];
         }
+        await reorganizeProduction(productionData, regNewRoll);
+        return [regNewRoll, actionBBDD, text];
     } catch (err) {
         console.log('error getScanned', err)
     }
-}
+};
 
-// //REGISTER NEW ROLL AND UPDATE EMPTY AUTOPASTER.
+/**
+ *  register new roll and update empty autopaster.
+ *
+ *  @params BobinaParams type: javascript object - roll data.
+ *  @params actionDDBB type: string - "insert" || "update"
+ *  @params itemsState type: array - data array state of sectionList.
+ *  @params prodData type: javascript object - production data.
+ *  @params kilosState type: array of calculation of current kilograms by autopaster.
+ *
+ *  @returns type: javascript object
+ */
 export async function registerNewBobina(BobinaParams, actionDDBB, itemsState, prodData, kilosState) {
-    const autopasters_prod_data_update =
-        `UPDATE autopasters_prod_data
-    SET bobina_fk = ?, resto_previsto = ?
-    WHERE production_fk = ? AND autopaster_fk = ?;`
-    ;
-    // const autopasters_prod_data_update =
-    //     `INSERT OR REPLACE INTO autopasters_prod_data (autopasters_prod_data_id, production_fk, autopaster_fk, bobina_fk, resto_previsto, media_defined, position_roll)
-    //     VALUES (?,?,?,?,?,?,?)`
-    // ;
     try {
         const de = await genericTransaction(
-            `SELECT * FROM autopasters_prod_data
-     INNER JOIN bobina_table ON bobina_table.codigo_bobina = autopasters_prod_data.bobina_fk
-     WHERE autopasters_prod_data.production_fk = ?
-     AND autopasters_prod_data.autopaster_fk = ?
-     `,
+            select_all_rolls_by_production_and_autopaster,
             [prodData.produccion_id, BobinaParams.autopaster,]
         )
-        // let getRollsAutopaster = autopastersDataProduction.filter(item => item.autopaster_fk === BobinaParams.autopaster);
         let getRollsAutopaster = await searchItems(BobinaParams.autopaster, itemsState);
         let maxPositionRoll = de.length > 0 ? de.sort((a, b) => b.position_roll - a.position_roll)[0].position_roll : 0;
         let finalPositionRoll = maxPositionRoll + 1;
         const values = Object.values(BobinaParams);
         let productionID = prodData.produccion_id;
         const AutopasterNum = BobinaParams.autopaster;
-        // const kilosNeededForAutopaster = ejemplaresToKilos(prodData.tirada, prodData.nulls, (BobinaParams.isMedia ? prodData.media_value : prodData.full_value))
         const kilosNeededForAutopaster = kilosState.filter(i => i.autopaster_id === AutopasterNum)
         // CALCULATE WEIGHT FOR NEW ROLL
-        let _restoPrevisto = kilosNeededForAutopaster[0].kilosNeeded >= 0 ? BobinaParams.actualWeight : BobinaParams.actualWeight - Math.abs(kilosNeededForAutopaster[0].kilosNeeded)
-        let restoPrevisto = _restoPrevisto <= 0 ? 0 : _restoPrevisto;
+        let _restoPrevisto = kilosNeededForAutopaster[0].kilosNeeded >= 0
+            ? BobinaParams.actualWeight
+            : BobinaParams.actualWeight - Math.abs(kilosNeededForAutopaster[0].kilosNeeded)
+        let restoPrevisto = _restoPrevisto <= 0 ? 0 : Math.round(_restoPrevisto);
+
         // CALCULATE WEIGHT FOR AUTOPASTER STATUS
         let total_kilos = {
             autopaster_id: AutopasterNum,
             kilosNeeded: BobinaParams.actualWeight - Math.abs(kilosNeededForAutopaster[0].kilosNeeded)
         };
+
         // UPDATE WEIGHT AUTOPASTER STATE
         const updateKilos = kilosState.map(i => {
             if (i.autopaster_id === AutopasterNum) {
@@ -715,27 +831,10 @@ export async function registerNewBobina(BobinaParams, actionDDBB, itemsState, pr
                 return i
             }
         })
-        const insertReplace =
-            `INSERT OR REPLACE INTO bobina_table (codigo_bobina, peso_ini, peso_actual, radio_actual, papel_comun_fk, autopaster_fk, gramaje_fk, media, codeType)
-     VALUES (?,?,?,?,?,?,?,?,?)`;
-        let toSend;
+
+        let toSend = null;
         if (actionDDBB === 'insert') {
-            alert('estamos en insert')
             toSend = await genericTransaction(insertReplace, values)
-                //     .then(response => {
-                //         console.log('response', response)
-                //         return [
-                //             null,
-                //             productionID,
-                //             BobinaParams.autopaster,
-                //             BobinaParams.scanCode,
-                //             restoPrevisto,
-                //             BobinaParams.isMedia,
-                //             finalPositionRoll,
-                //             // productionID,
-                //             // BobinaParams.autopaster,
-                //         ]
-                //     })
                 .then(() => genericTransaction(autopaster_prod_data_insert,
                     [
                         null,
@@ -745,16 +844,9 @@ export async function registerNewBobina(BobinaParams, actionDDBB, itemsState, pr
                         restoPrevisto,
                         BobinaParams.isMedia,
                         finalPositionRoll,
-                        // productionID,
-                        // BobinaParams.autopaster,
                     ]))
                 .then(() => genericTransaction(
-                    // `SELECT * FROM autopasters_prod_data WHERE production_fk = ? AND autopaster_fk = ?;`,
-                    `SELECT * FROM autopasters_prod_data
-                INNER JOIN bobina_table ON bobina_table.codigo_bobina = autopasters_prod_data.bobina_fk
-                WHERE autopasters_prod_data.production_fk = ?
-                AND autopasters_prod_data.autopaster_fk = ?;
-                `,
+                    select_all_rolls_by_production_and_autopaster,
                     [productionID, BobinaParams.autopaster]
                 ))
                 .then(response => {
@@ -764,7 +856,8 @@ export async function registerNewBobina(BobinaParams, actionDDBB, itemsState, pr
                             toSend: false,
                             weightEnd: null,
                             radiusEnd: '',
-                            codepathSVG: ''
+                            codepathSVG: '',
+                            rest_antProd: null
                         }
                     })
                     return [...getRollsAutopaster.others, {
@@ -773,26 +866,11 @@ export async function registerNewBobina(BobinaParams, actionDDBB, itemsState, pr
                     }].sort((a, b) => a.title - b.title)
                 })
                 .catch(error => console.log(error))
-            //     .then(() => {
-            //         // updateInfoForSectionList()
-            //         alert('insert')
-            //     })
-            //     .catch(err => console.log(err))
         }
         if (actionDDBB === 'update') {
-            alert('estamos en update<')
-            //evaluar si ya está en base de datos bobina_table
+            //evaluate if it exists in database bobbin_table
             toSend = await genericTransaction(insertReplace, values)
                 .then(() => {
-                    // genericUpdatefunction(autopasters_prod_data_update, [
-                    //     null,
-                    //     productionID,
-                    //     BobinaParams.autopaster,
-                    //     BobinaParams.scanCode,
-                    //     restoPrevisto,
-                    //     BobinaParams.isMedia,
-                    //     finalPositionRoll
-                    // ])
                     genericUpdatefunction(autopasters_prod_data_update, [
                         BobinaParams.scanCode,
                         restoPrevisto,
@@ -800,14 +878,8 @@ export async function registerNewBobina(BobinaParams, actionDDBB, itemsState, pr
                         AutopasterNum
                     ])
                 })
-                // .then(resp => console.log('posible breack', resp))
                 .then(() => genericTransaction(
-                    // `SELECT * FROM autopasters_prod_data WHERE production_fk = ? AND autopaster_fk = ?;`,
-                    `SELECT * FROM autopasters_prod_data
-                INNER JOIN bobina_table ON bobina_table.codigo_bobina = autopasters_prod_data.bobina_fk
-                WHERE autopasters_prod_data.production_fk = ?
-                AND autopasters_prod_data.autopaster_fk = ?;
-                `,
+                    select_all_rolls_by_production_and_autopaster,
                     [productionID, AutopasterNum]
                 ))
                 .then(response => {
@@ -817,7 +889,8 @@ export async function registerNewBobina(BobinaParams, actionDDBB, itemsState, pr
                             toSend: false,
                             weightEnd: null,
                             radiusEnd: '',
-                            codepathSVG: ''
+                            codepathSVG: '',
+                            rest_antProd: null
                         }
                     })
                     return [...getRollsAutopaster.others, {
@@ -829,40 +902,73 @@ export async function registerNewBobina(BobinaParams, actionDDBB, itemsState, pr
         }
         // RETURN ITEMS AND KILOSNEEDED FOR AUTOPASTER STATE.
         return {items: toSend, kilos: updateKilos}
-        // return genericTransaction(autopasters_prod_table_by_production, [productionID])
-        //     .then(response => groupedAutopasters(response))
     } catch (err) {
         console.log('error en registerNewBobina', err)
     }
 };
 
+/**
+ * Calculate kilos needed according to the number of copies
+ *
+ * @params tirada type: integer - num of copies
+ * @params nulls type: integer - num of null copies
+ * @params coefRoll type: float - measurement coefficient value
+ *
+ * @returns integer
+ * */
 export function ejemplaresToKilos(tirada, nulls, coefRoll) {
     return (tirada + nulls) * coefRoll
-}
+};
 
+/**
+ *  Calculates necessary and existing kilos in each autopaster.
+ *
+ *  @params itemsState type: array - data array state of sectionList.
+ *  @params prodData type: javascript object - production data.
+ *  @params autopastersData type: array - data array of autopasters line.
+ *
+ *  @returns array
+ * */
 export function kilosByAutopasterCalc(itemsState, prodData, autopastersData) {
-    console.log('kilosByAutopasterCalc', autopastersData)
-    console.log('itemsState', itemsState)
     return itemsState.map(item => {
         let existKey = false;
         let total = autopastersData.filter(i => i.autopaster_fk === item.title);
-        console.log('total', total)
         let _total = total[0].media_defined ? prodData.media_value : prodData.full_value;
+
         if ((prodData.paginacion_value / 16) % 1 === 0 && total[0].media_defined === 1) {
-            alert('es full')
             _total = prodData.full_value;
         }
-        // let _total = total[0].media ? prodData.media_value : prodData.full_value;
+
         if (item.data[0].bobina_fk) {
             existKey = true;
         }
+
         return {
             autopaster_id: item.title,
-            kilosNeeded: ((existKey ? item.data.reduce((acc, i) => acc + i.peso_actual, 0) : 0) - ((prodData.tirada + prodData.nulls) * _total))
+            kilosNeeded: ((existKey
+                    ? item.data.reduce((acc, i) => {
+                        if (i.rest_antProd !== null) {
+                            return acc + i.rest_antProd
+                        } else {
+                            return acc + i.peso_actual
+                        }
+                    }, 0)
+                    : 0
+            ) - Math.round((prodData.tirada + prodData.nulls) * _total))
         }
     });
 };
 
+/**
+ *  Calculates necessary and existing kilos in a single autopaster.
+ *
+ *  @async
+ *  @params autopasterID type: integer - autopaster id.
+ *  @params itemsTate type: array - data array state of sectionList.
+ *  @params prodData type: javascript object - production data.
+ *
+ *  @returns array javascript object
+ */
 export async function kilosInThisAutopasterCalc(autopasterID, itemsTate, prodData) {
     try {
         const searchedItems = await searchItems(autopasterID, itemsTate);
@@ -876,8 +982,14 @@ export async function kilosInThisAutopasterCalc(autopasterID, itemsTate, prodDat
     }
 };
 
+/**
+ *  Convert numeric content of array to string
+ *
+ *  @params myArray type: array
+ *
+ *  @returns array
+ */
 export function arrayNumbersToString(myArray) {
-    //For insert in BBDD
     let Arraystring = myArray[0].toString();
 
     for (let i = 1; i < myArray.length; i++) {
@@ -887,6 +999,13 @@ export function arrayNumbersToString(myArray) {
     return Arraystring
 }
 
+/**
+ *  count equal elements in array.
+ *
+ *  @params concatArrays type: array
+ *
+ *  @returns array;
+ * */
 export function countElements(concatArrays) {
     const countedItems = concatArrays.reduce((acc, item) => {
         acc[item]
@@ -895,16 +1014,25 @@ export function countElements(concatArrays) {
         return acc
     }, {})
     return [countedItems];
-}
+};
 
+/**
+ *  Selects most used autopasters according to pagination and product.
+ *
+ *  @params ProductionID type: integer - production id.
+ *  @params pagination type: integer - pagination.
+ *  @params statePagination type: array javscript object - all registers of pagination database.
+ *
+ *  @returns array
+ * */
 export function autopastersAutomaticSelection(ProductionID, pagination, statePagination) {
     const selectedProductionResult =
         `SELECT used_autopasters FROM productresults_table 
-LEFT JOIN producto_table
-ON producto_table.producto_id = productresults_table.nombre_producto
-LEFT JOIN paginacion_table 
-ON paginacion_table.paginacion_value = productresults_table.paginacion
-WHERE productresults_table.nombre_producto = ? AND paginacion_table.paginacion_id = ?;
+        LEFT JOIN producto_table
+        ON producto_table.producto_id = productresults_table.nombre_producto
+        LEFT JOIN paginacion_table 
+        ON paginacion_table.paginacion_value = productresults_table.paginacion
+        WHERE productresults_table.nombre_producto = ? AND paginacion_table.paginacion_id = ?;
     `;
     const paginationValue = statePagination.filter(i => i.paginacion_id === pagination)
     return genericTransaction(selectedProductionResult, [ProductionID, pagination])
@@ -923,12 +1051,17 @@ WHERE productresults_table.nombre_producto = ? AND paginacion_table.paginacion_i
                     autopasters.push(...Object.keys(i[1]))
                 }
             });
-            const autopastersToIntegers = autopasters.map(i => parseInt(i))
-            return autopastersToIntegers;
+            return autopasters.map(i => parseInt(i));
         })
         .catch(err => console.log('autopastersAutomaticSelection', err));
 }
 
+/**
+ *  Sets a maximum and minimum range to search for similar productions.
+ *
+ *  @params numEjemplares type: integer - num of copies.
+ *
+ * */
 export function rangeCopies(numEjemplares) {
     let obj = {
         min: 0,
@@ -942,4 +1075,86 @@ export function rangeCopies(numEjemplares) {
         obj.max = rounded + 1000;
     }
     return obj;
+};
+
+/**
+ *  Send email.
+ *
+ * @param options type: javascript object -  {
+                subject:  string,
+                recipients: array,
+                body: string,
+                isHTML: false,
+                attachments: [fileURI]
+            }
+ * @param nameFile type: string - file name
+ *
+ */
+export function handleEmail(options, nameFile) {
+    MailComposer.composeAsync(options)
+        .catch(() => new Error('emailError'))
+};
+
+/**
+ *  Update rolls for subsequent productions.
+ *
+ *  @params item type: javascript object - production data.
+ *  @params dataAddedRoll type: javascript object - roll data.
+ *
+ *  @returns Promise.all
+ * */
+export async function reorganizeProduction(item, dataAddedRoll) {
+    const searchAllNextSameProductions =
+        `SELECT * FROM produccion_table 
+        JOIN producto_table
+        ON producto_table.papel_comun_fk = ? AND produccion_table.produccion_id > ?`
+    ;
+    // produccion_id: get all rolls by production.
+    const getRollsByProduccionID =
+        `SELECT * FROM autopasters_prod_data WHERE production_fk = ? AND autopaster_fk = ? 
+        AND media_defined = ?;`
+    ;
+    try {
+        //get all next productions with the same owner.
+        const result = await genericTransaction(searchAllNextSameProductions, [item.papel_comun_id, item.produccion_id])
+
+        if (result.length > 0) {
+            let res = [];
+            result.forEach((item) => {
+                res.push(genericTransaction(
+                    getRollsByProduccionID,
+                    [item.produccion_id, dataAddedRoll.autopaster, dataAddedRoll.isMedia]
+                ))
+            }, []);
+            await Promise.all(res).then(response => {
+                let insertOrUpdatePromises = [];
+                response.forEach(item => {
+                    let existRoll = item.filter(i => i.autopaster_fk === dataAddedRoll.autopaster && i['bobina_fk']);
+
+                    if (existRoll.length > 0) {
+                        //insert
+                        const lastRoll = existRoll.sort((a, b) => b.position_roll - a.position_roll)[0];
+                        insertOrUpdatePromises.push(genericTransaction(
+                            autopaster_prod_data_insert,
+                            [null, lastRoll.production_fk, lastRoll.autopaster_fk, dataAddedRoll.scanCode, dataAddedRoll.actualWeight - lastRoll.resto_previsto, lastRoll.media_defined, lastRoll.position_roll + 1]
+                        ))
+                    } else {
+                        //update
+                        //calculate weight
+                        const weightAutopasterTotal = item.tirada + item.nulls;
+                        let weightPrev = dataAddedRoll.originalWeight > weightAutopasterTotal
+                            ? Math.round(dataAddedRoll.originalWeight - weightAutopasterTotal)
+                            : 0;
+                        insertOrUpdatePromises.push(genericTransaction(
+                            `UPDATE autopasters_prod_data SET bobina_fk = ?, resto_previsto = ?, autopaster_fk = ? WHERE autopasters_prod_data_id = ? `,
+                            [dataAddedRoll.scanCode, weightPrev, dataAddedRoll.autopaster, item.autopasters_prod_data_id]
+                        ))
+                    }
+                })
+            })
+        }
+    } catch (err) {
+        console.log(err)
+    }
+
 }

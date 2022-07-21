@@ -3,7 +3,7 @@ import Gallery from "react-native-image-gallery";
 import {View} from "react-native";
 import {COLORS} from "../assets/defaults/settingStyles";
 
-const Slider = ({
+const Remove__Slider = ({
                     sliderContParentStyles,
                     sliderContStyles,
                     arrItems,
@@ -42,4 +42,4 @@ const Slider = ({
     )
 }
 
-export default Slider;
+export default Remove__Slider;
