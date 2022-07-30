@@ -44,6 +44,7 @@ const FullCardProduction = ({
                                 confirmDelete,
                                 itemForSpinner,
                                 updatedataRollState,
+                                coefValues
                             }) => {
     const textTypeRoll = !media_defined ? 'Entera' : 'Media';
     let changeBackground = new_radius === '' ? '#ff000060' : '#ff850050';
@@ -173,7 +174,7 @@ const FullCardProduction = ({
                     <View style={[styles.contcode, styles.centerCenter, {padding: 5, height: 70, borderRadius: 5,}]}>
                         {peso_ini === peso_actual ?
                             <CustomBarcode
-                                format="CODE128"
+                                format="ITF"
                                 rollAutopaster={roll_autopaster}
                                 value={bobinaID.toString()}
                                 text={bobinaID.toString()}
@@ -217,6 +218,7 @@ const FullCardProduction = ({
                 />
             </View>
             <View style={{...styles.compsumptionAlert, backgroundColor: warningConsumption(restoPrevisto)}}>
+                <Text>{restoPrevisto > 0 ? Math.round(restoPrevisto / coefValues[textTypeRoll.toLowerCase()]) : 0} ejemplares</Text>
                 <Text style={styles.compsumptionAlertText}>Resto Previsto: {restoPrevisto} Kg</Text>
             </View>
         </View>
@@ -369,7 +371,8 @@ const styles = StyleSheet.create({
         width: '100%',
         height: 30,
         flexDirection: 'row',
-        justifyContent: 'flex-end',
+        // justifyContent: 'flex-end',
+        justifyContent: 'space-between',
         alignItems: 'center',
         padding: 5,
     },
@@ -377,7 +380,7 @@ const styles = StyleSheet.create({
         color: '#020202',
         textShadowColor: COLORS.white,
         textShadowOffset: {width: 0.5, height: 0.5},
-        textShadowRadius: 1
+        textShadowRadius: 1,
     }
 })
 

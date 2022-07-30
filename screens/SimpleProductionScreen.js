@@ -17,6 +17,7 @@ import FloatOpacityModal from "../components/FloatOpacityModal";
 import SimpleProductionContainer from "../components/productions/SimpleProductionContainer";
 import CreateCardProduction from "./productionScreens/CreateCardProduction";
 import FormTotalCalculationProduction from "../components/productions/FormTotalCalculationProduction";
+import {Sentry_Alert} from "../utils";
 
 const simpleProductionScreen = ({setChangeButtonFunc}) => {
 
@@ -138,14 +139,15 @@ const simpleProductionScreen = ({setChangeButtonFunc}) => {
     const updateGetStorage = () => {
         getDatas('@simpleProdData')
             .then(r => {
-                if (r) orderItems(r)
-
-                if (renderNowItem.length === 0 && r) {
-                    const order = r.sort((a, b) => a.orderID - b.orderID);
-                    setRenderNowItem(order[0].id);
+                if (r !== null) {
+                    orderItems(r)
+                    if (renderNowItem.length === 0 && r) {
+                        const order = r.sort((a, b) => a.orderID - b.orderID);
+                        setRenderNowItem(order[0].id);
+                    }
                 }
             })
-            .catch(err => console.log(err))
+            .catch(err => Sentry_Alert('simpleProductionScreen.js', 'getDatas - @simpleProdData', err))
     };
 
     // flatList and handlers
@@ -158,7 +160,9 @@ const simpleProductionScreen = ({setChangeButtonFunc}) => {
         } else {
             setRenderNowItem(result[0].id);
         }
-        storeData('@simpleProdData', result).then(() => orderItems(result));
+        storeData('@simpleProdData', result)
+            .then(() => orderItems(result))
+            .catch(err => Sentry_Alert('simpleProductionScreen.js', 'storeData - @simpleProdData', err));
         updateGetStorage();
     };
 

@@ -15,6 +15,7 @@ import ToastMesages from "../../components/ToastMessages";
 import ResetButtonForm from "../../components/FormComponents/ResetButtonForm";
 import {genericUpdatefunction, genericInsertFunction} from '../../dbCRUD/actionsFunctionsCrud';
 import {Picker} from '@react-native-picker/picker';
+import {Sentry_Alert} from "../../utils";
 
 const ProductosCrud = ({props}) => {
 
@@ -48,12 +49,10 @@ const ProductosCrud = ({props}) => {
                             setStateProductName(responsetObj[0].producto_name);
                             setStateCoefProdFk(responsetObj[0].cociente_total_fk);
                             setStatePapelCom(responsetObj[0].papel_comun_fk)
-                        } else {
-                            console.log('Error al conectar base de datos en IndividualCalculation Component');
                         }
                     }
                 );
-            });
+            }, err => Sentry_Alert('ProductosCrud.js', 'transaction - produtoByID', err));
         }
 
         //COEFICIENTE ALL REQUEST
@@ -64,12 +63,10 @@ const ProductosCrud = ({props}) => {
                 (_, {rows: {_array}}) => {
                     if (_array.length > 0) {
                         setCoeficienteDB(_array);
-                    } else {
-                        console.log('Error al conectar base de datos en IndividualCalculation Component');
                     }
                 }
             );
-        });
+        }, err => Sentry_Alert('ProductosCrud.js', 'transaction - pickerKBA', err));
 
         // ALL REQUEST
         db.transaction(tx => {
@@ -79,12 +76,10 @@ const ProductosCrud = ({props}) => {
                 (_, {rows: {_array}}) => {
                     if (_array.length > 0) {
                         setPapelComDB(_array);
-                    } else {
-                        console.log('Error al conectar base de datos en IndividualCalculation Component');
                     }
                 }
             );
-        });
+        }, err => Sentry_Alert('ProductosCrud.js', 'transaction - pickerPapelcomun', err));
 
         return () => isActive = false;
     }, []);

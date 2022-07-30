@@ -30,6 +30,7 @@ import {FormYupSchemas} from '../components/FormComponents/YupSchemas';
 import * as Yup from "yup";
 import CustomPicker from "../components/FormComponents/CustomPicker";
 import {Picker} from '@react-native-picker/picker';
+import {Sentry_Alert} from "../utils";
 
 
 const IndividualCalculation = () => {
@@ -90,12 +91,10 @@ const IndividualCalculation = () => {
                 (_, {rows: {_array}}) => {
                     if (_array.length > 0) {
                         getSelectedInputRadio(_array[0].coeficiente_value);
-                    } else {
-                        console.log('(elementCalcBobina)Error al conectar base de datos en IndividualCalculation Component');
                     }
                 }
             );
-        });
+        }, err => Sentry_Alert('IndividualCalculation.js', 'coeficienteSearchValue', err));
     };
 
     const [paginacionDataDB, getPaginationDataDB] = useState([]);
@@ -106,7 +105,7 @@ const IndividualCalculation = () => {
     const [resultElementCalTotalproduction, setResultElementCalTotalproduction] = useState(0);
 
     const switchValues = [
-        {label: 'Prevision de kilogramos', value: 1},
+        {label: 'Previsión de kilogramos', value: 1},
         {label: 'Bobina', value: 2},
         {label: 'Total producción', value: 3}
     ];
@@ -126,12 +125,10 @@ const IndividualCalculation = () => {
                 (_, {rows: {_array}}) => {
                     if (_array.length > 0) {
                         getMeasurementDataDB(_array);
-                    } else {
-                        console.log('Error al conectar base de datos en IndividualCalculation Component');
                     }
                 }
             );
-        });
+        }, err => Sentry_Alert('IndividualCalculation.js', 'transaction - picker_medition_style', err));
 
         db.transaction(tx => {
             tx.executeSql(
@@ -140,12 +137,10 @@ const IndividualCalculation = () => {
                 (_, {rows: {_array}}) => {
                     if (_array.length > 0) {
                         getPaginationDataDB(_array);
-                    } else {
-                        console.log('Error al conectar base de datos en IndividualCalculation Component');
                     }
                 }
             );
-        });
+        }, err => Sentry_Alert('IndividualCalculation.js', 'transaction - picker_pagination', err));
 
         db.transaction(tx => {
             tx.executeSql(
@@ -154,12 +149,10 @@ const IndividualCalculation = () => {
                 (_, {rows: {_array}}) => {
                     if (_array.length > 0) {
                         getProductoDataDB(_array);
-                    } else {
-                        console.log('(Producto_table) Error al conectar base de datos en IndividualCalculation Component');
                     }
                 }
             );
-        });
+        }, err => Sentry_Alert('IndividualCalculation.js', 'transaction - picker_producto', err));
 
         return () => {
             isActive = false;
@@ -221,7 +214,7 @@ const IndividualCalculation = () => {
         return (
             <>
                 <View style={styles.contTitle}>
-                    <Text style={styles.titles}>PREVISION KG PRODUCCIÓN</Text>
+                    <Text style={styles.titles}>PREVISIÓN KG PRODUCCIÓN</Text>
                 </View>
                 <Formik
                     innerRef={elementPrevProdctionformikRef}

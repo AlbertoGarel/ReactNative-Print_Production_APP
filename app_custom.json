@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "PrintingApp production manager",
-    "slug": "newspapers-production-manager",
+    "name": "RN_control_bobinas",
+    "slug": "RN_control_bobinas",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -49,9 +49,9 @@
         {
           "file": "sentry-expo/upload-sourcemaps",
           "config": {
-            "organization": "albertogarel",
+            "organization": "YOUR ORGANIZATION REGISTRERED IN SENTRY",
             "project": "printing_app_production_manager",
-            "authToken": "c34d3cc2575c450f95fa13c8a7e162aed892f05ec001444b96d38518ddf140e8"
+            "authToken": "YOUR SENTRY TOKEN"
           }
         }
       ]

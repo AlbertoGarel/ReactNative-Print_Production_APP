@@ -15,6 +15,7 @@ import ToastMesages from "../../components/ToastMessages";
 import ResetButtonForm from "../../components/FormComponents/ResetButtonForm";
 import {genericUpdatefunction, genericInsertFunction} from '../../dbCRUD/actionsFunctionsCrud';
 import {Picker} from '@react-native-picker/picker';
+import {Sentry_Alert} from "../../utils";
 
 const AutopastersCrud = ({props}) => {
 
@@ -48,12 +49,10 @@ const AutopastersCrud = ({props}) => {
                             setStateAutopastName(responsetObj[0].name_autopaster);
                             setStateLinProdFK(responsetObj[0].linea_fk);
                             setStateAutopastContainMedia(responsetObj[0].media)
-                        } else {
-                            console.log('Error al conectar base de datos en IndividualCalculation Component');
                         }
                     }
                 );
-            });
+            }, err => Sentry_Alert('AutopastersCrud.js', 'transaction - autopasterByID', err));
         }
 
         //GRAMAJE ALL REQUEST
@@ -64,12 +63,10 @@ const AutopastersCrud = ({props}) => {
                 (_, {rows: {_array}}) => {
                     if (_array.length > 0) {
                         setLinProdDB(_array);
-                    } else {
-                        console.log('Error al conectar base de datos en IndividualCalculation Component');
                     }
                 }
             );
-        });
+        }, err => Sentry_Alert('AutopastersCrud.js', 'transaction - pickerLineaProd', err));
 
         return () => isActive = false;
     }, []);
@@ -111,8 +108,9 @@ const AutopastersCrud = ({props}) => {
                                     showToast('Error al actualizar')
                                 }
                             })
-                            .catch(() => {
+                            .catch(err => {
                                 showToast('Error al actualizar')
+                                Sentry_Alert('AutopastersCrud.js', 'transaction - updateAutoasterByID', err)
                             })
                     }
                     if (props.typeform === 'CREAR') {
@@ -126,8 +124,9 @@ const AutopastersCrud = ({props}) => {
                                     showToast('Error al crear registro')
                                 }
                             })
-                            .catch(() => {
+                            .catch(err => {
                                 showToast('Error al crear registro')
+                                Sentry_Alert('AutopastersCrud.js', 'transaction - insertaAutopasterByID', err)
                             })
                         autopastersForm.current?.resetForm();
                     }

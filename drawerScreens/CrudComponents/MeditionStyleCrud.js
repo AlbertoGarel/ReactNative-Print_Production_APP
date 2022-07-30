@@ -15,6 +15,7 @@ import ToastMesages from "../../components/ToastMessages";
 import ResetButtonForm from "../../components/FormComponents/ResetButtonForm";
 import {genericUpdatefunction, genericInsertFunction} from '../../dbCRUD/actionsFunctionsCrud';
 import {Picker} from '@react-native-picker/picker';
+import {Sentry_Alert} from "../../utils";
 
 const MeditionStyleCrud = ({props}) => {
 
@@ -49,12 +50,10 @@ const MeditionStyleCrud = ({props}) => {
                             setStateGramajeFK(responsetObj[0].gramaje_fk);
                             setStateFullVal(responsetObj[0].full_value.toString());
                             setStateMedVal(responsetObj[0].media_value.toString());
-                        } else {
-                            console.log('Error al conectar base de datos en IndividualCalculation Component');
                         }
                     }
                 );
-            });
+            }, err => Sentry_Alert('MeditionStyleCrud.js', 'transaction - meditionStyleByID', err));
         }
 
         //GRAMAJE ALL REQUEST
@@ -65,12 +64,10 @@ const MeditionStyleCrud = ({props}) => {
                 (_, {rows: {_array}}) => {
                     if (_array.length > 0) {
                         setgramajeDB(_array);
-                    } else {
-                        console.log('Error al conectar base de datos en IndividualCalculation Component');
                     }
                 }
             );
-        });
+        }, err => Sentry_Alert('MeditionStyleCrud.js', 'transaction - picker_gramaje', err));
 
         return () => isActive = false;
     }, []);

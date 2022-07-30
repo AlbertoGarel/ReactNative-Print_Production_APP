@@ -8,7 +8,7 @@ const CustomBarcode = ({
                            value = '',
                            width = 2,
                            height = 100,
-                           format = 'CODE128',
+                           format = 'ITF',
                            lineColor = '#000000',
                            background = '#ffffff',
                            text,
@@ -86,7 +86,7 @@ const CustomBarcode = ({
         try {
             const encoder = barcodes[format];
             if (!encoder) {
-                throw new Error('Invalid barcode format.');
+                 new Error('Invalid barcode format.');
             }
             const encoded = encode(value, encoder);
             const barCodeWidth = encoded.data.length * width;

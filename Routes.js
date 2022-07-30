@@ -38,16 +38,11 @@ const Routes = ({navigation}) => {
     useEffect(() => {
         Font.loadAsync({
             "Anton": require("./assets/fonts/Anton-Regular.ttf"),
-        }).then(response => setIsfontLoad(true));
+        }).then(() => setIsfontLoad(true));
     }, [])
-
-    const buttonChangeTabNabStyleAndfunc = () => {
-        setChangeButtonFunc()
-    }
 
     const bannerError = () => {
         console.log("An error");
-        return;
     }
     return (
         <SafeAreaView style={{

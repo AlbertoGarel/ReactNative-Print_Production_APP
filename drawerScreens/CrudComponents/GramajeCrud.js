@@ -12,6 +12,7 @@ import CustomTextInput from "../../components/FormComponents/CustomTextInput";
 import {gramaje} from "../../assets/svg/svgContents";
 import ResetButtonForm from "../../components/FormComponents/ResetButtonForm";
 import ToastMesages from "../../components/ToastMessages";
+import {Sentry_Alert} from "../../utils";
 
 const GramajeCrud = ({props}) => {
 
@@ -35,12 +36,10 @@ const GramajeCrud = ({props}) => {
                             //clone array
                             const responsetObj = [..._array];
                             setGramajeState(responsetObj[0].gramaje_value.toString())
-                        } else {
-                            console.log('Error al conectar base de datos en IndividualCalculation Component');
                         }
                     }
                 );
-            });
+            }, err => Sentry_Alert('GramajeCrud.js', 'transaction - gramajeByID', err));
         }
 
         return () => isActive = false;

@@ -38,7 +38,7 @@ import BorderedButton from "../../components/BorderedButton";
 import BgRepeatSVG from "../../components/BackgroundComponent/BgRepeatSVG";
 import SvgComponent from "../../components/SvgComponent";
 import BarcodeScannerComponent from "../../components/BarcodeScannerComponent";
-import BottomSheetComponent from "../../components/remove__BottomSheetComponent";
+import BottomSheetComponent from "../../components/BottomSheetComponent";
 import Remove__ContainerSectionListItem from "../../components/productions/remove__ContainerSectionListItem";
 import {
     CalcPrevConsKilosRollsAutopaster,

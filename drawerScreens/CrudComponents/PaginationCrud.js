@@ -12,6 +12,7 @@ import CustomTextInput from "../../components/FormComponents/CustomTextInput";
 import {paginationSVG} from "../../assets/svg/svgContents";
 import ResetButtonForm from "../../components/FormComponents/ResetButtonForm";
 import ToastMesages from "../../components/ToastMessages";
+import {Sentry_Alert} from "../../utils";
 
 const PaginationCrud = ({props}) => {
 
@@ -40,7 +41,7 @@ const PaginationCrud = ({props}) => {
                         }
                     }
                 );
-            });
+            }, err => Sentry_Alert('PaginationCrud.js', 'transaction - paginationByID', err));
         }
 
         return () => isActive = false;

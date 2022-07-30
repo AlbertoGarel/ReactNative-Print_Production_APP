@@ -40,8 +40,6 @@ const DragDropCardsComponent = ({props}) => {
         return () => clearTimeout(wait)
     }, [])
 
-    const alphabet = 'ABCD'.split('');
-
     const calcHeightForContainer = (item) => {
         return (dragItemHeight * item.length) + (dragContainerPadding * 2) + (paddingItems * (maxViewItems * 2))
     }
@@ -152,7 +150,7 @@ const DragDropCardsComponent = ({props}) => {
                                         const newData = rolls.slice();
                                         newData.splice(toIndex, 0, newData.splice(fromIndex, 1)[0]);
                                         const reordered = newData.map((item, index) => {
-                                            item.position = index + 1;
+                                            item.position_roll = index + 1;
                                             return item;
                                         });
                                         wait(reordered);

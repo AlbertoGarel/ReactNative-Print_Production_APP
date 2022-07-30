@@ -4,6 +4,7 @@ import * as SQLite from "expo-sqlite";
 import {barcodesAndroid, barcodesIos} from "../dbCRUD/actionsSQL";
 import {getDatas, storeData} from "../data/AsyncStorageFunctions";
 import {COLORS} from "../assets/defaults/settingStyles";
+import {Sentry_Alert} from "../utils";
 
 const BarcodesTypeSelection = ({props}) => {
     const db = SQLite.openDatabase('bobinas.db');
@@ -21,20 +22,21 @@ const BarcodesTypeSelection = ({props}) => {
                     (_, {rows: {_array}}) => {
                         if (_array.length > 0) {
                             const stateCodebarsItems = _array.map(item => {
-                                return {checkName: item.barcode_name, checkValue: item.barcode_name === 'code128'}
+                                return {checkName: item.barcode_name, checkValue: item.barcode_name === 'itf'}
                             });
                             //check saved checked inputs
-                            getDatas('@storage_codeTypesSelected').then(saved => {
-                                if (saved) {
-                                    setChecked(saved);
-                                } else {
-                                    setChecked(stateCodebarsItems)
-                                }
-                            })
-                                .catch(err => console.error('In SettingsScreen request @storageAsync: ', err));
+                            getDatas('@storage_codeTypesSelected')
+                                .then(saved => {
+                                    if (saved) {
+                                        setChecked(saved);
+                                    } else {
+                                        setChecked(stateCodebarsItems)
+                                    }
+                                })
+                                .catch(err => Sentry_Alert('BarcodesTypeSelection.js', 'HandlerPresentation', err));
                         }
                     },
-                    err => console.error('In request BarcodesTypeselection', err)
+                    err => Sentry_Alert('BarcodesTypeSelection.js', 'getDatas - @storage_codeTypesSelected', err)
                 );
             });
         }
@@ -52,8 +54,8 @@ const BarcodesTypeSelection = ({props}) => {
         })
         setChecked(val);
         storeData('@storage_codeTypesSelected', val)
-            .then(r => console.log('Guardado...'))
-            .catch(err => console.log(err))
+            .then(response => response)
+            .catch(err => Sentry_Alert('BarcodesTypeSelection.js', 'storeData - @storage_codeTypesSelected', err))
     };
 
     return (
@@ -70,9 +72,9 @@ const BarcodesTypeSelection = ({props}) => {
                                 thumbColor={item.checkValue ? '#f5dd4b' : '#f4f3f4'}
                                 ios_backgroundColor="#3e3e3e"
                                 onValueChange={() => onValueChangeHandler(item.checkName)}
-                                value={item.checkName === 'code128' ? true : item.checkValue}
+                                value={item.checkName === 'itf' ? true : item.checkValue}
                                 chidren={item.checkName}
-                                disabled={item.checkName === 'code128'}
+                                disabled={item.checkName === 'itf'}
                             />
                             <Text
                                 style={{
@@ -81,11 +83,15 @@ const BarcodesTypeSelection = ({props}) => {
                                 }}
                                 key={item.checkName + index}
                             >
-                                {item.checkName === 'code128' ? `${item.checkName} ` : item.checkName}
-                                {item.checkName === 'code128' ?
+                                {item.checkName === 'itf' ? `${item.checkName} ` : item.checkName}
+                                {item.checkName === 'itf' ?
                                     <Text style={{
                                         color: '#f5dd4b',
-                                        fontSize: 10
+                                        fontSize: 12,
+                                        textShadowColor: '#000',
+                                        textShadowOffset: {width: 1, height: 1},
+                                        textShadowRadius: 1,
+                                        letterSpacing: 1
                                     }}>( default )</Text> : null}
                             </Text>
                         </View>

@@ -6,7 +6,7 @@ import CustomPicker from "./FormComponents/CustomPicker";
 import {Picker} from '@react-native-picker/picker';
 import {COLORS} from "../assets/defaults/settingStyles";
 import RoundButtonBattery from "./RoundButtonBattery";
-import {setFormatDAta} from "../utils";
+import {Sentry_Alert, setFormatDAta} from "../utils";
 
 const LineChartComponent = ({data, textStyle}) => {
 
@@ -29,11 +29,13 @@ const LineChartComponent = ({data, textStyle}) => {
                 data.sort((a, b) => Date.parse(b.fechaproduccion) - Date.parse(a.fechaproduccion))
             }
             getFullItems(data);
-            setFormatDAta(data).then(r => {
-                getFormatDataState(r)
-                getPickerValueSelected(r[0].value)
-                setFormatedDataForChart(getDataForChart(data, r[0].value))
-            }).catch(e => e);
+            setFormatDAta(data)
+                .then(r => {
+                    getFormatDataState(r)
+                    getPickerValueSelected(r[0].value)
+                    setFormatedDataForChart(getDataForChart(data, r[0].value))
+                })
+                .catch(err => Sentry_Alert('LineChartComponent.js', 'setFormatDAta', err));
         }
         return () => isMounted = false;
     }, [data]);

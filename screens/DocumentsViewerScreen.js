@@ -28,7 +28,7 @@ import HRtag from "../components/HRtag";
 import TouchableIcon from "../components/TouchableIcon";
 import {WebView} from 'react-native-webview';
 import CapacityInfoDraggable from "../components/CapacityInfoDraggable";
-import {setValueForInput} from "../utils";
+import {Sentry_Alert, setValueForInput} from "../utils";
 import seeFile from "../assets/images/seeFile.png";
 import smartphone from "../assets/images/smartphone-sending.png";
 import trash from "../assets/images/trashRed.png";
@@ -52,7 +52,7 @@ const DocumentsViewerScreen = () => {
             .then(capacity => {
                 if (isMounted) getTotalCapacity(capacity)
             })
-            .catch(err => console.log(err));
+            .catch(err => Sentry_Alert('DocumentsViewerScreen.js', 'diskcapacity', err));
         readFolder()
             .then(response => {
                 if (isMounted) {
@@ -61,7 +61,7 @@ const DocumentsViewerScreen = () => {
                     getReload(false);
                 }
             })
-            .catch(err => console.log('error en profile', err));
+            .catch(err => Sentry_Alert('DocumentsViewerScreen.js', 'readFolder', err));
 
         return () => isMounted = false;
     }, [reload]);

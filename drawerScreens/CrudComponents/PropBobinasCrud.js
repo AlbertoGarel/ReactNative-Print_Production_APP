@@ -12,6 +12,7 @@ import CustomTextInput from "../../components/FormComponents/CustomTextInput";
 import {propietarioSVG} from "../../assets/svg/svgContents";
 import ResetButtonForm from "../../components/FormComponents/ResetButtonForm";
 import ToastMesages from "../../components/ToastMessages";
+import {Sentry_Alert} from "../../utils";
 
 const PropBobinasCrud = ({props}) => {
 
@@ -40,7 +41,7 @@ const PropBobinasCrud = ({props}) => {
                         }
                     }
                 );
-            });
+            }, err => Sentry_Alert('PropBobinasCrud.js', 'transaction - papelComunByID', err));
         }
 
         return () => isActive = false;

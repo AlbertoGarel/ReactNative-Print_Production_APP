@@ -20,6 +20,7 @@ import Caroussel from "../components/Caroussel";
 import {produccion_table_ALL} from "../dbCRUD/actionsSQL";
 import {useFocusEffect} from "@react-navigation/native";
 import {genericDeleteFunction, genericTransaction} from "../dbCRUD/actionsFunctionsCrud";
+import {Sentry_Alert} from "../utils";
 
 const {width, height} = Dimensions.get('window');
 
@@ -43,7 +44,7 @@ const HomeScreen = ({navigation}) => {
             //Production
             genericTransaction(produccion_table_ALL, [])
                 .then(response => getProductions(response))
-                .catch(err => console.log(err))
+                .catch(err => Sentry_Alert('HomeScreen.js', 'produccion_table_ALL', err))
             return () => {
                 handlerSpinner(false, null)
                 setIsFocus(false);
@@ -58,9 +59,9 @@ const HomeScreen = ({navigation}) => {
     async function actionDeleteProduction(data) {
         try {
             const deleteRollsOnThisProd = await genericDeleteFunction('DELETE from autopasters_prod_data where production_fk = ?', [data.id])
-            if (!deleteRollsOnThisProd.rowsAffected) throw 'deleteError';
+            if (!deleteRollsOnThisProd.rowsAffected) new Error('deleteError');
             const thisProdDelete = await genericDeleteFunction(`DELETE FROM produccion_table WHERE produccion_id = ?;`, [data.id]);
-            if (!thisProdDelete.rowsAffected) throw 'deleteError';
+            if (!thisProdDelete.rowsAffected) new Error('deleteError');
             const productions = await genericTransaction(produccion_table_ALL, [])
             getProductions(productions)
         } catch (err) {
@@ -69,6 +70,7 @@ const HomeScreen = ({navigation}) => {
             } else {
                 alert('Error en base de datos.')
             }
+            Sentry_Alert('HomeScreen.js', 'func - actionDeleteProduction', err)
         }
     }
 

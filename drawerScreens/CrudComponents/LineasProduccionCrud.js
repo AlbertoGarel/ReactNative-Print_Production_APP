@@ -12,6 +12,7 @@ import CustomTextInput from "../../components/FormComponents/CustomTextInput";
 import {lineaprodSVG} from "../../assets/svg/svgContents";
 import ResetButtonForm from "../../components/FormComponents/ResetButtonForm";
 import ToastMesages from "../../components/ToastMessages";
+import {Sentry_Alert} from "../../utils";
 
 const LineasProduccionCrud = ({props}) => {
 
@@ -35,12 +36,10 @@ const LineasProduccionCrud = ({props}) => {
                             //clone array
                             const responsetObj = [..._array];
                             setLinProdState(responsetObj[0].linea_name)
-                        } else {
-                            console.log('Error al conectar base de datos en IndividualCalculation Component');
                         }
                     }
                 );
-            });
+            }, err => Sentry_Alert('LineasProduccionCrud.js', 'transaction - linProdByID', err));
         }
 
         return () => isActive = false;

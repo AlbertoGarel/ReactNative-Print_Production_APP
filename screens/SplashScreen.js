@@ -5,6 +5,7 @@ import * as Font from 'expo-font';
 import logoSocial from '../assets/images/splash/socialPymes_Imagotipo_blanco.png'
 import mylogo from '../assets/images/splash/Logo_AlbertoGarel.png'
 import {COLORS} from "../assets/defaults/settingStyles";
+import {Sentry_Alert} from "../utils";
 
 let screenWidth = Dimensions.get('screen').width;
 let screenHeight = Dimensions.get('screen').height;
@@ -19,7 +20,9 @@ const SplashScreen = () => {
         if (isMuounted) {
             Font.loadAsync({
                 "Anton": require("../assets/fonts/Anton-Regular.ttf"),
-            }).then(() => setIsfontLoad(true));
+            })
+                .then(() => setIsfontLoad(true))
+                .catch(err => Sentry_Alert('SplashScreen.js', 'Font.loadAsync', err));
 
             Animated.timing(fadeAnim, {
                 toValue: 1,
@@ -65,7 +68,7 @@ const SplashScreen = () => {
                 <Text style={{
                     paddingBottom: 10,
                     paddingRight: 20,
-                    color:  COLORS.black,
+                    color: COLORS.black,
                     fontSize: 35,
                     fontFamily: isFontLoad ? "Anton" : null,
                 }}>albertogarel</Text>

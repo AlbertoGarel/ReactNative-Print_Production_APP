@@ -4,7 +4,7 @@ import * as Sharing from "expo-sharing";
 import * as DocumentPicker from 'expo-document-picker';
 import * as SQLite from "expo-sqlite";
 import {Alert} from 'react-native';
-import {arrayEquals} from "../utils";
+import {arrayEquals, Sentry_Alert} from "../utils";
 
 /**
  * FOLDER NAME FOR SAVE FILES
@@ -30,14 +30,17 @@ export const checkAndCreateFolder = async (folder_path = appFolder) => {
                 intermediates: true
             })
         } catch (error) {
-            // Report folder creation error, include the folder existence before and now
-            const new_folder_info = await FileSystem.getInfoAsync(folder_path);
-            const debug = `checkAndCreateFolder: ${
-                error.message
-            } old:${JSON.stringify(folder_info)} new:${JSON.stringify(
-                new_folder_info
-            )}`;
-            console.log(debug);
+            if (__DEV__) {
+                // Report folder creation error, include the folder existence before and now
+                const new_folder_info = await FileSystem.getInfoAsync(folder_path);
+                const debug = `checkAndCreateFolder: ${
+                    error.message
+                } old:${JSON.stringify(folder_info)} new:${JSON.stringify(
+                    new_folder_info
+                )}`;
+                console.log(debug);
+            }
+            Sentry_Alert('FileSystemFunctions.js', 'checkAndCreateFolder', error)
         }
     }
 };
@@ -54,7 +57,7 @@ export const checkExistFolder = async (folder_path = appFolder) => {
         let info = await FileSystem.getInfoAsync(folder_path)
         return info.exists;
     } catch (err) {
-        return console.log('NO exist folder', err)
+        Sentry_Alert('FileSystemFunctions.js', 'checkExistFolder', err)
     }
 };
 
@@ -70,7 +73,7 @@ export const readFolder = async (folder_path = appFolder) => {
     try {
         return await FileSystem.readDirectoryAsync(folder_path)
     } catch (err) {
-        return err
+        Sentry_Alert('FileSystemFunctions.js', 'readFolder', err)
     }
 };
 
@@ -128,7 +131,7 @@ export const readFileHTMLFromDocumentDirectory = async fileName => {
 export const createAndSavePDF_HTML_file = async (fileName, html) => {
     try {
         const contentPath = await FileSystem.readDirectoryAsync(appFolder);
-        const searchEqualName = contentPath.filter(i=> i.split(/[\(\.]/)[0] === fileName);
+        const searchEqualName = contentPath.filter(i => i.split(/[\(\.]/)[0] === fileName);
         const finallyName = searchEqualName.length > 0 ? `${fileName}(${searchEqualName.length})` : fileName;
         const {uri} = await Print.printToFileAsync({html});
         await FileSystem.copyAsync({from: uri, to: appFolder + finallyName + '.pdf'});
@@ -138,7 +141,7 @@ export const createAndSavePDF_HTML_file = async (fileName, html) => {
             fileURI: appFolder + finallyName + '.pdf'
         }
     } catch (error) {
-        console.error(error);
+        Sentry_Alert('FileSystemFunctions.js', 'createAndSavePDF_HTML_file', error)
     }
 };
 
@@ -155,8 +158,8 @@ export const sendFile = async fileName => {
             UTI: '.pdf',
             mimeType: 'application/pdf'
         });
-    } catch (e) {
-        alert('error fileURI')
+    } catch (err) {
+        Sentry_Alert('FileSystemFunctions.js', 'sendFile', err)
     }
 };
 
@@ -172,8 +175,8 @@ export const diskcapacity = async () => {
         const free = await FileSystem.getFreeDiskStorageAsync();
         const total = await FileSystem.getTotalDiskCapacityAsync();
         return {freeDisk: free, totalDisk: total}
-    } catch (e) {
-        console.log(e)
+    } catch (err) {
+        Sentry_Alert('FileSystemFunctions.js', 'diskcapacity', err)
     }
 };
 /**
@@ -184,8 +187,8 @@ export const diskcapacity = async () => {
 export const sendDataBase = async () => {
     try {
         await Sharing.shareAsync(FileSystem.documentDirectory + 'SQLite/bobinas.db');
-    } catch (e) {
-        alert('error fileURI')
+    } catch (err) {
+        Sentry_Alert('FileSystemFunctions.js', 'sendDataBase', err)
     }
 };
 /**
@@ -213,11 +216,11 @@ export const importDataBase = async (fakeMessage) => {
         // CHECK DATABASE VERSION. IF ARE DISTINCT NO CONTINUE
         if (Importedversion.version !== db.version) {
             if (Importedversion.version > db.version) {
-                throw 2;
+                new Error(2);
             } else if (Importedversion.version < db.version) {
-                throw 3;
+                new Error(3);
             } else {
-                throw 4;
+                new Error(4);
             }
         }
         //READ DIRECTORY DOCUMENTPICKER CACHE.
@@ -243,14 +246,14 @@ export const importDataBase = async (fakeMessage) => {
                     tx.executeSql(sql, [],
                         (_, result) => resolve(result.rows._array.map(i => i.name)),
                         (_, err) => reject(err));
-                }, err => err);
+                }, err => Sentry_Alert('FileSystemFunctions.js', 'transaction - promise1', err));
             });
             let promise2 = new Promise((resolve, reject) => {
                 db.transaction((tx) => {
                     tx.executeSql(sql, [],
                         (_, result) => resolve(result.rows._array.map(i => i.name)),
                         (_, err) => reject(err));
-                }, err => err);
+                }, err => Sentry_Alert('FileSystemFunctions.js', 'transaction - promise2', err));
             });
 
             //RESOLVE PROMISES
@@ -279,7 +282,7 @@ export const importDataBase = async (fakeMessage) => {
                     },
                 ]);
             } else {
-                throw 5;
+                new Error(5);
             }
         }
     } catch (e) {

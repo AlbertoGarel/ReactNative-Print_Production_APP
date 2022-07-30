@@ -15,6 +15,7 @@ import ToastMesages from "../../components/ToastMessages";
 import ResetButtonForm from "../../components/FormComponents/ResetButtonForm";
 import {genericUpdatefunction, genericInsertFunction} from '../../dbCRUD/actionsFunctionsCrud';
 import {Picker} from '@react-native-picker/picker';
+import {Sentry_Alert} from "../../utils";
 
 const CoeficienteKbaCrud = ({props}) => {
 
@@ -47,12 +48,10 @@ const CoeficienteKbaCrud = ({props}) => {
                             setStateKbaName(responsetObj[0].kba_name);
                             setStateGramajeFK(responsetObj[0].gramaje_fk);
                             setStateKbaVal(responsetObj[0].kba_value.toString());
-                        } else {
-                            console.log('Error al conectar base de datos en IndividualCalculation Component');
                         }
                     }
                 );
-            });
+            }, err => Sentry_Alert('CoeficienteKbaCrud.js', 'transaction - kbaByID', err));
         }
 
         //GRAMAJE ALL REQUEST
@@ -68,7 +67,7 @@ const CoeficienteKbaCrud = ({props}) => {
                     }
                 }
             );
-        });
+        }, err => Sentry_Alert('CoeficienteKbaCrud.js', 'transaction - picker_gramaje', err));
 
         return () => isActive = false;
     }, []);
@@ -112,7 +111,7 @@ const CoeficienteKbaCrud = ({props}) => {
                             })
                             .catch(err => {
                                 showToast('Error al actualizar')
-                                console.log(err)
+                                Sentry_Alert('CoeficienteKbaCrud.js', 'transaction - updateKbaByID', err)
                             })
                     }
                     if (props.typeform === 'CREAR') {
@@ -128,7 +127,7 @@ const CoeficienteKbaCrud = ({props}) => {
                             })
                             .catch(err => {
                                 showToast('Error al crear registro')
-                                console.log(err)
+                                Sentry_Alert('CoeficienteKbaCrud.js', 'transaction - insertKba', err)
                             })
                         meditionStyleForm.current?.resetForm();
                     }

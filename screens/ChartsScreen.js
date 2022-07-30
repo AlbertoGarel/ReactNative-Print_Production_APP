@@ -17,6 +17,7 @@ import LineChartComponent from "../components/LineChartComponent";
 import PieChartComponent from "../components/PieChartComponent";
 import StackedBartChartComponent from "../components/StackedBartChartComponent";
 import SpinnerSquares from "../components/SpinnerSquares";
+import {Sentry_Alert} from "../utils";
 
 const productresult_table =
     `SELECT a.productresult_id,
@@ -60,7 +61,7 @@ const ChartsScreen = () => {
                     }
                 }
             );
-        }, err => console.log(err));
+        }, err => Sentry_Alert('ChartsScreen.js', 'transaction - productresult_table', err));
     }, []);
 
     const panResponderOFF = useRef(

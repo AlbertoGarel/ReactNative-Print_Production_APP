@@ -4,7 +4,7 @@ import {View} from 'react-native';
 import RBSheet from 'react-native-raw-bottom-sheet';
 
 
-const Remove__BottomSheetComponent = (props, ref) => {
+const BottomSheetComponent = (props, ref) => {
 
     return (
         <View>
@@ -19,4 +19,4 @@ const Remove__BottomSheetComponent = (props, ref) => {
     )
 }
 
-export default forwardRef(Remove__BottomSheetComponent);
+export default forwardRef(BottomSheetComponent);

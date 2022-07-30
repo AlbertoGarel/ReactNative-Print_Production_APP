@@ -5,7 +5,7 @@ import FormCardProduction from "../../components/productions/FormCardProduction"
 import {COLORS} from "../../assets/defaults/settingStyles";
 import SvgComponent from "../../components/SvgComponent";
 import {prodCardSVG} from "../../assets/svg/svgContents";
-import {numberOfAutopasters} from "../../utils";
+import {numberOfAutopasters, Sentry_Alert} from "../../utils";
 
 const CreateCardProduction = ({
                                   renderNowItem,
@@ -45,7 +45,7 @@ const CreateCardProduction = ({
 
                 setDataPickerAutopasters(arrNums);
             })
-            .catch(error => console.log(error));
+            .catch(err => Sentry_Alert('CreateCardProduction.js', 'getDatas - @simpleProdData', err));
     }, [renderNowItem, editCardItem]);
 
     const addCards = (newCardObject) => {
@@ -59,7 +59,7 @@ const CreateCardProduction = ({
             .then(r => {
                 updateGetStorage();
             })
-            .catch(error => console.log('error', error));
+            .catch(err => Sentry_Alert('CreateCardProduction.js', 'storeData - @simpleProdData', err));
         setVisibleCreateCards(false);
     }
 

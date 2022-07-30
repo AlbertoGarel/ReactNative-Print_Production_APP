@@ -7,6 +7,16 @@ import SplashScreen from "./screens/SplashScreen";
 import {appFolder, appHTMLfolderForPdf, checkAndCreateFolder, checkExistFolder} from "./data/FileSystemFunctions";
 import IntroductionScreen from "./screens/Introduction/IntroductionScreen";
 import {getDatas, storeData} from "./data/AsyncStorageFunctions";
+// SENTRY.IO ERRORS LOG
+import * as Sentry from 'sentry-expo';
+import {SENTRY_DSN} from "./projectKeys";
+import {Sentry_Alert} from "./utils";
+
+Sentry.init({
+    dsn: SENTRY_DSN,//enter your sentry dsn.
+    enableInExpoDevelopment: true,
+    debug: __DEV__, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
+});
 
 function App() {
 
@@ -22,27 +32,27 @@ function App() {
                     setFirstPresentation(response)
                 }
             })
-            .catch(() => {
-                alert('false')
+            .catch((err) => {
+                Sentry_Alert('App.js', '@introduction', err);
             });
 
         openDatabase()
             .then(response => response)
-            .catch(error => error);
+            .catch(err => Sentry_Alert('App.js', 'openDatabase', err));
 
         checkAndCreateFolder(appFolder)
             .then(response => response)
-            .catch(err => err);
+            .catch(err => Sentry_Alert('App.js', 'checkAndCreateFolder(appFolder)', err));
         checkAndCreateFolder(appHTMLfolderForPdf)
             .then(response => response)
-            .catch(err => err);
+            .catch(err => Sentry_Alert('App.js', 'checkAndCreateFolder(appHTMLfolderForPdf)', err));
 
         checkExistFolder(appFolder)
             .then(response => response)
-            .catch(err => console.log(err))
+            .catch(err => Sentry_Alert('App.js', 'checkExistFolder(appFolder)', err))
         checkExistFolder(appHTMLfolderForPdf)
             .then(response => response)
-            .catch(err => console.log(err))
+            .catch(err => Sentry_Alert('App.js', 'checkExistFolder(appHTMLfolderForPdf)', err))
 
         setTimeout(() => {
             setLoadScreen(false)
@@ -54,7 +64,7 @@ function App() {
     function HandlerPresentation() {
         storeData('@introduction', false)
             .then(() => setFirstPresentation(false))
-            .catch(() => alert('error'))
+            .catch((err) => Sentry_Alert('App.js', 'HandlerPresentation', err));
     }
 
     return (

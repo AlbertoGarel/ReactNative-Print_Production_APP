@@ -6,6 +6,7 @@ import {Formik} from "formik";
 import CustomTextInput from "../FormComponents/CustomTextInput";
 import {peso, radio} from "../../assets/svg/svgContents";
 import * as SQLite from "expo-sqlite";
+import {Sentry_Alert} from "../../utils";
 
 const FormUsedRoll = ({props}) => {
     const db = SQLite.openDatabase('bobinas.db');
@@ -15,7 +16,7 @@ const FormUsedRoll = ({props}) => {
     const [activityIndicatorVisble, setActivityIndicatorVisible] = useState(false);
     const registerUsedRollSchema = Yup.object().shape({
         inputUsedRoll: Yup.number().max(props.item.originalWeight, `El valor debe ser menor que el peso de fabricación.`)
-            .min(0, 'too Short!')
+            .min(0, 'Introduce un valor v´lido')
             .required('required'),
     });
 
@@ -41,7 +42,7 @@ const FormUsedRoll = ({props}) => {
                         }
                     }
                 )
-            }, err => console.log('error searchCoefMinProx on fullProduction', err)
+            }, err => Sentry_Alert('FormUsedRoll.js', 'transaction - searchCoefMinProx', err)
         )
     };
 
@@ -79,7 +80,7 @@ const FormUsedRoll = ({props}) => {
                     validationSchema={registerUsedRollSchema}
                     onSubmit={values => {
                         const usedRollDataProps = props.item;
-                        usedRollDataProps.actualWeight = values.inputUsedRoll;
+                        usedRollDataProps.actualWeight = Math.round(parseInt((values.inputUsedRoll)));
                         usedRollDataProps.radius = values.calculatedradius;
                         //SAVE TO BBDD.
                         props.registerNewBobina(usedRollDataProps, 'insert')

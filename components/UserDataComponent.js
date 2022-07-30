@@ -7,6 +7,7 @@ import * as Yup from "yup";
 import {FormYupSchemas} from "./FormComponents/YupSchemas";
 import {COLORS} from "../assets/defaults/settingStyles";
 import {getDatas, storeData} from "../data/AsyncStorageFunctions";
+import {Sentry_Alert} from "../utils";
 
 const UserDataComponent = ({props}) => {
 
@@ -36,7 +37,7 @@ const UserDataComponent = ({props}) => {
                 setEmailState(obj.email)
             }
         })
-            .catch(err => console.log(err))
+            .catch(err => Sentry_Alert('UserDataComponent.js', 'getDatas - @UserDataForm', err))
         return () => isMounted = false;
     }, []);
 

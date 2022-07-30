@@ -8,7 +8,7 @@ import PercentageBarCard from "./PercentageBarCard";
 import {getDatas, storeData} from "../../data/AsyncStorageFunctions";
 import * as SQLite from "expo-sqlite";
 import {coeficienteSearchValue} from "../../dbCRUD/actionsSQL";
-import {paperRollConsummption} from "../../utils";
+import {paperRollConsummption, Sentry_Alert} from "../../utils";
 import PaperCoilWeightDataCard from "./PaperCoilWeightDataCard";
 import TextInputCoilRadius from "../FormComponents/TextInputCoilRadius";
 import ComsumptionResultCard from "./ComsumptionResultCard";
@@ -40,56 +40,61 @@ const CardsProduction = ({item, updateGetStorage, productToRenderId, handlerEdit
     }, [item]);
 
     const calcPaperRollConsummption = (radius, id) => {
-        getDatas('@simpleProdData').then(r => {
-            const restOfproducts = r.filter(item => item.id !== productToRenderId);
-            const thisProduct = r.filter(item => item.id === productToRenderId);
-            const restDataCards = thisProduct[0].cards.filter(item => item.id !== id);
-            const thisDataCards = thisProduct[0].cards.filter(item => item.id === id);
+        getDatas('@simpleProdData')
+            .then(r => {
+                const restOfproducts = r.filter(item => item.id !== productToRenderId);
+                const thisProduct = r.filter(item => item.id === productToRenderId);
+                const restDataCards = thisProduct[0].cards.filter(item => item.id !== id);
+                const thisDataCards = thisProduct[0].cards.filter(item => item.id === id);
 
-            if (parseInt(radius) === 0) {
-                thisDataCards[0].radio = 0;
-                thisDataCards[0].restoFinal = 0;
-                thisDataCards[0].consumo = thisDataCards[0].restoInicio;
+                if (parseInt(radius) === 0) {
+                    thisDataCards[0].radio = 0;
+                    thisDataCards[0].restoFinal = 0;
+                    thisDataCards[0].consumo = thisDataCards[0].restoInicio;
 
-                thisProduct[0].cards = [...restDataCards, ...thisDataCards];
-                const allItems = [...restOfproducts, ...thisProduct];
-                storeData('@simpleProdData', allItems).then(r => console.log(r));
-                updateGetStorage();
-            } else if (radius === '') {
-                thisDataCards[0].radio = '';
-                thisDataCards[0].restoFinal = '';
-                thisDataCards[0].consumo = '';
+                    thisProduct[0].cards = [...restDataCards, ...thisDataCards];
+                    const allItems = [...restOfproducts, ...thisProduct];
+                    storeData('@simpleProdData', allItems)
+                        .then(stored => stored)
+                        .catch(err => Sentry_Alert('CardsProduction.js', 'storeData', err));
+                    updateGetStorage();
+                } else if (radius === '') {
+                    thisDataCards[0].radio = '';
+                    thisDataCards[0].restoFinal = '';
+                    thisDataCards[0].consumo = '';
 
-                thisProduct[0].cards = [...restDataCards, ...thisDataCards];
-                const allItems = [...restOfproducts, ...thisProduct];
-                storeData('@simpleProdData', allItems).then(r => console.log('stored'));
-                updateGetStorage();
-            } else {
-                db.transaction(tx => {
-                    const roundedRadio = Math.round(radius);
-                    tx.executeSql(
-                        coeficienteSearchValue,
-                        [roundedRadio],
-                        (_, {rows: {_array}}) => {
-                            if (_array.length > 0) {
-                                const coefValue = _array[0].coeficiente_value;
-                                thisDataCards[0].radio = roundedRadio;
-                                thisDataCards[0].restoFinal = Math.round(thisDataCards[0].pesoOriginal * coefValue);
-                                thisDataCards[0].consumo = thisDataCards[0].restoInicio - thisDataCards[0].restoFinal;
+                    thisProduct[0].cards = [...restDataCards, ...thisDataCards];
+                    const allItems = [...restOfproducts, ...thisProduct];
+                    storeData('@simpleProdData', allItems)
+                        .then(stored => stored)
+                        .catch(err => Sentry_Alert('CardsProduction.js', 'storeData', err));
+                    ;
+                    updateGetStorage();
+                } else {
+                    db.transaction(tx => {
+                        const roundedRadio = Math.round(radius);
+                        tx.executeSql(
+                            coeficienteSearchValue,
+                            [roundedRadio],
+                            (_, {rows: {_array}}) => {
+                                if (_array.length > 0) {
+                                    const coefValue = _array[0].coeficiente_value;
+                                    thisDataCards[0].radio = roundedRadio;
+                                    thisDataCards[0].restoFinal = Math.round(thisDataCards[0].pesoOriginal * coefValue);
+                                    thisDataCards[0].consumo = thisDataCards[0].restoInicio - thisDataCards[0].restoFinal;
 
-                                thisProduct[0].cards = [...restDataCards, ...thisDataCards];
-                                const allItems = [...restOfproducts, ...thisProduct];
-                                storeData('@simpleProdData', allItems).then(r => console.log('transaction', r));
-                                updateGetStorage();
-                            } else {
-                                console.log('(elementCalcBobina)Error al conectar base de datos en IndividualCalculation Component');
+                                    thisProduct[0].cards = [...restDataCards, ...thisDataCards];
+                                    const allItems = [...restOfproducts, ...thisProduct];
+                                    storeData('@simpleProdData', allItems).then(r => console.log('transaction', r));
+                                    updateGetStorage();
+                                }
                             }
-                        }
-                    );
-                }, err => console.log(error));
-            }
-            //next code
-        })
+                        );
+                    }, err => Sentry_Alert('CardsProduction.js', 'coeficienteSearchValue', err));
+                }
+                //next code
+            })
+            .catch(err => Sentry_Alert('CardsProduction.js', '@simpleProdData', err))
     };
 
     //PROPS ELEMENTS CARDS

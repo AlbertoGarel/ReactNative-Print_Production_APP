@@ -2,6 +2,22 @@ import {Alert} from "react-native";
 import {genericTransaction, genericUpdatefunction, genericUpdateFunctionConfirm} from "./dbCRUD/actionsFunctionsCrud";
 import {autopaster_prod_data_insert, dataProductSelectedAllInfo} from "./dbCRUD/actionsSQL";
 import * as MailComposer from 'expo-mail-composer';
+import * as Sentry from 'sentry-expo';
+
+/**
+ *
+ *
+ *
+ * */
+export function Sentry_Alert(tag1, tag2, error) {
+    const scope = new Sentry.Native.Scope();
+    scope.setTag("section", "articles");
+    Sentry.Native.captureException(error, scope);
+}
+
+// Área del folio = 70 cm x 80 cm = 0,7 m x 0,8 m = 0,56 m2
+// Área de la bobina = 1.000 cm x 140 cm = 100 m x 1,4 m = 140 m2
+// Folios por bobina = 140 m2 / 0,56 m2 = 250 folios
 
 // SQL SENTENCES FOR UTILS FUNCTIONS
 const autopasters_prod_data_update =
@@ -224,7 +240,7 @@ export const OriginalWeight = (data) => {
  */
 export const CalcPrevConsKilosRollsAutopaster = (arrObjects, tiradaTotal, gramajeValues, productionID) => {
     //Order from lowest to highest those that remain by position and recalculate kilos planned.
-    const orderedItems = arrObjects.sort((a, b) => a.position - b.position);
+    const orderedItems = arrObjects.sort((a, b) => a.position_roll - b.position_roll);
     //Calculate kilos consumed by each one and assign position.
     let isMedia = orderedItems[0].ismedia ? gramajeValues.media : gramajeValues.entera;
     let kilosPrev = Math.round(tiradaTotal * isMedia);
@@ -254,7 +270,10 @@ export const CalcPrevConsKilosRollsAutopaster = (arrObjects, tiradaTotal, gramaj
                 item.codigo_bobina
             ]
         );
-        item.position_roll = index + 1;
+        // If it does not have a defined position in the reel list assigned in autopaster.
+        // Avoid reassigning after moving cards (DragDrop)
+        if (!item.position_roll) item.position_roll = index + 1;
+
         item.resto_previsto = kilos;
     });
 
@@ -582,7 +601,6 @@ export async function deleteItem(response, rollID, productionData) {
         }
         return await genericUpdateFunctionConfirm(...paramsAction)
             .then(rowsAffected => {
-                alert(rowsAffected)
                 if (rowsAffected === 1 && updatedGroup.data > 1) {
                     return Promise.all(promisesALLforUpdateItems)
                 }
@@ -730,7 +748,8 @@ export async function getScannedCode(scanned, autopasterID, itemsState, producti
     try {
         let {scannedCode, codeType} = scanned;
         if (scannedCode.length !== 16) {
-            return alert('El valor numérico del código de barras no tiene el formato esperado de 16 cifras.')
+            alert('El valor numérico del código de barras no tiene el formato esperado de 16 cifras.')
+            return false;
         }
         scannedCode = parseInt(scannedCode);
         let change_media_type = autopasterLineProdData.filter(i => i.autopaster_fk === autopasterID)[0].media_defined;
@@ -742,7 +761,7 @@ export async function getScannedCode(scanned, autopasterID, itemsState, producti
         const _existInProduction = existInProduction.filter(i => i.bobina_fk === (scannedCode))
         if (_existInProduction.length > 0) {
             alert(`Esta bobina ya exite en esta producción en autopaster nº ${existInProduction[0].autopaster_fk}`)
-            return [];
+            return false;
         }
         const isEmptyRoll = existInProduction.filter(i => (i.autopaster_fk === autopasterID) && (!i.bobina_fk))
         if (_existInProduction.length === 0 && isEmptyRoll.length > 0) {
@@ -780,7 +799,7 @@ export async function getScannedCode(scanned, autopasterID, itemsState, producti
                 codeType: codeType
             }
         }
-        await reorganizeProduction(productionData, regNewRoll);
+        // await reorganizeProduction(productionData, regNewRoll);
         return [regNewRoll, actionBBDD, text];
     } catch (err) {
         console.log('error getScanned', err)
@@ -803,7 +822,7 @@ export async function registerNewBobina(BobinaParams, actionDDBB, itemsState, pr
         const de = await genericTransaction(
             select_all_rolls_by_production_and_autopaster,
             [prodData.produccion_id, BobinaParams.autopaster,]
-        )
+        );
         let getRollsAutopaster = await searchItems(BobinaParams.autopaster, itemsState);
         let maxPositionRoll = de.length > 0 ? de.sort((a, b) => b.position_roll - a.position_roll)[0].position_roll : 0;
         let finalPositionRoll = maxPositionRoll + 1;
@@ -820,7 +839,10 @@ export async function registerNewBobina(BobinaParams, actionDDBB, itemsState, pr
         // CALCULATE WEIGHT FOR AUTOPASTER STATUS
         let total_kilos = {
             autopaster_id: AutopasterNum,
-            kilosNeeded: BobinaParams.actualWeight - Math.abs(kilosNeededForAutopaster[0].kilosNeeded)
+            // kilosNeeded: kilosNeededForAutopaster[0].kilosNeeded >= 0
+            //     ? BobinaParams.actualWeight + kilosNeededForAutopaster[0].kilosNeeded
+            //     : BobinaParams.actualWeight - Math.abs(kilosNeededForAutopaster[0].kilosNeeded)
+            kilosNeeded: kilosNeededForAutopaster[0].kilosNeeded + BobinaParams.actualWeight
         };
 
         // UPDATE WEIGHT AUTOPASTER STATE
@@ -900,6 +922,7 @@ export async function registerNewBobina(BobinaParams, actionDDBB, itemsState, pr
                 })
                 .catch(error => console.log(error))
         }
+        await reorganizeProduction(prodData, BobinaParams);
         // RETURN ITEMS AND KILOSNEEDED FOR AUTOPASTER STATE.
         return {items: toSend, kilos: updateKilos}
     } catch (err) {

@@ -3,6 +3,7 @@ import {StyleSheet, View, Text, Image} from "react-native";
 import {COLORS} from "../../assets/defaults/settingStyles";
 import CustomTextInput from "../FormComponents/CustomTextInput";
 import {storeData} from "../../data/AsyncStorageFunctions";
+import {Sentry_Alert} from "../../utils";
 
 const FormTotalCalculationProduction = ({
                                             renderNowItem,
@@ -63,7 +64,7 @@ const FormTotalCalculationProduction = ({
         const productToSave = [...restProducts, productToUpdate];
         storeData('@simpleProdData', productToSave)
             .then(() => updateGetStorage())
-            .catch(err => console.log(err))
+            .catch(err => Sentry_Alert('FormTotalCalculationProduction.js', 'storeData - @simpleProdData', err))
 
     }
 

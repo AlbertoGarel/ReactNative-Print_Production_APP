@@ -18,9 +18,10 @@ import * as SQLite from "expo-sqlite";
 import BgComponent from "../components/BackgroundComponent/BgComponent";
 import HomeHeader from "../components/headers/HomeHeader";
 import {Table, TableWrapper, Row, Cell} from 'react-native-table-component';
-import BottomSheetComponent from "../components/remove__BottomSheetComponent";
+import BottomSheetComponent from "../components/BottomSheetComponent";
 import BarcodeScannerComponent from "../components/BarcodeScannerComponent";
 import {useFocusEffect} from "@react-navigation/native";
+import {Sentry_Alert} from "../utils";
 
 const height = Dimensions.get('window').height / 1.5;
 
@@ -100,7 +101,7 @@ const SearchScreen = () => {
             } else {
                 getValuesDB([])
             }
-        });
+        }, err => Sentry_Alert('SearchScreen.js', 'transaction - searchValue', err));
     };
 
     const cellWidth = 85;

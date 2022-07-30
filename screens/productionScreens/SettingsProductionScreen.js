@@ -49,7 +49,7 @@ import {
     identifyAutopasters,
     individualProvidedWeightRollProduction,
     rangeCopies,
-    searchCoefTypeRoll
+    searchCoefTypeRoll, Sentry_Alert
 } from "../../utils";
 import {genericInsertFunction, genericTransaction} from "../../dbCRUD/actionsFunctionsCrud";
 import CustomDateTimePicker from "../../components/FormComponents/CustomDateTimePicker";
@@ -87,7 +87,7 @@ const SettingsProductionScreen = () => {
     const navigation = useNavigation();
 
     let toastRef;
-    const showToast = (message, isError = true) => {
+    const showToast = (message, isError) => {
         if (!isError) {
             toastRef.props.style.backgroundColor = '#00ff00';
         }
@@ -162,12 +162,10 @@ const SettingsProductionScreen = () => {
                     (_, {rows: {_array}}) => {
                         if (_array.length > 0) {
                             getPapelComun(_array);
-                        } else {
-                            console.log('(picker_producto) no se encontraron registros en SettingsProductionScreen');
                         }
                     }
                 );
-            });
+            }, err => Sentry_Alert('SettingsProductionScreen.js', 'transaction - SELECT * FROM producto_table', err));
             //PRODUCT PICKER
             db.transaction(tx => {
                 tx.executeSql(
@@ -176,12 +174,10 @@ const SettingsProductionScreen = () => {
                     (_, {rows: {_array}}) => {
                         if (_array.length > 0) {
                             getProductoDataDB(_array);
-                        } else {
-                            console.log('(picker_producto) no se encontraron registros en SettingsProductionScreen');
                         }
                     }
                 );
-            });
+            }, err => Sentry_Alert('SettingsProductionScreen.js', 'transaction - picker_producto', err));
             //PRODUCTION LINE
             db.transaction(tx => {
                 tx.executeSql(
@@ -190,12 +186,10 @@ const SettingsProductionScreen = () => {
                     (_, {rows: {_array}}) => {
                         if (_array.length > 0) {
                             getLineProdDataDB(_array);
-                        } else {
-                            console.log('(pickerLinProd) no se encontraron registros en SettingsProductionScreen');
                         }
                     }
                 );
-            });
+            }, err => Sentry_Alert('SettingsProductionScreen.js', 'transaction - pickerLinProd', err));
             //MEDITION STYLE
             db.transaction(tx => {
                 tx.executeSql(
@@ -209,7 +203,7 @@ const SettingsProductionScreen = () => {
                         }
                     }
                 );
-            });
+            }, err => Sentry_Alert('SettingsProductionScreen.js', 'transaction - picker_medition_style', err));
 
             //AUTOPASTERS
             db.transaction(tx => {
@@ -224,7 +218,7 @@ const SettingsProductionScreen = () => {
                         }
                     }, () => err => console.log(err)
                 );
-            });
+            }, err => Sentry_Alert('SettingsProductionScreen.js', 'transaction - SELECT * FROM autopaster_table', err));
 
             getDatas('@NullCopiesData')
                 .then(response => {
@@ -232,7 +226,7 @@ const SettingsProductionScreen = () => {
                     setNullCopiesByTiradaPercentage(parseInt(response.nullcopiesbydefault));
                 })
                 .catch((err) => {
-                    console.log(err)
+                    Sentry_Alert('SettingsProductionScreen.js', 'getDatas - @NullCopiesData', err)
                 });
         });
 
@@ -272,14 +266,14 @@ const SettingsProductionScreen = () => {
                                 setMedia(0);
                                 setNumEnteras(identifyWithMedia.entera);
                             }
-                        } else {
-                            console.log('(getAutopasterByLineaID) no se encontraron registros en SettingsProductionScreen');
                         }
                     }, () => err => console.log(err)
                 );
-            });
+            }, err => Sentry_Alert('SettingsProductionScreen.js', 'transaction - getAutopasterByLineaID', err));
         } else {
-            console.log('no call autopasters')
+            if (__DEV__) {
+                console.log('no call autopasters')
+            }
         }
     }, [maxPaginationOptionPickerLineSelected, selectedPagination]);
 
@@ -316,8 +310,8 @@ const SettingsProductionScreen = () => {
                             dataRollInsert = [item[0], item[1], _array[0].codigo_bobina, calcWeigth.rollweight, item[2], positionRoll]
 
                             genericInsertFunction(insertAutopastCode, dataRollInsert)
-                                .then(response => console.log('response POSITIVE COIL', response))
-                                .catch(err => console.log('err', err))
+                                .then(response => response)
+                                .catch(err => Sentry_Alert('SettingsProductionScreen.js', 'func - searchStatementAutoProdData_Table - _array.length > 0', err))
                         } else {
                             // NO OK. NEGATIVE COIL SEARCH IN PRODUCTION TABLE. SEARCH LAST ROLL IN SELECTED AUTOPASTER.
                             db.transaction(tx => {
@@ -326,7 +320,6 @@ const SettingsProductionScreen = () => {
                                     queryParams,
                                     (_, {rows: {_array}}) => {
                                         if (_array.length > 0) {
-                                            console.log('comprobar bobinas2', _array)
                                             // OK. INSERT 'CODIGO_BOBINA' ROLL IN autopasters_prod_data.
                                             coefRoll = searchCoefTypeRoll(...meditionVal, ..._array);
                                             nowRollWeight = _array[0].peso_actual;
@@ -335,23 +328,21 @@ const SettingsProductionScreen = () => {
 
                                             // INSERT DATA.
                                             genericInsertFunction(insertAutopastCode, dataRollInsert)
-                                                .then(response => console.log('response NEGATIVE COIL', response))
-                                                .catch(err => console.log('err', err))
+                                                .then(response => response)
+                                                .catch(err => Sentry_Alert('SettingsProductionScreen.js', 'func - searchStatementRoll - _array.length > 0', err))
                                         } else {
-                                            console.log('comprobar bobinas3', _array)
                                             // NO ROLL FOUND.
                                             const insertAutopastWithoutRoll = [...item, positionRoll];
                                             genericInsertFunction(insertWithoutRoll, insertAutopastWithoutRoll)
-                                                .then(response => console.log('response NO EXIST ROLLS', response))
-                                                .catch(err => console.log('err', err))
+                                                .then(response => response)
+                                                .catch(err => Sentry_Alert('SettingsProductionScreen.js', 'func - searchStatementRoll - NO ROLL FOUND', err))
                                         }
                                     }
                                 );
                             })
                         }
-                    }, err => console.log('error en BBDD', err)
+                    }, err => Sentry_Alert('SettingsProductionScreen.js', 'transaction - searchStatementAutoProdData_Table', err)
                 )
-                ;
             });
         })
     };
@@ -369,11 +360,12 @@ const SettingsProductionScreen = () => {
                     setTimeout(() => navigation.navigate('HomeStack'), 2000);
                     resetForm();
                 } else {
-                    showToast('Error al guardar.')
+                    showToast('Error al guardar.', true)
                 }
             })
             .catch(err => {
-                showToast('Error al guardar.')
+                showToast('Error al guardar.', true)
+                Sentry_Alert('SettingsProductionScreen.js', 'handlerSendOptionsSelected - insert_production', err)
             })
     };
 
@@ -408,12 +400,10 @@ const SettingsProductionScreen = () => {
                 (_, {rows: {_array}}) => {
                     if (_array.length > 0) {
                         getMaxPaginationOptionPickerLineSelected(_array);
-                    } else {
-                        console.log('(paginacion_table) no se encontraron registros en SettingsProductionScreen\'');
                     }
                 }
             );
-        });
+        }, err => Sentry_Alert('SettingsProductionScreen.js', 'transaction - limitPagination', err));
     }
 
     const fullProductionSchema = Yup.object().shape({
@@ -456,7 +446,6 @@ const SettingsProductionScreen = () => {
                         setCheckedAutomaticAutopasters(false)
                         return alert('no existen registros anteriores similares.')
                     }
-                    console.log('resp', response)
                     let autopasters = [...response];
                     if (isMedia !== 0) {
                         autopasters = response.filter(i => parseInt(i) !== isMedia)
@@ -464,7 +453,7 @@ const SettingsProductionScreen = () => {
                     setEnteras(autopasters)
                     setCheckedAutomaticAutopasters(true)
                 })
-                .catch(err => console.log(err))
+                .catch(err => Sentry_Alert('SettingsProductionScreen.js', 'func - autopastersAutomaticSelection', err))
         } else {
             alert('completa loss campos de los apartados "paso1" y "paso 2"')
         }
@@ -499,7 +488,7 @@ const SettingsProductionScreen = () => {
                         getselectedNulls(dif / response.length)
                     }
                 })
-                .catch(err => console.log(err))
+                .catch(err => Sentry_Alert('SettingsProductionScreen.js', 'transaction  selectAveragePreviousProductions', err))
         }
         setCheckedAutomaticNulls(!isCheckedAutomaticNulls)
     };
@@ -682,7 +671,7 @@ const SettingsProductionScreen = () => {
                                                                         setFieldValue('pickerlinProd', itemValue)
                                                                         getselectedLinProd(itemValue)
                                                                     } else {
-                                                                        showToast("Debes escoger una opción válida...")
+                                                                        showToast("Debes escoger una opción válida...", true)
                                                                     }
                                                                 }}
                                                                 dataOptionsPicker={
@@ -730,7 +719,7 @@ const SettingsProductionScreen = () => {
                                                                         setFieldValue('pickerPagination', itemValue)
                                                                         getselectedPagination(itemValue)
                                                                     } else {
-                                                                        showToast("Debes escoger una opción válida...")
+                                                                        showToast("Debes escoger una opción válida...", true)
                                                                     }
                                                                 }}
                                                                 dataOptionsPicker={
@@ -782,7 +771,7 @@ const SettingsProductionScreen = () => {
                                                                         setFieldValue('pickerProduct', itemValue)
                                                                         getselectedProduct(itemValue)
                                                                     } else {
-                                                                        showToast("Debes escoger una opción válida...")
+                                                                        showToast("Debes escoger una opción válida...", true)
                                                                     }
                                                                 }}
                                                                 dataOptionsPicker={
@@ -830,7 +819,7 @@ const SettingsProductionScreen = () => {
                                                                         setFieldValue('pickerMedition', itemValue)
                                                                         getselectedMedition(itemValue)
                                                                     } else {
-                                                                        showToast("Debes escoger una opción válida...")
+                                                                        showToast("Debes escoger una opción válida...", true)
                                                                     }
                                                                 }}
                                                                 dataOptionsPicker={

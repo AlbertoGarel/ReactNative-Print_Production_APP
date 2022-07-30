@@ -3,7 +3,7 @@ import {View, Text, Dimensions, StyleSheet, ImageBackground, TouchableOpacity} f
 import Carousel, {Pagination} from 'react-native-snap-carousel';
 import {COLORS} from "../assets/defaults/settingStyles";
 import {useNavigation} from '@react-navigation/native';
-import {groupedAutopasters, kilosByAutopasterCalc} from "../utils";
+import {groupedAutopasters, kilosByAutopasterCalc, Sentry_Alert} from "../utils";
 import {genericTransaction} from "../dbCRUD/actionsFunctionsCrud";
 import {
     autopasters_prod_table_by_production,
@@ -73,13 +73,13 @@ const Caroussel = ({items, deleteProduction, spinnerSelected, handlerSpinner}) =
                         definedAutopasters: await response
                     };
                 } catch (err) {
-                    console.log(err)
+                    Sentry_Alert('Caroussel.js', 'transaction - autopasters_prod_table_by_production', err)
                 }
             })
             .then(async response => {
                 await navigation.navigate('FullProduction', response)
             })
-            .catch(err => console.log(err));
+            .catch(err => Sentry_Alert('Caroussel.js', 'updateInfoForSectionList', err));
     };
 
 
@@ -89,7 +89,8 @@ const Caroussel = ({items, deleteProduction, spinnerSelected, handlerSpinner}) =
                               onLongPress={() => deleteProduction(item)}>
                 <View style={{...styles.itemCont, height: contHeight}}
                 >
-                    {item.id === spinnerSelected.item && spinnerSelected.spin && <View style={styles.spinnerCont}><SpinnerSquares/></View>}
+                    {item.id === spinnerSelected.item && spinnerSelected.spin &&
+                    <View style={styles.spinnerCont}><SpinnerSquares/></View>}
                     <Text style={styles.datetext}>{item['Fecha de creación']}</Text>
                     <Text style={styles.prodText}>
                         {item.producto.length > 10 ?

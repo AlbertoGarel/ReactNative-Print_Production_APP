@@ -5,6 +5,7 @@ import {editSVG} from "../../assets/svg/svgContents";
 import {COLORS} from "../../assets/defaults/settingStyles";
 import {getDatas, storeData} from "../../data/AsyncStorageFunctions";
 import PropTypes from "prop-types";
+import {Sentry_Alert} from "../../utils";
 
 const Extrainfo = ({
                        productToRender,
@@ -33,12 +34,12 @@ const Extrainfo = ({
                 const newGroupData = [
                     ...diferentData, groupDataAndSave
                 ];
-                storeData('@simpleProdData', newGroupData).then(r => {
-                    updateGetStorage();
-                })
+                storeData('@simpleProdData', newGroupData)
+                    .then(() => updateGetStorage())
+                    .catch(err => Sentry_Alert('Extrainfo.js', 'storeData - @simpleProdData', err))
 
             })
-            .catch(err => console.log(err));
+            .catch(err => Sentry_Alert('Extrainfo.js', 'getDatas - @simpleProdData', err));
     };
 
     return (
