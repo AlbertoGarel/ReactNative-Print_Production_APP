@@ -22,21 +22,21 @@ export async function openDatabase(pathToDatabaseFile: fileDB2): SQLite.WebSQLDa
     if (!(await FileSystem.getInfoAsync(FileSystem.documentDirectory + 'SQLite')).exists) {
         await FileSystem.makeDirectoryAsync(FileSystem.documentDirectory + 'SQLite');
     }
-    //descomentar para no pisar bbdd n cada inicio.
-    // if (!(await FileSystem.getInfoAsync(FileSystem.documentDirectory + 'SQLite/bobinas.db')).exists) {
-    await FileSystem.downloadAsync(
-        Asset.fromModule(fileDB2).uri,
-        FileSystem.documentDirectory + 'SQLite/bobinas.db'
-    );
-    // }
-    return SQLite.openDatabase('bobinas.db');// READ ONLY (copy)
-    // return SQLite.openDatabase(FileSystem.documentDirectory + 'SQLite/bobinas.db');//READ AND WRITE
+
+    if (!(await FileSystem.getInfoAsync(FileSystem.documentDirectory + 'SQLite/bobinas.db')).exists) {//descomentar para no pisar bbdd n cada inicio o comentar para conservar tabla con contenido de prueba.
+        await FileSystem.downloadAsync(
+            Asset.fromModule(fileDB2).uri,
+            FileSystem.documentDirectory + 'SQLite/bobinas.db'
+        );
+    }
+    // return SQLite.openDatabase('bobinas.db');// READ ONLY (copy) comment to production mode
+    return SQLite.openDatabase(FileSystem.documentDirectory + 'SQLite/bobinas.db');//READ AND WRITE
 }
 
 /**
  * HANDLER ERRORS
  */
-export function HandlingErrorsSQLITE(err){
+export function HandlingErrorsSQLITE(err) {
     let message = '';
     switch (err.toString()) {
         case 'Error: FOREIGN KEY constraint failed (code 1811 SQLITE_CONSTRAINT_TRIGGER)':
@@ -48,6 +48,7 @@ export function HandlingErrorsSQLITE(err){
     }
     return message;
 }
+
 /**
  *  MEDITION_STYLE
  */

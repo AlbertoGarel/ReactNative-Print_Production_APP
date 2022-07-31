@@ -20,7 +20,7 @@ const LineasProduccionCrud = ({props}) => {
     const linProdForm = useRef();
     const linProdRef = useRef();
 
-    const [linProdState, setLinProdState] = useState();
+    const [linProdState, setLinProdState] = useState('');
 
     useEffect(() => {
         let isActive = true;
@@ -135,7 +135,7 @@ const LineasProduccionCrud = ({props}) => {
                             _onChangeText={handleChange('linProd')}
                             _onBlur={handleBlur('linProd')}
                             value={values.linProd}
-                            _defaultValue={values.linProd}
+                            _defaultValue={values.linProd.toString()}
                         />
                         {
                             !isValid &&

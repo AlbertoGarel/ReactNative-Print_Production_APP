@@ -28,7 +28,7 @@ const CoeficienteKbaCrud = ({props}) => {
     const [gramajeDB, setgramajeDB] = useState([]);
     const [stateKbaName, setStateKbaName] = useState('');
     const [stategramajeFk, setStateGramajeFK] = useState(0);
-    const [stateKbaVal, setStateKbaVal] = useState();
+    const [stateKbaVal, setStateKbaVal] = useState('');
 
     useEffect(() => {
         let isActive = true;
@@ -167,7 +167,6 @@ const CoeficienteKbaCrud = ({props}) => {
                                     />
                                 </View>
                                 <View style={{flex: 1, paddingLeft: 10}}>
-                                    {gramajeDB.length > 0 ?
                                         <CustomPicker
                                             _typeform={props.typeform}
                                             ref={gramajeRef}
@@ -177,7 +176,7 @@ const CoeficienteKbaCrud = ({props}) => {
                                             }}
                                             name={'pickerGramaje'}
                                             itemStyle={{fontFamily: 'Anton'}}
-                                            mode={'dropdown'}
+                                            mode={'dialog'}
                                             value={values.pickerGramaje}
                                             selectedValue={values.pickerGramaje}
                                             onValueChange={(itemValue) => {
@@ -196,9 +195,6 @@ const CoeficienteKbaCrud = ({props}) => {
                                             })}
                                             defaultItemLabel={'Escoge un gramaje'}
                                         />
-                                        :
-                                        null
-                                    }
                                 </View>
                             </View>
                         </View>
@@ -217,7 +213,7 @@ const CoeficienteKbaCrud = ({props}) => {
                             _onChangeText={handleChange('kbaname')}
                             _onBlur={handleBlur('kbaname')}
                             value={values.kbaname}
-                            _defaultValue={values.kbaname}
+                            _defaultValue={values.kbaname.toString()}
                         />
                         {(errors.kbaVal && touched.kbaVal) &&
                         <Text style={{fontSize: 10, color: 'red', marginLeft: 10}}>{errors.kbaVal}</Text>
@@ -234,7 +230,7 @@ const CoeficienteKbaCrud = ({props}) => {
                             _onChangeText={handleChange('kbaVal')}
                             _onBlur={handleBlur('kbaVal')}
                             value={values.kbaVal}
-                            _defaultValue={values.kbaVal}
+                            _defaultValue={values.kbaVal.toString()}
                         />
                         {
                             !isValid &&

@@ -177,7 +177,7 @@ const ProductosCrud = ({props}) => {
                             _onChangeText={handleChange('productName')}
                             _onBlur={handleBlur('productName')}
                             value={values.productName}
-                            _defaultValue={values.productName}
+                            _defaultValue={values.productName.toString()}
                         />
                         <View style={{paddingLeft: 10, paddingRight: 10, paddingBottom: 10}}>
                             {(errors.pickerCoefProd && touched.pickerCoefProd) &&
@@ -192,7 +192,6 @@ const ProductosCrud = ({props}) => {
                                     />
                                 </View>
                                 <View style={{flex: 1, paddingLeft: 10}}>
-                                    {coeficienteDB.length > 0 ?
                                         <CustomPicker
                                             _typeform={props.typeform}
                                             ref={coefProdRef}
@@ -202,7 +201,7 @@ const ProductosCrud = ({props}) => {
                                             }}
                                             name={'pickerCoefProd'}
                                             itemStyle={{fontFamily: 'Anton'}}
-                                            mode={'dropdown'}
+                                            mode={'dialog'}
                                             value={values.pickerCoefProd}
                                             selectedValue={values.pickerCoefProd}
                                             onValueChange={(itemValue) => {
@@ -221,9 +220,6 @@ const ProductosCrud = ({props}) => {
                                             })}
                                             defaultItemLabel={'Escoge un coeficiente KBA...'}
                                         />
-                                        :
-                                        null
-                                    }
                                 </View>
                             </View>
                         </View>
@@ -254,7 +250,6 @@ const ProductosCrud = ({props}) => {
                                     />
                                 </View>
                                 <View style={{flex: 1, paddingLeft: 10}}>
-                                    {papelComDB.length > 0 ?
                                         <CustomPicker
                                             _typeform={props.typeform}
                                             ref={papelComRef}
@@ -264,7 +259,7 @@ const ProductosCrud = ({props}) => {
                                             }}
                                             name={'pickerPapelComProd'}
                                             itemStyle={{fontFamily: 'Anton'}}
-                                            mode={'dropdown'}
+                                            mode={'dialog'}
                                             value={values.pickerPapelComProd}
                                             selectedValue={values.pickerPapelComProd}
                                             onValueChange={(itemValue) => {
@@ -283,9 +278,6 @@ const ProductosCrud = ({props}) => {
                                             })}
                                             defaultItemLabel={'Escoge papel común...'}
                                         />
-                                        :
-                                        null
-                                    }
                                 </View>
                             </View>
                         </View>

@@ -8,7 +8,8 @@ import {
     View,
     ScrollView,
     PanResponder,
-    ActivityIndicator
+    ActivityIndicator,
+    Image
 } from 'react-native';
 import {COLORS} from "../assets/defaults/settingStyles";
 import {LinearGradient} from "expo-linear-gradient";
@@ -42,11 +43,14 @@ const ChartsScreen = () => {
     //states data
     const [groupedItems, getGroupedItems] = useState(['']);
     const [itemTitles, getItemTitles] = useState([]);
+    const [empty, setEmpty] = useState(false);
 
     useEffect(() => {
-        headerScrollView.current.scrollTo({x: dataSourceCords[active], y: 0, animated: true})
+        if (!empty) {
+            headerScrollView.current.scrollTo({x: dataSourceCords[active], y: 0, animated: true})
+        }
         clearTimeout(animationActiveRef)
-    }, [active]);
+    }, [active, empty]);
 
     useEffect(() => {
         db.transaction(tx => {
@@ -58,6 +62,9 @@ const ChartsScreen = () => {
                         const groupedData = toGroup(_array);
                         getItemTitles(Object.keys(groupedData).sort());
                         getGroupedItems(groupedData);
+                        setEmpty(false)
+                    } else {
+                        setEmpty(true)
                     }
                 }
             );
@@ -150,8 +157,23 @@ const ChartsScreen = () => {
     };
 
 
-    if (groupedItems.length === 0) {
-        return <Text>Is Empty</Text>
+    if (empty) {
+        return (
+            <View style={{
+                flex: 1,
+                justifyContent: 'center',
+                alignItems: 'center'
+            }}>
+                <Image
+                    style={{backgroundColor: 'transparent', resizeMode: 'contain'}}
+                    source={require('../assets/images/graf.png')}
+                />
+                <Text style={{
+                    fontFamily: 'Anton',
+                    fontSize: 20
+                }}>NO EXISTEN REGISTROS.</Text>
+            </View>
+        )
     }
 
     return (

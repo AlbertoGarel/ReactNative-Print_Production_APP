@@ -20,7 +20,7 @@ const PropBobinasCrud = ({props}) => {
     const propBobForm = useRef();
     const propBobRef = useRef();
 
-    const [linProdState, setLinProdState] = useState();
+    const [linProdState, setLinProdState] = useState('');
 
     useEffect(() => {
         let isActive = true;
@@ -137,7 +137,7 @@ const PropBobinasCrud = ({props}) => {
                             _onChangeText={handleChange('propBob')}
                             _onBlur={handleBlur('propBob')}
                             value={values.propBob}
-                            _defaultValue={values.propBob}
+                            _defaultValue={values.propBob.toString()}
                         />
                         {
                             !isValid &&

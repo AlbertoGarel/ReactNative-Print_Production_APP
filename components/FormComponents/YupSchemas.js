@@ -49,7 +49,7 @@ export const FormYupSchemas = {
         .max(100, errorMessages.tooLong)
         .required(errorMessages.required),
     paginationVal: Yup.number()
-        .min(16, 'Paginción mínima en 16')
+        .min(8, 'Paginción mínima en 8')
         .max(200, errorMessages.tooLong)
         .required(errorMessages.required),
     gramajeVal: Yup.number()

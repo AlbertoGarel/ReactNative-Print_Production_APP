@@ -20,7 +20,7 @@ const GramajeCrud = ({props}) => {
     const gramajeForm = useRef();
     const gramajeRef = useRef();
 
-    const [gramajeState, setGramajeState] = useState();
+    const [gramajeState, setGramajeState] = useState('');
 
     useEffect(() => {
         let isActive = true;
@@ -135,7 +135,7 @@ const GramajeCrud = ({props}) => {
                             _onChangeText={handleChange('gramaje')}
                             _onBlur={handleBlur('gramaje')}
                             value={values.gramaje}
-                            _defaultValue={values.gramaje}
+                            _defaultValue={values.gramaje.toString()}
                         />
                         {
                             !isValid &&

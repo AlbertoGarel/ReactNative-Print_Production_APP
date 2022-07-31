@@ -27,7 +27,7 @@ const AutopastersCrud = ({props}) => {
     const [linProdDB, setLinProdDB] = useState([]);
     //if min value for formik is 1, in state will 0.
     const [stateLinProdFk, setStateLinProdFK] = useState(0);
-    const [stateAutopastName, setStateAutopastName] = useState(0);
+    const [stateAutopastName, setStateAutopastName] = useState('');
     //for item picker values 0 and 1 (true / false ), negative value.
     const [stateAutopastContainMedia, setStateAutopastContainMedia] = useState(-1);
 
@@ -177,7 +177,6 @@ const AutopastersCrud = ({props}) => {
                                     />
                                 </View>
                                 <View style={{flex: 1, paddingLeft: 10}}>
-                                    {linProdDB.length > 0 ?
                                         <CustomPicker
                                             _typeform={props.typeform}
                                             ref={linprodRef}
@@ -187,7 +186,7 @@ const AutopastersCrud = ({props}) => {
                                             }}
                                             name={'pickerLinProd'}
                                             itemStyle={{fontFamily: 'Anton'}}
-                                            mode={'dropdown'}
+                                            mode={'dialog'}
                                             value={values.pickerLinProd}
                                             selectedValue={values.pickerLinProd}
                                             onValueChange={(itemValue) => {
@@ -206,9 +205,6 @@ const AutopastersCrud = ({props}) => {
                                             })}
                                             defaultItemLabel={'Escoge una línea de producción...'}
                                         />
-                                        :
-                                        null
-                                    }
                                 </View>
                             </View>
                         </View>
@@ -222,12 +218,12 @@ const AutopastersCrud = ({props}) => {
                             svgHeight={50}
                             placeholder={'Nombre para autopaster...'}
                             text={''}
-                            type={'default'}
+                            type={'numeric'}
                             _name={'autopastName'}
                             _onChangeText={handleChange('autopastName')}
                             _onBlur={handleBlur('autopastName')}
                             value={values.autopastName}
-                            _defaultValue={values.autopastName}
+                            _defaultValue={values.autopastName.toString()}
                         />
                         <View style={{paddingLeft: 10, paddingRight: 10, paddingBottom: 10}}>
                             {(errors.autopastContMed && touched.autopastContMed) &&
@@ -253,7 +249,6 @@ const AutopastersCrud = ({props}) => {
                                     />
                                 </View>
                                 <View style={{flex: 1, paddingLeft: 10}}>
-                                    {linProdDB.length > 0 ?
                                         <CustomPicker
                                             _typeform={props.typeform}
                                             ref={medRef}
@@ -263,7 +258,7 @@ const AutopastersCrud = ({props}) => {
                                             }}
                                             name={'autopastContMed'}
                                             itemStyle={{fontFamily: 'Anton'}}
-                                            mode={'dropdown'}
+                                            mode={'dialog'}
                                             value={values.autopastContMed}
                                             selectedValue={values.autopastContMed}
                                             onValueChange={(itemValue) => {
@@ -289,9 +284,6 @@ const AutopastersCrud = ({props}) => {
                                             })}
                                             defaultItemLabel={'Tipo de bobina...'}
                                         />
-                                        :
-                                        null
-                                    }
                                 </View>
                             </View>
                         </View>

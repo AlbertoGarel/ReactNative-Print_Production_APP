@@ -29,8 +29,8 @@ const MeditionStyleCrud = ({props}) => {
     const [gramajeDB, setgramajeDB] = useState([]);
     const [statemeditionType, setStateMeditionType] = useState('');
     const [stategramajeFk, setStateGramajeFK] = useState(0);
-    const [stateFullVal, setStateFullVal] = useState();
-    const [stateMedlVal, setStateMedVal] = useState();
+    const [stateFullVal, setStateFullVal] = useState('');
+    const [stateMedlVal, setStateMedVal] = useState('');
 
     useEffect(() => {
         let isActive = true;
@@ -157,7 +157,7 @@ const MeditionStyleCrud = ({props}) => {
                             {(errors.pickerGramaje && touched.pickerGramaje) &&
                             < Text style={{fontSize: 10, color: 'red'}}>{errors.pickerGramaje}</Text>
                             }
-                            <View style={style.contpicker}>
+                            <View style={styles.contpicker}>
                                 <View style={styles.IconStyle}>
                                     <SvgComponent
                                         svgData={gramaje}
@@ -166,7 +166,6 @@ const MeditionStyleCrud = ({props}) => {
                                     />
                                 </View>
                                 <View style={{flex: 1, paddingLeft: 10}}>
-                                    {gramajeDB.length > 0 ?
                                         <CustomPicker
                                             _typeform={props.typeform}
                                             ref={gramajeRef}
@@ -176,7 +175,7 @@ const MeditionStyleCrud = ({props}) => {
                                             }}
                                             name={'pickerGramaje'}
                                             itemStyle={{fontFamily: 'Anton'}}
-                                            mode={'dropdown'}
+                                            mode={'dialog'}
                                             value={values.pickerGramaje}
                                             selectedValue={values.pickerGramaje}
                                             onValueChange={(itemValue) => {
@@ -195,9 +194,6 @@ const MeditionStyleCrud = ({props}) => {
                                             })}
                                             defaultItemLabel={'Escoge un gramaje'}
                                         />
-                                        :
-                                        null
-                                    }
                                 </View>
                             </View>
                         </View>
@@ -211,12 +207,12 @@ const MeditionStyleCrud = ({props}) => {
                             svgHeight={50}
                             placeholder={'Nombre para medición...'}
                             text={''}
-                            // type={'numeric'}
+                            type={'default'}
                             _name={'meditionStyle'}
                             _onChangeText={handleChange('meditionStyle')}
                             _onBlur={handleBlur('meditionStyle')}
                             value={values.meditionStyle}
-                            _defaultValue={values.meditionStyle}
+                            _defaultValue={values.meditionStyle.toString()}
                         />
                         {(errors.fullVal && touched.fullVal) &&
                         <Text style={{fontSize: 10, color: 'red', marginLeft: 10}}>{errors.fullVal}</Text>
@@ -233,7 +229,7 @@ const MeditionStyleCrud = ({props}) => {
                             _onChangeText={handleChange('fullVal')}
                             _onBlur={handleBlur('fullVal')}
                             value={values.fullVal}
-                            _defaultValue={values.fullVal}
+                            _defaultValue={values.fullVal.toString()}
                         />
                         {(errors.medVal && touched.medVal) &&
                         <Text style={{fontSize: 10, color: 'red', marginLeft: 10}}>{errors.medVal}</Text>
@@ -250,7 +246,7 @@ const MeditionStyleCrud = ({props}) => {
                             _onChangeText={handleChange('medVal')}
                             _onBlur={handleBlur('medVal')}
                             value={values.medVal}
-                            _defaultValue={values.medVal}
+                            _defaultValue={values.medVal.toString()}
                         />
                         {
                             !isValid &&

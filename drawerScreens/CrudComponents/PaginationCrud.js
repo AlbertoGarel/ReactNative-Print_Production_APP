@@ -20,7 +20,7 @@ const PaginationCrud = ({props}) => {
     const PaginationForm = useRef();
     const paginationRef = useRef();
 
-    const [paginationState, setPaginationState] = useState();
+    const [paginationState, setPaginationState] = useState('');
 
     useEffect(() => {
         let isActive = true;
@@ -137,7 +137,7 @@ const PaginationCrud = ({props}) => {
                             _onChangeText={handleChange('pagination')}
                             _onBlur={handleBlur('pagination')}
                             value={values.pagination}
-                            _defaultValue={values.pagination}
+                            _defaultValue={values.pagination.toString()}
                         />
                         {
                             !isValid &&
