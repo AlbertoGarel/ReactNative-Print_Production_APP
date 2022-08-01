@@ -7,3 +7,7 @@ module.exports = {
         assetExts: [...defaultConfig.resolver.assetExts, 'db'],
     },
 };
+
+defaultConfig.transformer.minifierConfig.compress.drop_console = true;
+
+module.exports = defaultConfig;
