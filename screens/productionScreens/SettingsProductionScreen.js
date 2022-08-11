@@ -35,6 +35,8 @@ import CustomTextInput from "../../components/FormComponents/CustomTextInput";
 import SvgComponent from "../../components/SvgComponent";
 import CustomPicker from "../../components/FormComponents/CustomPicker";
 import {
+    autopasters_prod_table_by_production,
+    dataProductSelectedAllInfo,
     getAutopasterByLineaID,
     picker_medition_style,
     picker_producto,
@@ -59,17 +61,16 @@ const searchStatementAutoProdData_Table =
      INNER JOIN bobina_table ON autopasters_prod_data.bobina_fk = bobina_table.codigo_bobina
      WHERE bobina_table.autopaster_fk = ? AND bobina_table.gramaje_fk = ?
      AND bobina_table.papel_comun_fk = ? AND
-     autopasters_prod_data.resto_previsto > 0 AND
      autopasters_prod_data.media_defined = ? ORDER BY autopasters_prod_data.resto_previsto DESC;`;
+
 const searchStatementRoll =
-    `SELECT * FROM bobina_table
+    `SELECT * FROM bobina_table 
      WHERE NOT EXISTS(SELECT 1 FROM autopasters_prod_data WHERE (autopasters_prod_data.bobina_fk = bobina_table.codigo_bobina))
      AND bobina_table.autopaster_fk = ?
      AND bobina_table.gramaje_fk = ?
      AND bobina_table.papel_comun_fk = ?
      AND bobina_table.media = ?
-     AND (SELECT MIN(bobina_table.peso_actual) FROM bobina_table)
-     AND bobina_table.peso_actual > 0;`
+     AND bobina_table.peso_actual > 0 ORDER BY bobina_table.peso_actual ASC;`
 
 // [productionID, autopasterFK, bobinaFK, restoPrevisto(calc), mediaDefined(ismedia)]
 const insertAutopastCode =
@@ -87,7 +88,7 @@ const SettingsProductionScreen = () => {
     const navigation = useNavigation();
 
     let toastRef;
-    const showToast = (message, isError) => {
+    const showToast = (message, isError = false) => {
         if (!isError) {
             toastRef.props.style.backgroundColor = '#00ff00';
         }
@@ -287,8 +288,8 @@ const SettingsProductionScreen = () => {
         } else {
             getSelectedAutopasterswithrolls = [...getSelectedAutopasterswithrolls, ..._enteras, _media];
         }
-        db.transaction(tx => {
-            getSelectedAutopasterswithrolls.forEach(async item => {
+        db.transaction(async tx => {
+            for await (let item of getSelectedAutopasterswithrolls) {
                 let coefRoll = 0;
                 let nowRollWeight = 0;
                 let positionRoll = 1;
@@ -343,30 +344,45 @@ const SettingsProductionScreen = () => {
                         }
                     }, err => Sentry_Alert('SettingsProductionScreen.js', 'transaction - searchStatementAutoProdData_Table', err)
                 )
-            });
+            }
+            ;
         })
     };
 
-    const handlerSendOptionsSelected = (toSendAutopastProd, toSendProd) => {
+    async function handlerSendOptionsSelected(toSendAutopastProd, toSendProd) {
         const insert_production = "INSERT INTO produccion_table (produccion_id, editions, linea_fk, medition_fk, pagination_fk, producto_fk, tirada, nulls, fecha_produccion) VALUES (?,?,?,?,?,?,?,?,?);"
         const prod_data = Object.values(toSendProd);
         //SEARCH BOBINAS FUNCTION
-        genericInsertFunction(insert_production, prod_data)
-            .then(result => {
-                if (result.rowsAffected > 0) {
-                    //LOOP INSERT DATA
-                    groupAuto(toSendAutopastProd, toSendProd);
-                    showToast('Guardado con éxito.', false);
-                    setTimeout(() => navigation.navigate('HomeStack'), 2000);
-                    resetForm();
-                } else {
-                    showToast('Error al guardar.', true)
-                }
-            })
-            .catch(err => {
-                showToast('Error al guardar.', true)
-                Sentry_Alert('SettingsProductionScreen.js', 'handlerSendOptionsSelected - insert_production', err)
-            })
+        try {
+            const insertProd = await genericInsertFunction(insert_production, prod_data)
+            if (insertProd.rowsAffected === 0) throw new Error('Error al guardar.')
+            //LOOP INSERT DATA
+            const group = await groupAuto(toSendAutopastProd, toSendProd);
+            const dataProduction = await genericTransaction(dataProductSelectedAllInfo, [toSendProd.id]);
+            const autopastersForProd = await genericTransaction(
+                `SELECT * FROM bobina_table
+                    INNER JOIN autopasters_prod_data ON autopasters_prod_data.autopaster_fk = bobina_table.autopaster_fk
+                    WHERE bobina_table.papel_comun_fk = ? AND bobina_table.peso_actual > ?
+                    AND bobina_table.autopaster_fk = ? AND bobina_table.gramaje_fk = ?`,
+                [dataProduction[0].papel_comun_id, 0, 5, dataProduction[0].gramaje_id])
+            // const fillAutopasters =
+            //     const getRoll = await genericTransaction(
+            //     `SELECT * FROM bobina_table
+            //             INNER JOIN autopasters_prod_data ON autopasters_prod_data.autopaster_fk = bobina_table.autopaster_fk
+            //             WHERE bobina_table.papel_comun_fk = ? AND bobina_table.peso_actual > ?
+            //             AND bobina_table.autopaster_fk = ? AND bobina_table.gramaje_fk = ?`,
+            //     [dataProduction[0].papel_comun_id, 0, item.autopaster_fk, dataProduction[0].gramaje_id]
+            // )
+
+            showToast('Guardado con éxito.', false);
+            setTimeout(() => navigation.navigate('HomeStack'), 2000);
+            resetForm();
+        } catch (err) {
+            console.log(err)
+            showToast(err.message, true)
+            Sentry_Alert('SettingsProductionScreen.js', 'handlerSendOptionsSelected - insert_production', err)
+        }
+
     };
 
     const resetForm = () => {
@@ -539,7 +555,7 @@ const SettingsProductionScreen = () => {
                     customMedia: isMedia
                 }}
                 validationSchema={fullProductionSchema}
-                onSubmit={values => {
+                onSubmit={async values => {
                     const create_id = Date.now();
                     const objectAutopast = {
                         id: create_id,
@@ -561,7 +577,7 @@ const SettingsProductionScreen = () => {
                         nulls: values.inputNulls,
                         date: values.inputDate.replace(/\//g, '-'),
                     };
-                    handlerSendOptionsSelected(objectAutopast, objectProd)
+                    await handlerSendOptionsSelected(objectAutopast, objectProd);
                 }}
             >
                 {({
@@ -1089,7 +1105,7 @@ const SettingsProductionScreen = () => {
                                                             title={'BOBINA ENTERA'}
                                                             data={autopastersSelectedLineProd}
                                                             keysForData={{
-                                                                id: 'name_autopaster',
+                                                                id: 'autopaster_id',
                                                                 value: 'autopaster_id'
                                                             }}
                                                             multipleSelect={true}
@@ -1112,7 +1128,7 @@ const SettingsProductionScreen = () => {
                                                             title={'MEDIA BOBINA'}
                                                             data={autopastersSelectedLineProd}
                                                             keysForData={{
-                                                                id: 'name_autopaster',
+                                                                id: 'autopaster_id',
                                                                 value: 'autopaster_id'
                                                             }}
                                                             multipleSelect={false}

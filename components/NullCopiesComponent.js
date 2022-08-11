@@ -166,7 +166,7 @@ const NullCopiesComponent = ({props}) => {
                                 fontFamily: 'Anton',
                                 alignSelf: 'flex-start'
                             }}
-                            >* Datos almacenados en local.</Text>
+                            >* Datos guardados en dispositivo.</Text>
                         </View>
                     </>
                 )}

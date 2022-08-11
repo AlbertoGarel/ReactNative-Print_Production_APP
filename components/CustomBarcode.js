@@ -119,7 +119,7 @@ const CustomBarcode = ({
             getCodePathSVG(bars.join(' '), value, roll_autopaster);
         }
 
-    }, [bars])
+    }, [bars, getCodePathSVG])
 
     return (
         <View

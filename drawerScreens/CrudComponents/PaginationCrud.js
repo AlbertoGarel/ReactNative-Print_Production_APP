@@ -12,7 +12,7 @@ import CustomTextInput from "../../components/FormComponents/CustomTextInput";
 import {paginationSVG} from "../../assets/svg/svgContents";
 import ResetButtonForm from "../../components/FormComponents/ResetButtonForm";
 import ToastMesages from "../../components/ToastMessages";
-import {Sentry_Alert} from "../../utils";
+import {handlerSqliteErrors, Sentry_Alert} from "../../utils";
 
 const PaginationCrud = ({props}) => {
 
@@ -36,12 +36,10 @@ const PaginationCrud = ({props}) => {
                             //clone array
                             const responsetObj = [..._array];
                             setPaginationState(responsetObj[0].paginacion_value.toString())
-                        } else {
-                            console.log('Error al conectar base de datos en IndividualCalculation Component');
                         }
-                    }
+                    }, err => Sentry_Alert('PaginationCrud.js', 'transaction - paginationByID', err)
                 );
-            }, err => Sentry_Alert('PaginationCrud.js', 'transaction - paginationByID', err));
+            });
         }
 
         return () => isActive = false;
@@ -80,7 +78,12 @@ const PaginationCrud = ({props}) => {
                                 }
                             })
                             .catch(err => {
-                                showToast('Error al actualizar');
+                                const handlerCustomError = handlerSqliteErrors(err);
+                                alert(handlerCustomError);
+                                if (!handlerCustomError) {
+                                    Sentry_Alert('AutopastersCrud.js', 'transaction - autopasterByID', err)
+                                    showToast('Error al actualizar');
+                                }
                             });
                     }
                     if (props.typeform === 'CREAR') {
@@ -95,7 +98,13 @@ const PaginationCrud = ({props}) => {
                                 }
                             })
                             .catch(err => {
-                                showToast('Error al crear registro');
+                                const handlerCustomError = handlerSqliteErrors(err);
+                                alert(handlerCustomError);
+                                if (!handlerCustomError) {
+                                    Sentry_Alert('AutopastersCrud.js', 'transaction - autopasterByID', err)
+                                    showToast('Error al crear registro');
+                                }
+
                             })
                         PaginationForm.current?.resetForm();
                     }

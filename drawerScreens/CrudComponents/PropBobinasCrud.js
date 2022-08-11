@@ -12,7 +12,7 @@ import CustomTextInput from "../../components/FormComponents/CustomTextInput";
 import {propietarioSVG} from "../../assets/svg/svgContents";
 import ResetButtonForm from "../../components/FormComponents/ResetButtonForm";
 import ToastMesages from "../../components/ToastMessages";
-import {Sentry_Alert} from "../../utils";
+import {handlerSqliteErrors, Sentry_Alert} from "../../utils";
 
 const PropBobinasCrud = ({props}) => {
 
@@ -39,9 +39,9 @@ const PropBobinasCrud = ({props}) => {
                         } else {
                             console.log('Error al conectar base de datos en IndividualCalculation Component');
                         }
-                    }
+                    }, err => Sentry_Alert('PropBobinasCrud.js', 'transaction - papelComunByID', err)
                 );
-            }, err => Sentry_Alert('PropBobinasCrud.js', 'transaction - papelComunByID', err));
+            });
         }
 
         return () => isActive = false;
@@ -75,12 +75,15 @@ const PropBobinasCrud = ({props}) => {
                             .then(result => {
                                 if (result.rowsAffected > 0) {
                                     showToast('Actualizado con éxito', false)
-                                } else {
-                                    showToast('Error al actualizar')
                                 }
                             })
                             .catch(err => {
-                                showToast('Error al actualizar');
+                                const handlerCustomError = handlerSqliteErrors(err);
+                                alert(handlerCustomError);
+                                if (!handlerCustomError) {
+                                    Sentry_Alert('AutopastersCrud.js', 'transaction - autopasterByID', err)
+                                    showToast('Error al actualizar');
+                                }
                             })
                     }
                     if (props.typeform === 'CREAR') {
@@ -90,12 +93,16 @@ const PropBobinasCrud = ({props}) => {
                             .then(result => {
                                 if (result.rowsAffected > 0) {
                                     showToast('Creado con éxito', false)
-                                } else {
-                                    showToast('Error al crear registro')
                                 }
                             })
                             .catch(err => {
-                                showToast('Error al crear registro');
+                                const handlerCustomError = handlerSqliteErrors(err);
+                                alert(handlerCustomError);
+                                if (!handlerCustomError) {
+                                    Sentry_Alert('AutopastersCrud.js', 'transaction - autopasterByID', err)
+                                    showToast('Error al crear registro');
+                                }
+
                             })
                         propBobForm.current?.resetForm();
                     }

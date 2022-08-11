@@ -4,11 +4,16 @@ const htmlDefaultTemplate = (dataProduction, dataUserAndEnterprise, prodResult, 
     const {date, prodLine, pagination, product, editions} = dataProduction;
     const {kilosConsumidos, kilosTirada, tiradaBruta} = prodResult;
     cardsData.sort((a, b) => a.autopaster - b.autopaster);
-    const repeatNum = cardsData.reduce((acc, item) => {
-        acc[item.autopaster] = (acc[item.autopaster] || 0) + 1;
-        return acc;
+
+    const countedItems = cardsData.reduce((acc, item) => {
+        let addHead = 1;
+        acc[item]
+            ? acc[item.autopaster_fk] = acc[item.autopaster_fk] + 1
+            : acc[item.autopaster_fk] = addHead + 1
+        return acc
     }, {});
-    let maxRepeat = Object.values(repeatNum).sort((a, b) => b - a)[0];
+
+    let maxRepeat = Object.values(countedItems).sort((a, b) => b - a)[0];
     let autopasters = numAutopastersLine;
 
     //falta: trabajador, empresa

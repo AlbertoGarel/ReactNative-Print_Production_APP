@@ -15,7 +15,7 @@ import ToastMesages from "../../components/ToastMessages";
 import ResetButtonForm from "../../components/FormComponents/ResetButtonForm";
 import {genericUpdatefunction, genericInsertFunction} from '../../dbCRUD/actionsFunctionsCrud';
 import {Picker} from '@react-native-picker/picker';
-import {Sentry_Alert} from "../../utils";
+import {handlerSqliteErrors, Sentry_Alert} from "../../utils";
 
 const ProductosCrud = ({props}) => {
 
@@ -50,9 +50,9 @@ const ProductosCrud = ({props}) => {
                             setStateCoefProdFk(responsetObj[0].cociente_total_fk);
                             setStatePapelCom(responsetObj[0].papel_comun_fk)
                         }
-                    }
+                    }, err => Sentry_Alert('ProductosCrud.js', 'transaction - produtoByID', err)
                 );
-            }, err => Sentry_Alert('ProductosCrud.js', 'transaction - produtoByID', err));
+            });
         }
 
         //COEFICIENTE ALL REQUEST
@@ -64,9 +64,9 @@ const ProductosCrud = ({props}) => {
                     if (_array.length > 0) {
                         setCoeficienteDB(_array);
                     }
-                }
+                }, err => Sentry_Alert('ProductosCrud.js', 'transaction - pickerKBA', err)
             );
-        }, err => Sentry_Alert('ProductosCrud.js', 'transaction - pickerKBA', err));
+        });
 
         // ALL REQUEST
         db.transaction(tx => {
@@ -77,9 +77,9 @@ const ProductosCrud = ({props}) => {
                     if (_array.length > 0) {
                         setPapelComDB(_array);
                     }
-                }
+                }, err => Sentry_Alert('ProductosCrud.js', 'transaction - pickerPapelcomun', err)
             );
-        }, err => Sentry_Alert('ProductosCrud.js', 'transaction - pickerPapelcomun', err));
+        });
 
         return () => isActive = false;
     }, []);
@@ -116,12 +116,15 @@ const ProductosCrud = ({props}) => {
                             .then(result => {
                                 if (result.rowsAffected > 0) {
                                     showToast('Actualizado con éxito', false)
-                                } else {
-                                    showToast('Error al actualizar')
                                 }
                             })
                             .catch(err => {
-                                showToast('Error al actualizar');
+                                const handlerCustomError = handlerSqliteErrors(err);
+                                alert(handlerCustomError);
+                                if (!handlerCustomError) {
+                                    Sentry_Alert('AutopastersCrud.js', 'transaction - autopasterByID', err)
+                                    showToast('Error al actualizar');
+                                }
                             })
                     }
                     if (props.typeform === 'CREAR') {
@@ -131,12 +134,16 @@ const ProductosCrud = ({props}) => {
                             .then(result => {
                                 if (result.rowsAffected > 0) {
                                     showToast('Creado con éxito', false)
-                                } else {
-                                    showToast('Error al crear registro')
                                 }
                             })
                             .catch(err => {
-                                showToast('Error al crear registro');
+                                const handlerCustomError = handlerSqliteErrors(err);
+                                alert(handlerCustomError);
+                                if (!handlerCustomError) {
+                                    Sentry_Alert('AutopastersCrud.js', 'transaction - autopasterByID', err)
+                                    showToast('Error al crear registro');
+                                }
+
                             })
                         productosForm.current?.resetForm();
                     }
@@ -192,34 +199,34 @@ const ProductosCrud = ({props}) => {
                                     />
                                 </View>
                                 <View style={{flex: 1, paddingLeft: 10}}>
-                                        <CustomPicker
-                                            _typeform={props.typeform}
-                                            ref={coefProdRef}
-                                            style={{
-                                                borderWidth: .5,
-                                                borderColor: COLORS.black,
-                                            }}
-                                            name={'pickerCoefProd'}
-                                            itemStyle={{fontFamily: 'Anton'}}
-                                            mode={'dialog'}
-                                            value={values.pickerCoefProd}
-                                            selectedValue={values.pickerCoefProd}
-                                            onValueChange={(itemValue) => {
-                                                if (itemValue > 0) {
-                                                    handleChange('pickerCoefProd')
-                                                    setFieldTouched('pickerCoefProd', true)
-                                                    setFieldValue('pickerCoefProd', itemValue)
-                                                } else {
-                                                    showToast("Debes escoger una opción válida...")
-                                                }
-                                            }}
-                                            dataOptionsPicker={coeficienteDB.map((item, index) => {
-                                                return <Picker.Item key={index}
-                                                                    label={item.kba_name + ': ' + item.kba_value}
-                                                                    value={item.kba_id}/>
-                                            })}
-                                            defaultItemLabel={'Escoge un coeficiente KBA...'}
-                                        />
+                                    <CustomPicker
+                                        _typeform={props.typeform}
+                                        ref={coefProdRef}
+                                        style={{
+                                            borderWidth: .5,
+                                            borderColor: COLORS.black,
+                                        }}
+                                        name={'pickerCoefProd'}
+                                        itemStyle={{fontFamily: 'Anton'}}
+                                        mode={'dialog'}
+                                        value={values.pickerCoefProd}
+                                        selectedValue={values.pickerCoefProd}
+                                        onValueChange={(itemValue) => {
+                                            if (itemValue > 0) {
+                                                handleChange('pickerCoefProd')
+                                                setFieldTouched('pickerCoefProd', true)
+                                                setFieldValue('pickerCoefProd', itemValue)
+                                            } else {
+                                                showToast("Debes escoger una opción válida...")
+                                            }
+                                        }}
+                                        dataOptionsPicker={coeficienteDB.map((item, index) => {
+                                            return <Picker.Item key={index}
+                                                                label={item.kba_name + ': ' + item.kba_value}
+                                                                value={item.kba_id}/>
+                                        })}
+                                        defaultItemLabel={'Escoge un coeficiente KBA...'}
+                                    />
                                 </View>
                             </View>
                         </View>
@@ -250,34 +257,34 @@ const ProductosCrud = ({props}) => {
                                     />
                                 </View>
                                 <View style={{flex: 1, paddingLeft: 10}}>
-                                        <CustomPicker
-                                            _typeform={props.typeform}
-                                            ref={papelComRef}
-                                            style={{
-                                                borderWidth: .5,
-                                                borderColor: COLORS.black,
-                                            }}
-                                            name={'pickerPapelComProd'}
-                                            itemStyle={{fontFamily: 'Anton'}}
-                                            mode={'dialog'}
-                                            value={values.pickerPapelComProd}
-                                            selectedValue={values.pickerPapelComProd}
-                                            onValueChange={(itemValue) => {
-                                                if (itemValue >= 0) {
-                                                    handleChange('pickerPapelComProd')
-                                                    setFieldTouched('pickerPapelComProd', true)
-                                                    setFieldValue('pickerPapelComProd', itemValue)
-                                                } else {
-                                                    showToast("Debes escoger una opción válida...")
-                                                }
-                                            }}
-                                            dataOptionsPicker={papelComDB.map((item, index) => {
-                                                return <Picker.Item key={index}
-                                                                    label={item.papel_comun_name}
-                                                                    value={item.papel_comun_id}/>
-                                            })}
-                                            defaultItemLabel={'Escoge papel común...'}
-                                        />
+                                    <CustomPicker
+                                        _typeform={props.typeform}
+                                        ref={papelComRef}
+                                        style={{
+                                            borderWidth: .5,
+                                            borderColor: COLORS.black,
+                                        }}
+                                        name={'pickerPapelComProd'}
+                                        itemStyle={{fontFamily: 'Anton'}}
+                                        mode={'dialog'}
+                                        value={values.pickerPapelComProd}
+                                        selectedValue={values.pickerPapelComProd}
+                                        onValueChange={(itemValue) => {
+                                            if (itemValue >= 0) {
+                                                handleChange('pickerPapelComProd')
+                                                setFieldTouched('pickerPapelComProd', true)
+                                                setFieldValue('pickerPapelComProd', itemValue)
+                                            } else {
+                                                showToast("Debes escoger una opción válida...")
+                                            }
+                                        }}
+                                        dataOptionsPicker={papelComDB.map((item, index) => {
+                                            return <Picker.Item key={index}
+                                                                label={item.papel_comun_name}
+                                                                value={item.papel_comun_id}/>
+                                        })}
+                                        defaultItemLabel={'Escoge papel común...'}
+                                    />
                                 </View>
                             </View>
                         </View>

@@ -13,6 +13,7 @@ const StackedBartChartComponent = ({data, width, textStyle}) => {
 
     const [FormatedFullItems, getFormatedFullItems] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
+    const [negative, setNegative] = useState(false)
     const [dataSelected, getDataSelected] = useState({
         data: [],
         labels: [''],
@@ -31,8 +32,10 @@ const StackedBartChartComponent = ({data, width, textStyle}) => {
                 let year = item.fechaproduccion.slice(0, 4);
                 if (index === 0) {
                     //sets state with the first item sorted while the grouping is being created
+                    const prevNegative = item.kilosconsumidos - item.kilostirada;
+                    if (prevNegative < 0) setNegative(true);
                     getDataSelected({
-                        data: [item.kilosconsumidos, (item.kilosconsumidos - item.kilostirada)],
+                        data: [item.kilosconsumidos, (prevNegative < 0 ? null : prevNegative)],
                         labels: [item.fechaproduccion],
                         paginacion: item.paginacion,
                         ediciones: item.ediciones,
@@ -60,8 +63,10 @@ const StackedBartChartComponent = ({data, width, textStyle}) => {
     const handlerSelectedItem = (title) => {
         const {fechaproduccion, paginacion, tiradabruta, ejemplares, ediciones, kilostirada, kilosconsumidos} = title;
         const nulos = tiradabruta - ejemplares;
+        const prevNegative = kilosconsumidos - kilostirada;
+        if (prevNegative < 0) setNegative(true)
         const updateState = {
-            data: [kilosconsumidos, (kilosconsumidos - kilostirada)],
+            data: [kilosconsumidos, prevNegative <= 0 ? null : prevNegative],
             labels: [fechaproduccion],
             paginacion: paginacion,
             ediciones: ediciones,
@@ -123,6 +128,15 @@ const StackedBartChartComponent = ({data, width, textStyle}) => {
                     />
                     <View style={{...styles.contData, width: width / 2}}>
                         <View style={styles.centeredView}>
+                            {negative &&
+                            <View style={{backgroundColor: COLORS.white, padding: 2, margin: 2, borderRadius: 5}}>
+                                <Text style={{
+                                    color: 'red',
+                                    fontSize: 10
+                                }}>Se computaron en infome más kg. de tirada que consumidos.</Text>
+
+                            </View>
+                            }
                             <Modal
                                 animationType="slide"
                                 transparent={true}
@@ -183,6 +197,7 @@ const StackedBartChartComponent = ({data, width, textStyle}) => {
         </>
     )
 }
+
 const styles = StyleSheet.create({
     rowCenter: {
         flexDirection: 'row',

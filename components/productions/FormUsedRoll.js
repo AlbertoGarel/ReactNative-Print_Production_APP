@@ -15,9 +15,9 @@ const FormUsedRoll = ({props}) => {
     const [calculatedRadius, setCalculatedRadius] = useState('');
     const [activityIndicatorVisble, setActivityIndicatorVisible] = useState(false);
     const registerUsedRollSchema = Yup.object().shape({
-        inputUsedRoll: Yup.number().max(props.item.originalWeight, `El valor debe ser menor que el peso de fabricación.`)
-            .min(0, 'Introduce un valor v´lido')
-            .required('required'),
+        inputUsedRoll: Yup.number().max(props.item.roll.originalWeight, `El valor debe ser menor que el peso de fabricación.`)
+            .min(0, 'Introduce un valor válido')
+            .required('requerido'),
     });
 
     const searchCoef = (weightAct, weightOr) => {
@@ -68,7 +68,7 @@ const FormUsedRoll = ({props}) => {
                 fontSize: 20,
                 fontFamily: 'Anton',
                 color: COLORS.black,
-            }}><Text style={{fontSize: 15, color: '#189AB4'}}>Código: </Text>{props.item.scanCode}</Text></View>
+            }}><Text style={{fontSize: 15, color: '#189AB4'}}>Código: </Text>{props.item.roll.scanCode}</Text></View>
             <View style={{marginTop: 10}}>
                 <Formik
                     enableReinitialize={true}
@@ -78,13 +78,17 @@ const FormUsedRoll = ({props}) => {
                         calculatedradius: calculatedRadius
                     }}
                     validationSchema={registerUsedRollSchema}
-                    onSubmit={values => {
-                        const usedRollDataProps = props.item;
-                        usedRollDataProps.actualWeight = Math.round(parseInt((values.inputUsedRoll)));
-                        usedRollDataProps.radius = values.calculatedradius;
-                        //SAVE TO BBDD.
-                        props.registerNewBobina(usedRollDataProps, 'insert')
-                        props.HandlerCloseRollUsedForm()
+                    onSubmit={async values => {
+                        try {
+                            const usedRollDataProps = props.item.roll;
+                            usedRollDataProps.actualWeight = Math.round(parseInt((values.inputUsedRoll)));
+                            usedRollDataProps.radius = values.calculatedradius;
+                            //SAVE TO BBDD.
+                            await props.registerNewBobina(usedRollDataProps, props.item.action)
+                            props.HandlerCloseRollUsedForm()
+                        } catch (err) {
+
+                        }
                     }}
                 >
                     {({
@@ -119,7 +123,7 @@ const FormUsedRoll = ({props}) => {
                                     _onChangeText={handleChange('inputUsedRoll')}
                                     _onBlur={() => {
                                         handleBlur('inputUsedRoll')
-                                        searchCoef(values.inputUsedRoll, props.item.originalWeight);
+                                        searchCoef(values.inputUsedRoll, props.item.roll.originalWeight);
                                     }}
                                     _onEndEditing={() => getSelectedUsedRollWeight(values.inputUsedRoll)}
                                     value={selectedUsedRollWeight}

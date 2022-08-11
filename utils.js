@@ -5,7 +5,11 @@ import * as MailComposer from 'expo-mail-composer';
 import * as Sentry from 'sentry-expo';
 
 /**
+ *  SENTRY WARNING
  *
+ *  @param tag1: <string> name first tag
+ *  @param tag2: <string> name second tag
+ *  @param error: object error
  *
  *
  * */
@@ -107,9 +111,9 @@ export const paperRollConsummption = (radius) => {
 /**
  *  integer for full roll or float for 1/2 roll
  *
- *  @return integer or float.
+ *  @return <integer> or float.
  *
- *  @param pagination: integer (pagination value)
+ *  @param pagination: <integer> (pagination value)
  *
  **/
 export const numberOfAutopasters = (pagination) => {
@@ -119,9 +123,9 @@ export const numberOfAutopasters = (pagination) => {
 /**
  *  Identifies if autopaster is for 1/2 roll or full roll.
  *
- *  @return javascript object {media: , entera: }.
+ *  @return <javascript object> {media: , entera: }.
  *
- *  @param num: integer (pagination value)
+ *  @param num: <integer> (pagination value)
  *
  **/
 export const identifyAutopasters = (num) => {
@@ -139,14 +143,14 @@ export const identifyAutopasters = (num) => {
 /**
  *  Calculate weight and copies.
  *
- *  @return JavaScript object {
+ *  @return <JavaScript object> {
  *          rollweight: consumed Kilos(rollweight === 0) or leftover Kilos (rollweight !== 0),
  *          copies: to complete (rollweight === 0) or leftover copies (rollweight !== 0)
  *          }
  *
- *  @param numProd: integer (production copies + approximated expected null copies)
- *  @param pesoBob: integer (weight roll)
- *  @param coef: integer (coefficient for roll radius)
+ *  @param numProd: <integer> (production copies + approximated expected null copies)
+ *  @param pesoBob: <integer> (weight roll)
+ *  @param coef: <integer> (coefficient for roll radius)
  *
  */
 export const individualProvidedWeightRollProduction = (numProd, pesoBob, coef) => {
@@ -167,10 +171,10 @@ export const individualProvidedWeightRollProduction = (numProd, pesoBob, coef) =
 /**
  *  Search and return coefficient of roll found
  *
- *  @return integer or float
+ *  @return <integer> or float
  *
- *  @param meditionStyle: javascript object {}
- *  @param foundRoll: javascript object {}
+ *  @param meditionStyle: <javascript object> {}
+ *  @param foundRoll: <javascript object> {}
  *
  */
 export const searchCoefTypeRoll = (meditionStyle, foundRoll) => {
@@ -182,8 +186,8 @@ export const searchCoefTypeRoll = (meditionStyle, foundRoll) => {
  *
  *  @return grouped javascript object.
  *
- *  @param arrayToGroup: array javascript object {}
- *  @param objKey: string of key.
+ *  @param arrayToGroup: <array javascript object> {}
+ *  @param objKey: <string> of key.
  *
  */
 export const groupBy = (arrayToGroup, objKey) => {
@@ -205,10 +209,10 @@ export const groupBy = (arrayToGroup, objKey) => {
 /**
  *  Sum the values of a chosen key common to all of them. .
  *
- *  @return integer: Sum of values.
+ *  @return <integer>: Sum of values.
  *
- *  @param arrObject: array javaScript object {}
- *  @param objKey: string of key.
+ *  @param arrObject: <array javaScript object> {}
+ *  @param objKey: <string> of key.
  *
  */
 export const calcValues = (arrObject, objKey) => {
@@ -218,9 +222,9 @@ export const calcValues = (arrObject, objKey) => {
 /**
  *  Extracts the number of kilos of barcode type 128
  *
- *  @return integer: Number of kilos.
+ *  @return <integer>: Number of kilos.
  *
- *  @param data: integer
+ *  @param data: <integer>
  *
  */
 export const OriginalWeight = (data) => {
@@ -232,10 +236,10 @@ export const OriginalWeight = (data) => {
  *
  *  @return javaScript objects collection: [{items}]
  *
- *  @param arrObjects: javaScript objects collection [{items}]
- *  @param tiradaTotal: integer
- *  @param gramajeValues: javaScript object {}
- *  @param productionID: integer
+ *  @param arrObjects: <javaScript objects collection> [{items}]
+ *  @param tiradaTotal: <integer>
+ *  @param gramajeValues: <javaScript object> {}
+ *  @param productionID: <integer>
  *
  */
 export const CalcPrevConsKilosRollsAutopaster = (arrObjects, tiradaTotal, gramajeValues, productionID) => {
@@ -298,7 +302,7 @@ export const CalcPrevConsKilosRollsAutopaster = (arrObjects, tiradaTotal, gramaj
  *
  *  @return string
  *
- *  @param type: string / integer (barcodeType scanned)
+ *  @param type: <string> / <integer> (barcodeType scanned)
  *
  */
 export const typeBarcodeFilter = (type) => {
@@ -353,7 +357,7 @@ export const typeBarcodeFilter = (type) => {
  *
  *  @return string month.
  *
- *  @param date: string ("yy-mm-dd")
+ *  @param date: <string> ("yy-mm-dd")
  *
  */
 export const setValueForInput = (date) => {
@@ -398,9 +402,9 @@ export const setValueForInput = (date) => {
 /**
  *  Create and grouped string dates ("month year").
  *
- *  @return array of javascript objects.
+ *  @return <array of javascript objects>.
  *
- *  @param arr: array of dates.
+ *  @param arr: <array> of dates.
  *
  */
 export const setFormatDAta = async (arr) => {
@@ -419,15 +423,15 @@ export const setFormatDAta = async (arr) => {
         }, {});
         return Object.values(newData)
     } catch (e) {
-        alert('fallo en getLabels')
+        Sentry_Alert('utils.js', 'function - setFormatDAta', err)
     }
 };
 
 /**
  *  Compare two arrays.
  *
- * @param a type: Array
- * @param b type: Array
+ * @param a type: <Array>
+ * @param b type: <Array>
  *
  * @return true/false type: boolean
  *
@@ -444,27 +448,29 @@ export const arrayEquals = (a, b) => {
  *  Groups rolls by ayutopaster, calculates existing kilos by autopaster and updates predictions in database.
  *
  * @param data type: array of elements.
- * @param production_id type: integer.
+ * @param production_id type: <integer>.
  *
- * @return true/false type: boolean
+ * @return true/false type: <boolean>
  *
  */
 export async function groupedAutopasters(data, production_id) {
     const innerBobinaTableAndProductData =
         `SELECT * FROM autopasters_prod_data
-     INNER JOIN bobina_table ON bobina_table.codigo_bobina = ?
-     WHERE autopasters_prod_data.production_fk = ?
-     AND autopasters_prod_data.bobina_fk = bobina_table.codigo_bobina
-     `;
+        INNER JOIN bobina_table ON bobina_table.codigo_bobina = ?
+        WHERE autopasters_prod_data.production_fk = ?
+        AND autopasters_prod_data.bobina_fk = bobina_table.codigo_bobina
+        AND autopasters_prod_data.autopaster_fk = bobina_table.autopaster_fk;
+        `;
     const selectLastRestoPrev =
         `
         SELECT a.resto_previsto AS 'rest_antProd' FROM autopasters_prod_data a
      INNER JOIN bobina_table ON bobina_table.codigo_bobina = ?
      WHERE a.production_fk < ?
      AND a.bobina_fk = bobina_table.codigo_bobina ORDER BY a.production_fk DESC LIMIT 1        
-        `
+        `;
     try {
         const prodData = await genericTransaction(dataProductSelectedAllInfo, [production_id]);
+        // console.log('data of production', prodData)
         const extraData = {
             toSend: false,
             weightEnd: null,
@@ -475,6 +481,7 @@ export async function groupedAutopasters(data, production_id) {
             acc = await acc;
             // check if roll exists in autopaster
             let rollInDatabase = await genericTransaction(innerBobinaTableAndProductData, [item.bobina_fk ? item.bobina_fk : 0, item.production_fk])
+
             if (rollInDatabase.length) {
                 // if exist, add rest_andProd value
                 let last = await genericTransaction(selectLastRestoPrev, [item.bobina_fk ? item.bobina_fk : 0, item.production_fk])
@@ -511,7 +518,7 @@ export async function groupedAutopasters(data, production_id) {
 
         return Object.values(await groupedForSectionList);
     } catch (err) {
-        console.log(err)
+        Sentry_Alert('utils.js', 'function - groupedAutopasters', err)
     }
 }
 
@@ -615,19 +622,19 @@ export async function deleteItem(response, rollID, productionData) {
                 }
             })
     } catch (err) {
-        console.log('in utils', err)
+        Sentry_Alert('utils.js', 'function - deleteItem', err)
     }
 };
 
 /**
  *  To update roll in production and data base and return boolean for initiate production calculate.
  *
- * @param rollID type: integer.
- * @param radiusState type: integer
- * @param items type: javascript object (roll element).
- * @param maxRadiusValue type: integer.
- * @param coefficientDDBB type: integer || float.
- * @param kilosNeeded type: array javascript object {sutopaster_id: integer, kilosNeeded: positive integer || negative integer}
+ * @param rollID type: <integer>.
+ * @param radiusState type: <integer>
+ * @param items type: <javascript object> (roll element).
+ * @param maxRadiusValue type: <integer>.
+ * @param coefficientDDBB type: <integer> || float.
+ * @param kilosNeeded type: <array javascript object> {sutopaster_id: integer, kilosNeeded: positive integer || negative integer}
  *
  * @return javascript object {sectionListUpdate: sectionList data [{ data: [], title: integer}] , initCalc: boolean })
  *
@@ -712,15 +719,16 @@ export function updatedataRollState(rollID, radiusState, items, maxRadiusValue, 
             resolve({sectionListUpdate: toReturn, initCalc: validforcalc});
         }
     })
+        .catch(err => Sentry_Alert('utils.js', 'function - updatedataRollState', err))
 }
 
 /**
- *  Checks whether conditions for calculating production results are met.
+ *  Check if the conditions for calculating production results with the "toSend" field are met.
  *
- *  @params arrItems type: array sectionList for data.
- *  @params kilosNeeded type: array of calculation of current kilograms by autopaster.
+ *  @params arrItems type: <array> sectionList for data.
+ *  @params kilosNeeded type: <array> of calculation of current kilograms by autopaster.
  *
- *  @returns type: boolean
+ *  @returns type: <boolean>
  */
 export function validForCalc(arrItems, kilosNeeded) {
     const values = [];
@@ -729,18 +737,18 @@ export function validForCalc(arrItems, kilosNeeded) {
             values.push(i.toSend);
         })
     })
-    const negativeValues = kilosNeeded.find(element => element.kilosNeeded < 0)
-    return values.every(value => value === true) && !negativeValues;
+
+    return values.every(value => value === true)
 };
 
 /**
  *  Scan barcode and determine if it exists in the database or is a new record. ADD ROLL IN PRODUCTION.
  *
- *  @param scanned type: javascript object - {scannedCode, codeType}
- *  @param autopasterID type: integer - autopaster id.
- *  @param itemsState type: array - data array state of sectionList.
- *  @param productionData type: javascript object - production data.
- *  @param autopasterLineProdData type: array javascript object - production line data.
+ *  @param scanned type: <javascript object> - {scannedCode, codeType}
+ *  @param autopasterID type: <integer> - autopaster id.
+ *  @param itemsState type: <array> - data array state of sectionList.
+ *  @param productionData type: <javascript object> - production data.
+ *  @param autopasterLineProdData type: <array javascript object> - production line data.
  *
  *  @returns type: array -
  */
@@ -802,18 +810,41 @@ export async function getScannedCode(scanned, autopasterID, itemsState, producti
         // await reorganizeProduction(productionData, regNewRoll);
         return [regNewRoll, actionBBDD, text];
     } catch (err) {
-        console.log('error getScanned', err)
+        Sentry_Alert('utils.js', 'function - getScannedCode', err)
     }
 };
 
 /**
+ *  Check if autopasters contain minimum weight required to create report.
+ *
+ *  @params minKg type: <javascript object> - Weight calculation minimum to create report.
+ *  @params contabilizedKG type: <javascript object> - Existing kilos in autopaster (kilosNeeded state).
+ *  @params autopastersList type: <array object> - autopasters list.
+ *
+ *  @returns type: boolean
+ *
+ * */
+export function calculateMinimunKg(minKg, contabilizedKG, autopastersList) {
+    const isMedia = autopastersList.filter(i => i.media_defined);
+    const resultToCalc = [].concat(contabilizedKG).map(roll => {
+        if (roll.autopaster_id === isMedia.autopaster_fk) {
+            return minKg.media <= roll.kilosNeeded
+        } else {
+            return minKg.entera <= roll.kilosNeeded
+        }
+    });
+
+    return resultToCalc.every(value => value === true);
+}
+
+/**
  *  register new roll and update empty autopaster.
  *
- *  @params BobinaParams type: javascript object - roll data.
- *  @params actionDDBB type: string - "insert" || "update"
- *  @params itemsState type: array - data array state of sectionList.
- *  @params prodData type: javascript object - production data.
- *  @params kilosState type: array of calculation of current kilograms by autopaster.
+ *  @params BobinaParams type: <javascript object> - roll data.
+ *  @params actionDDBB type: <string> - "insert" || "update"
+ *  @params itemsState type: <array> - data array state of sectionList.
+ *  @params prodData type: <javascript object> - production data.
+ *  @params kilosState type: <array> of calculation of current kilograms by autopaster.
  *
  *  @returns type: javascript object
  */
@@ -887,7 +918,6 @@ export async function registerNewBobina(BobinaParams, actionDDBB, itemsState, pr
                         title: AutopasterNum
                     }].sort((a, b) => a.title - b.title)
                 })
-                .catch(error => console.log(error))
         }
         if (actionDDBB === 'update') {
             //evaluate if it exists in database bobbin_table
@@ -920,24 +950,23 @@ export async function registerNewBobina(BobinaParams, actionDDBB, itemsState, pr
                         title: AutopasterNum
                     }].sort((a, b) => a.title - b.title)
                 })
-                .catch(error => console.log(error))
         }
         await reorganizeProduction(prodData, BobinaParams);
         // RETURN ITEMS AND KILOSNEEDED FOR AUTOPASTER STATE.
         return {items: toSend, kilos: updateKilos}
     } catch (err) {
-        console.log('error en registerNewBobina', err)
+        Sentry_Alert('utils.js', 'function - registerNewBobina', err)
     }
 };
 
 /**
  * Calculate kilos needed according to the number of copies
  *
- * @params tirada type: integer - num of copies
- * @params nulls type: integer - num of null copies
- * @params coefRoll type: float - measurement coefficient value
+ * @params tirada type: <integer> - num of copies
+ * @params nulls type: <integer> - num of null copies
+ * @params coefRoll type: <float> - measurement coefficient value
  *
- * @returns integer
+ * @returns <integer>
  * */
 export function ejemplaresToKilos(tirada, nulls, coefRoll) {
     return (tirada + nulls) * coefRoll
@@ -946,9 +975,9 @@ export function ejemplaresToKilos(tirada, nulls, coefRoll) {
 /**
  *  Calculates necessary and existing kilos in each autopaster.
  *
- *  @params itemsState type: array - data array state of sectionList.
- *  @params prodData type: javascript object - production data.
- *  @params autopastersData type: array - data array of autopasters line.
+ *  @params itemsState type: <array> - data array state of sectionList.
+ *  @params prodData type: <javascript object> - production data.
+ *  @params autopastersData type: <array> - data array of autopasters line.
  *
  *  @returns array
  * */
@@ -986,9 +1015,9 @@ export function kilosByAutopasterCalc(itemsState, prodData, autopastersData) {
  *  Calculates necessary and existing kilos in a single autopaster.
  *
  *  @async
- *  @params autopasterID type: integer - autopaster id.
- *  @params itemsTate type: array - data array state of sectionList.
- *  @params prodData type: javascript object - production data.
+ *  @params autopasterID type: <integer> - autopaster id.
+ *  @params itemsTate type: <array> - data array state of sectionList.
+ *  @params prodData type: <javascript object> - production data.
  *
  *  @returns array javascript object
  */
@@ -1001,16 +1030,16 @@ export async function kilosInThisAutopasterCalc(autopasterID, itemsTate, prodDat
             kilosNeeded: kilosAutopasterForUpdate - ejemplaresToKilos(prodData.tirada, prodData.nulls, (searchedItems.toUpdate[0].isMedia ? prodData.media_value : prodData.full_value))
         }
     } catch (err) {
-        console.log('error en kilosInThisAutopasterCalc')
+        Sentry_Alert('utils.js', 'function - kilosInThisAutopasterCalc', err)
     }
 };
 
 /**
  *  Convert numeric content of array to string
  *
- *  @params myArray type: array
+ *  @params myArray type: <array>
  *
- *  @returns array
+ *  @returns <array>
  */
 export function arrayNumbersToString(myArray) {
     let Arraystring = myArray[0].toString();
@@ -1025,9 +1054,9 @@ export function arrayNumbersToString(myArray) {
 /**
  *  count equal elements in array.
  *
- *  @params concatArrays type: array
+ *  @params concatArrays type: <array>
  *
- *  @returns array;
+ *  @returns <array>;
  * */
 export function countElements(concatArrays) {
     const countedItems = concatArrays.reduce((acc, item) => {
@@ -1042,9 +1071,9 @@ export function countElements(concatArrays) {
 /**
  *  Selects most used autopasters according to pagination and product.
  *
- *  @params ProductionID type: integer - production id.
- *  @params pagination type: integer - pagination.
- *  @params statePagination type: array javscript object - all registers of pagination database.
+ *  @params ProductionID type: <integer> - production id.
+ *  @params pagination type: <integer> - pagination.
+ *  @params statePagination type: <array javscript object> - all registers of pagination database.
  *
  *  @returns array
  * */
@@ -1076,7 +1105,7 @@ export function autopastersAutomaticSelection(ProductionID, pagination, statePag
             });
             return autopasters.map(i => parseInt(i));
         })
-        .catch(err => console.log('autopastersAutomaticSelection', err));
+        .catch(err => Sentry_Alert('utils.js', 'function - autopastersAutomaticSelection', err));
 }
 
 /**
@@ -1103,10 +1132,10 @@ export function rangeCopies(numEjemplares) {
 /**
  *  Send email.
  *
- * @param options type: javascript object -  {
-                subject:  string,
-                recipients: array,
-                body: string,
+ * @param options type: <javascript object> -  {
+                subject:  <string>,
+                recipients: <array>,
+                body: <string>,
                 isHTML: false,
                 attachments: [fileURI]
             }
@@ -1121,8 +1150,8 @@ export function handleEmail(options, nameFile) {
 /**
  *  Update rolls for subsequent productions.
  *
- *  @params item type: javascript object - production data.
- *  @params dataAddedRoll type: javascript object - roll data.
+ *  @params item type: <javascript object> - production data.
+ *  @params dataAddedRoll type: <javascript object> - roll data.
  *
  *  @returns Promise.all
  * */
@@ -1177,7 +1206,32 @@ export async function reorganizeProduction(item, dataAddedRoll) {
             })
         }
     } catch (err) {
-        console.log(err)
+        Sentry_Alert('utils.js', 'function - reorganizeProduction', err)
     }
 
+};
+
+/**
+ *  SQLite common error handler.
+ *
+ *  @param Object error.
+ *
+ *  @returns <string>: custom message.
+ **/
+export function handlerSqliteErrors(error) {
+    const handlerError = String(error).split('(')[1].split(' ', 2)[1];
+    let message = '';
+    console.log(error)
+    switch (handlerError) {
+        case '1811':
+            message = 'No se puede eliminar este valor mientras siga referenciado en otra tabla.';
+            break;
+        case '2067':
+        case '1555':
+            message = 'Valor en uso. Introduzca otro diferente';
+            break;
+        default:
+            message = 'error en la acción';
+    }
+    return message;
 }

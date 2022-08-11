@@ -65,8 +65,9 @@ const PieChartComponent = ({data, title, textStyle, width}) => {
 
             const updateKilos = [...dataStateKilos];
             updateKilos[0].kilos = sumValues.kilostiradaReduce
-            updateKilos[1].kilos = sumValues.kilosconsumptionReduce - sumValues.kilostiradaReduce
-            setDataStateKilos(updateKilos)
+            const prevNegative = sumValues.kilosconsumptionReduce - sumValues.kilostiradaReduce;
+            updateKilos[1].kilos = prevNegative < 0 ? 0 : prevNegative;
+            setDataStateKilos(updateKilos);
 
             const updateEjemplares = [...dataStateEjemplares];
             updateEjemplares[0].ejemplares = sumValues.ejemplaresReduce

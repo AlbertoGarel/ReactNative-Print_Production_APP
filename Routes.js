@@ -1,10 +1,11 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
     SafeAreaView,
     View,
     StyleSheet,
     StatusBar,
     Vibration,
+    Animated
 } from "react-native";
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {COLORS} from './assets/defaults/settingStyles'
@@ -34,6 +35,22 @@ const Routes = ({navigation}) => {
 
     const [changeButtonFunc, setChangeButtonFunc] = useState(false);
     const [isFontLoad, setIsfontLoad] = useState(false);
+
+    const [fadeAnimation] = useState(new Animated.Value(1));
+
+    function fadeAnimate() {
+        Animated.timing(fadeAnimation, {
+            toValue: 0.5,
+            duration: 100,
+            useNativeDriver: true
+        }).start(() => {
+            Animated.timing(fadeAnimation, {
+                toValue: 1,
+                duration: 100,
+                useNativeDriver: true
+            }).start()
+        });
+    }
 
     useEffect(() => {
         Font.loadAsync({
@@ -114,13 +131,14 @@ const Routes = ({navigation}) => {
                     listeners={{
                         tabPress: () => {
                             // e.preventDefault(); // Use this to navigate somewhere else
-                            Vibration.vibrate(100)
+                            fadeAnimate()
+                            Vibration.vibrate(150)
                         },
                     }}
                     options={{
                         tabBarLabel: '',
                         tabBarIcon: ({color = 'red', size = 20}) => (
-                            <View style={{
+                            <Animated.View style={{
                                 width: 80,
                                 height: 80,
                                 marginBottom: 35,
@@ -137,7 +155,9 @@ const Routes = ({navigation}) => {
                                 shadowOpacity: 0.25,
                                 shadowRadius: 3.84,
                                 elevation: 5,
+                                opacity: fadeAnimation
                             }}
+                                           hitSlop={{top: 80, bottom: 0, left: 40, right: 40}}
                             >
                                 <Icon name={'plus-a'}
                                       size={30}
@@ -152,7 +172,7 @@ const Routes = ({navigation}) => {
                                           textAlignVertical: 'center'
                                       }}
                                 />
-                            </View>
+                            </Animated.View>
                         ),
                     }}/>
                 <Tab.Screen

@@ -16,7 +16,7 @@ import {Feather as Icon} from "@expo/vector-icons";
 import * as SQLite from "expo-sqlite";
 import {HandlingErrorsSQLITE} from "../../dbCRUD/actionsSQL";
 import {deleteMeditionStyle} from "../../dbCRUD/actionsSQL";
-import {Sentry_Alert} from "../../utils";
+import {handlerSqliteErrors, Sentry_Alert} from "../../utils";
 
 class Tables extends Component {
     constructor(props) {
@@ -100,7 +100,9 @@ class Tables extends Component {
                     this.requestDB(this.props.request.allItems);
                 },
                 (_, error) => {
-                    Sentry_Alert('Tables.js', 'transaction - _deleteByID', error)
+                    const handlerCustomError = handlerSqliteErrors(error)
+                    alert(handlerCustomError);
+                    if (!handlerCustomError) Sentry_Alert('Tables.js', 'transaction - _deleteByID', error)
                 })
         })
     };

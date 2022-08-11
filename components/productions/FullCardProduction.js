@@ -44,7 +44,7 @@ const FullCardProduction = ({
                                 confirmDelete,
                                 itemForSpinner,
                                 updatedataRollState,
-                                coefValues
+                                coefValues,
                             }) => {
     const textTypeRoll = !media_defined ? 'Entera' : 'Media';
     let changeBackground = new_radius === '' ? '#ff000060' : '#ff850050';
@@ -57,7 +57,11 @@ const FullCardProduction = ({
     const nullable = restoPrevistoAnteriorProduccion === null;
 
     useEffect(() => {
-        if (updateCodepathSVG && bobinaID) {
+        setStateRadius(new_radius);
+    }, [new_radius]);
+
+    useEffect(() => {
+        if (codePathSVG && bobinaID) {
             updateCodepathSVG(codePathSVG, bobinaID, roll_autopaster)
         }
         let setTime = null;
@@ -154,7 +158,7 @@ const FullCardProduction = ({
     }
 
     return (
-        <View style={[styles.cardparent, {backgroundColor: textTypeRoll === 'Media' ? '#ECFAFA' : COLORS.white}]}>
+        <View style={[styles.cardparent, {backgroundColor: textTypeRoll === 'Media' ? '#cfd5e6' : COLORS.white}]}>
             {itemForSpinner === bobinaID && <View style={styles.parentSpinner}>
                 <SpinnerSquares/>
             </View>

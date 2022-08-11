@@ -59,9 +59,9 @@ const HomeScreen = ({navigation}) => {
     async function actionDeleteProduction(data) {
         try {
             const deleteRollsOnThisProd = await genericDeleteFunction('DELETE from autopasters_prod_data where production_fk = ?', [data.id])
-            if (!deleteRollsOnThisProd.rowsAffected) new Error('deleteError');
+            if (!deleteRollsOnThisProd.rowsAffected) throw new Error('deleteError');
             const thisProdDelete = await genericDeleteFunction(`DELETE FROM produccion_table WHERE produccion_id = ?;`, [data.id]);
-            if (!thisProdDelete.rowsAffected) new Error('deleteError');
+            if (!thisProdDelete.rowsAffected) throw new Error('deleteError');
             const productions = await genericTransaction(produccion_table_ALL, [])
             getProductions(productions)
         } catch (err) {

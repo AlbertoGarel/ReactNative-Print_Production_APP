@@ -8,7 +8,7 @@ import {
     SafeAreaView,
     Dimensions,
     Text,
-    ActivityIndicator
+    ActivityIndicator, InteractionManager
 } from 'react-native';
 import {search, deleteThin, searchCode, semicircle2} from "../assets/svg/svgContents";
 import SvgComponent from "../components/SvgComponent";
@@ -115,7 +115,11 @@ const SearchScreen = () => {
         return arr;
     };
 
-    const bottomSheetHandler = () => SetIsVisible(!isVisible);
+    function bottomSheetHandler() {
+        InteractionManager.runAfterInteractions(() => {
+            SetIsVisible(!isVisible);
+        })
+    }
 
     const getScannedCode = (param) => {
         onChangeTexthandler(param.scannedCode)
@@ -254,17 +258,34 @@ const SearchScreen = () => {
                         <Text style={styles.textNoResult}>No se ha encontrado nada...</Text>
                     </View>
             }
+            {/*<BottomSheetComponent*/}
+            {/*    ref={bottomSheetRef}*/}
+            {/*    height={height}*/}
+            {/*    openDuration={250}*/}
+            {/*    modalVisible={bottomSheetRef.current?.state.modalVisible}*/}
+            {/*    onClose={bottomSheetHandler}*/}
+            {/*    onOpen={bottomSheetHandler}*/}
+            {/*    children={<BarcodeScannerComponent props={{*/}
+            {/*        isVisible: isVisible,*/}
+            {/*        getScannedCode: getScannedCode,*/}
+            {/*    }}/>}*/}
+            {/*    isVisible={isVisible}*/}
+            {/*/>*/}
             <BottomSheetComponent
                 ref={bottomSheetRef}
                 height={height}
-                openDuration={250}
-                onClose={() => bottomSheetHandler()}
-                onOpen={() => bottomSheetHandler()}
+                modalVisible={bottomSheetRef.current?.state.modalVisible}
+                minClosingHeight={height / 3}
+                dragFromTopOnly={true}
+                openDuration={500}
+                closeDuration={0}
+                onClose={bottomSheetHandler}
+                onOpen={bottomSheetHandler}
                 children={<BarcodeScannerComponent props={{
                     isVisible: isVisible,
                     getScannedCode: getScannedCode,
+                    onChangeTexthandler: null
                 }}/>}
-                isVisible={isVisible}
             />
         </SafeAreaView>
     );

@@ -49,9 +49,9 @@ const CoeficienteKbaCrud = ({props}) => {
                             setStateGramajeFK(responsetObj[0].gramaje_fk);
                             setStateKbaVal(responsetObj[0].kba_value.toString());
                         }
-                    }
+                    }, err => Sentry_Alert('CoeficienteKbaCrud.js', 'transaction - kbaByID', err)
                 );
-            }, err => Sentry_Alert('CoeficienteKbaCrud.js', 'transaction - kbaByID', err));
+            });
         }
 
         //GRAMAJE ALL REQUEST
@@ -62,12 +62,10 @@ const CoeficienteKbaCrud = ({props}) => {
                 (_, {rows: {_array}}) => {
                     if (_array.length > 0) {
                         setgramajeDB(_array);
-                    } else {
-                        console.log('Error al conectar base de datos en IndividualCalculation Component');
                     }
-                }
+                }, err => Sentry_Alert('CoeficienteKbaCrud.js', 'transaction - picker_gramaje', err)
             );
-        }, err => Sentry_Alert('CoeficienteKbaCrud.js', 'transaction - picker_gramaje', err));
+        });
 
         return () => isActive = false;
     }, []);
@@ -105,8 +103,6 @@ const CoeficienteKbaCrud = ({props}) => {
                             .then(result => {
                                 if (result.rowsAffected > 0) {
                                     showToast('Actualizado con éxito', false)
-                                } else {
-                                    showToast('Error al actualizar')
                                 }
                             })
                             .catch(err => {
@@ -121,8 +117,6 @@ const CoeficienteKbaCrud = ({props}) => {
                             .then(result => {
                                 if (result.rowsAffected > 0) {
                                     showToast('Creado con éxito', false)
-                                } else {
-                                    showToast('Error al crear registro')
                                 }
                             })
                             .catch(err => {
@@ -167,34 +161,34 @@ const CoeficienteKbaCrud = ({props}) => {
                                     />
                                 </View>
                                 <View style={{flex: 1, paddingLeft: 10}}>
-                                        <CustomPicker
-                                            _typeform={props.typeform}
-                                            ref={gramajeRef}
-                                            style={{
-                                                borderWidth: .5,
-                                                borderColor: COLORS.black,
-                                            }}
-                                            name={'pickerGramaje'}
-                                            itemStyle={{fontFamily: 'Anton'}}
-                                            mode={'dialog'}
-                                            value={values.pickerGramaje}
-                                            selectedValue={values.pickerGramaje}
-                                            onValueChange={(itemValue) => {
-                                                if (itemValue > 0) {
-                                                    handleChange('pickerGramaje')
-                                                    setFieldTouched('pickerGramaje', true)
-                                                    setFieldValue('pickerGramaje', itemValue)
-                                                } else {
-                                                    showToast("Debes escoger una opción válida...")
-                                                }
-                                            }}
-                                            dataOptionsPicker={gramajeDB.map((item, index) => {
-                                                return <Picker.Item key={index}
-                                                                    label={item.gramaje_value + ' gr/cm'}
-                                                                    value={item.gramaje_id}/>
-                                            })}
-                                            defaultItemLabel={'Escoge un gramaje'}
-                                        />
+                                    <CustomPicker
+                                        _typeform={props.typeform}
+                                        ref={gramajeRef}
+                                        style={{
+                                            borderWidth: .5,
+                                            borderColor: COLORS.black,
+                                        }}
+                                        name={'pickerGramaje'}
+                                        itemStyle={{fontFamily: 'Anton'}}
+                                        mode={'dialog'}
+                                        value={values.pickerGramaje}
+                                        selectedValue={values.pickerGramaje}
+                                        onValueChange={(itemValue) => {
+                                            if (itemValue > 0) {
+                                                handleChange('pickerGramaje')
+                                                setFieldTouched('pickerGramaje', true)
+                                                setFieldValue('pickerGramaje', itemValue)
+                                            } else {
+                                                showToast("Debes escoger una opción válida...")
+                                            }
+                                        }}
+                                        dataOptionsPicker={gramajeDB.map((item, index) => {
+                                            return <Picker.Item key={index}
+                                                                label={item.gramaje_value + ' gr/cm'}
+                                                                value={item.gramaje_id}/>
+                                        })}
+                                        defaultItemLabel={'Escoge un gramaje'}
+                                    />
                                 </View>
                             </View>
                         </View>

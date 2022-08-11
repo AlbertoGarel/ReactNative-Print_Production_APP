@@ -12,7 +12,7 @@ import CustomTextInput from "../../components/FormComponents/CustomTextInput";
 import {gramaje} from "../../assets/svg/svgContents";
 import ResetButtonForm from "../../components/FormComponents/ResetButtonForm";
 import ToastMesages from "../../components/ToastMessages";
-import {Sentry_Alert} from "../../utils";
+import {handlerSqliteErrors, Sentry_Alert} from "../../utils";
 
 const GramajeCrud = ({props}) => {
 
@@ -37,9 +37,9 @@ const GramajeCrud = ({props}) => {
                             const responsetObj = [..._array];
                             setGramajeState(responsetObj[0].gramaje_value.toString())
                         }
-                    }
+                    }, err => Sentry_Alert('GramajeCrud.js', 'transaction - gramajeByID', err)
                 );
-            }, err => Sentry_Alert('GramajeCrud.js', 'transaction - gramajeByID', err));
+            });
         }
 
         return () => isActive = false;
@@ -73,12 +73,15 @@ const GramajeCrud = ({props}) => {
                             .then(result => {
                                 if (result.rowsAffected > 0) {
                                     showToast('Actualizado con éxito', false)
-                                } else {
-                                    showToast('Error al actualizar')
                                 }
                             })
                             .catch(err => {
-                                showToast('Error al actualizar')
+                                const handlerCustomError = handlerSqliteErrors(err);
+                                alert(handlerCustomError);
+                                if (!handlerCustomError) {
+                                    Sentry_Alert('AutopastersCrud.js', 'transaction - autopasterByID', err)
+                                    showToast('Error al actualizar')
+                                }
                             })
                     }
                     if (props.typeform === 'CREAR') {
@@ -88,12 +91,15 @@ const GramajeCrud = ({props}) => {
                             .then(result => {
                                 if (result.rowsAffected > 0) {
                                     showToast('Creado con éxito', false)
-                                } else {
-                                    showToast('Error al crear registro')
                                 }
                             })
                             .catch(err => {
-                                showToast('Error al crear registro')
+                                const handlerCustomError = handlerSqliteErrors(err);
+                                alert(handlerCustomError);
+                                if (!handlerCustomError) {
+                                    Sentry_Alert('AutopastersCrud.js', 'transaction - autopasterByID', err)
+                                    showToast('Error al crear registro')
+                                }
                             })
                         gramajeForm.current?.resetForm()
                     }

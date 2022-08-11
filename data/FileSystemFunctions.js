@@ -216,11 +216,11 @@ export const importDataBase = async (fakeMessage) => {
         // CHECK DATABASE VERSION. IF ARE DISTINCT NO CONTINUE
         if (Importedversion.version !== db.version) {
             if (Importedversion.version > db.version) {
-                new Error(2);
+                throw new Error(2);
             } else if (Importedversion.version < db.version) {
-                new Error(3);
+                throw new Error(3);
             } else {
-                new Error(4);
+                throw new Error(4);
             }
         }
         //READ DIRECTORY DOCUMENTPICKER CACHE.
@@ -257,10 +257,14 @@ export const importDataBase = async (fakeMessage) => {
             });
 
             //RESOLVE PROMISES
-            const promiseAllResult = await Promise.all([promise1, promise2])
+            const promiseAllResult = await Promise.all([promise1, promise2]);
 
-            //COMPARE ARRAY TABLE COLUMN NAMES
-            const areEquals = await arrayEquals(promiseAllResult[0], promiseAllResult[1]);
+            //SUBSTRACT "ANDROID METADATA" AND COMPARE ARRAY TABLE COLUMN NAMES.
+            const areEquals = await arrayEquals(
+                promiseAllResult[0].filter(i => i !== "android_metadata"),
+                promiseAllResult[1].filter(i => i !== "android_metadata")
+            );
+
             if (areEquals) {
                 // EQUALS COPY DATABASE FILE TO DEFAULT DIRECTORY.
                 Alert.alert('¡¡ATENCIÓN', 'Se dispone a instalar una base de datos distinta. ¿está de acuerdo?', [
@@ -282,12 +286,12 @@ export const importDataBase = async (fakeMessage) => {
                     },
                 ]);
             } else {
-                new Error(5);
+                throw new Error(5);
             }
         }
     } catch (e) {
         let message = '';
-        switch (e) {
+        switch (e.message) {
             case 1:
                 message = 'Importación de base de datos cancelada por ususario.'
                 break;

@@ -15,7 +15,7 @@ import ToastMesages from "../../components/ToastMessages";
 import ResetButtonForm from "../../components/FormComponents/ResetButtonForm";
 import {genericUpdatefunction, genericInsertFunction} from '../../dbCRUD/actionsFunctionsCrud';
 import {Picker} from '@react-native-picker/picker';
-import {Sentry_Alert} from "../../utils";
+import {handlerSqliteErrors, Sentry_Alert} from "../../utils";
 
 const AutopastersCrud = ({props}) => {
 
@@ -46,13 +46,13 @@ const AutopastersCrud = ({props}) => {
                             //clone array
                             const responsetObj = [..._array];
                             // setLinProdDB(..._array);
-                            setStateAutopastName(responsetObj[0].name_autopaster);
+                            setStateAutopastName(responsetObj[0].autopaster_id);
                             setStateLinProdFK(responsetObj[0].linea_fk);
                             setStateAutopastContainMedia(responsetObj[0].media)
                         }
-                    }
+                    }, err => Sentry_Alert('AutopastersCrud.js', 'transaction - autopasterByID', err)
                 );
-            }, err => Sentry_Alert('AutopastersCrud.js', 'transaction - autopasterByID', err));
+            });
         }
 
         //GRAMAJE ALL REQUEST
@@ -64,9 +64,9 @@ const AutopastersCrud = ({props}) => {
                     if (_array.length > 0) {
                         setLinProdDB(_array);
                     }
-                }
+                }, err => Sentry_Alert('AutopastersCrud.js', 'transaction - pickerLineaProd', err)
             );
-        }, err => Sentry_Alert('AutopastersCrud.js', 'transaction - pickerLineaProd', err));
+        });
 
         return () => isActive = false;
     }, []);
@@ -104,29 +104,33 @@ const AutopastersCrud = ({props}) => {
                             .then(result => {
                                 if (result.rowsAffected > 0) {
                                     showToast('Actualizado con éxito', false)
-                                } else {
-                                    showToast('Error al actualizar')
                                 }
                             })
                             .catch(err => {
-                                showToast('Error al actualizar')
-                                Sentry_Alert('AutopastersCrud.js', 'transaction - updateAutoasterByID', err)
+                                const handlerCustomError = handlerSqliteErrors(err);
+                                alert(handlerCustomError);
+                                if (!handlerCustomError) {
+                                    Sentry_Alert('AutopastersCrud.js', 'transaction - autopasterByID', err)
+                                    showToast('Error al actualizar');
+                                }
                             })
                     }
                     if (props.typeform === 'CREAR') {
                         //row order: coefKbaid(ai) = null, name_autopaster, linea_fk, media
-                        const insertArr = [null, values.autopastName, values.pickerLinProd, values.autopastContMed];
+                        const insertArr = [values.autopastName, values.pickerLinProd, values.autopastContMed];
                         genericInsertFunction(insertaAutopasterByID, insertArr)
                             .then(result => {
                                 if (result.rowsAffected > 0) {
                                     showToast('Creado con éxito', false)
-                                } else {
-                                    showToast('Error al crear registro')
                                 }
                             })
                             .catch(err => {
-                                showToast('Error al crear registro')
-                                Sentry_Alert('AutopastersCrud.js', 'transaction - insertaAutopasterByID', err)
+                                const handlerCustomError = handlerSqliteErrors(err);
+                                alert(handlerCustomError);
+                                if (!handlerCustomError) {
+                                    Sentry_Alert('AutopastersCrud.js', 'transaction - autopasterByID', err)
+                                    showToast('Error al crear registro')
+                                }
                             })
                         autopastersForm.current?.resetForm();
                     }
@@ -177,34 +181,34 @@ const AutopastersCrud = ({props}) => {
                                     />
                                 </View>
                                 <View style={{flex: 1, paddingLeft: 10}}>
-                                        <CustomPicker
-                                            _typeform={props.typeform}
-                                            ref={linprodRef}
-                                            style={{
-                                                borderWidth: .5,
-                                                borderColor: COLORS.black,
-                                            }}
-                                            name={'pickerLinProd'}
-                                            itemStyle={{fontFamily: 'Anton'}}
-                                            mode={'dialog'}
-                                            value={values.pickerLinProd}
-                                            selectedValue={values.pickerLinProd}
-                                            onValueChange={(itemValue) => {
-                                                if (itemValue > 0) {
-                                                    handleChange('pickerLinProd')
-                                                    setFieldTouched('pickerLinProd', true)
-                                                    setFieldValue('pickerLinProd', itemValue)
-                                                } else {
-                                                    showToast("Debes escoger una opción válida...")
-                                                }
-                                            }}
-                                            dataOptionsPicker={linProdDB.map((item, index) => {
-                                                return <Picker.Item key={index}
-                                                                    label={item.linea_name}
-                                                                    value={item.linea_id}/>
-                                            })}
-                                            defaultItemLabel={'Escoge una línea de producción...'}
-                                        />
+                                    <CustomPicker
+                                        _typeform={props.typeform}
+                                        ref={linprodRef}
+                                        style={{
+                                            borderWidth: .5,
+                                            borderColor: COLORS.black,
+                                        }}
+                                        name={'pickerLinProd'}
+                                        itemStyle={{fontFamily: 'Anton'}}
+                                        mode={'dialog'}
+                                        value={values.pickerLinProd}
+                                        selectedValue={values.pickerLinProd}
+                                        onValueChange={(itemValue) => {
+                                            if (itemValue > 0) {
+                                                handleChange('pickerLinProd')
+                                                setFieldTouched('pickerLinProd', true)
+                                                setFieldValue('pickerLinProd', itemValue)
+                                            } else {
+                                                showToast("Debes escoger una opción válida...")
+                                            }
+                                        }}
+                                        dataOptionsPicker={linProdDB.map((item, index) => {
+                                            return <Picker.Item key={index}
+                                                                label={item.linea_name}
+                                                                value={item.linea_id}/>
+                                        })}
+                                        defaultItemLabel={'Escoge una línea de producción...'}
+                                    />
                                 </View>
                             </View>
                         </View>
@@ -249,41 +253,41 @@ const AutopastersCrud = ({props}) => {
                                     />
                                 </View>
                                 <View style={{flex: 1, paddingLeft: 10}}>
-                                        <CustomPicker
-                                            _typeform={props.typeform}
-                                            ref={medRef}
-                                            style={{
-                                                borderWidth: .5,
-                                                borderColor: COLORS.black,
-                                            }}
-                                            name={'autopastContMed'}
-                                            itemStyle={{fontFamily: 'Anton'}}
-                                            mode={'dialog'}
-                                            value={values.autopastContMed}
-                                            selectedValue={values.autopastContMed}
-                                            onValueChange={(itemValue) => {
-                                                if (itemValue >= 0) {
-                                                    handleChange('autopastContMed')
-                                                    setFieldTouched('autopastContMed', true)
-                                                    setFieldValue('autopastContMed', itemValue)
-                                                } else {
-                                                    showToast("Debes escoger una opción válida...")
-                                                }
-                                            }}
-                                            dataOptionsPicker={[
-                                                {
-                                                    name: 'Entera', value: 0
-                                                },
-                                                {
-                                                    name: 'Media', value: 1
-                                                }
-                                            ].map((item, index) => {
-                                                return <Picker.Item key={index}
-                                                                    label={item.name}
-                                                                    value={item.value}/>
-                                            })}
-                                            defaultItemLabel={'Tipo de bobina...'}
-                                        />
+                                    <CustomPicker
+                                        _typeform={props.typeform}
+                                        ref={medRef}
+                                        style={{
+                                            borderWidth: .5,
+                                            borderColor: COLORS.black,
+                                        }}
+                                        name={'autopastContMed'}
+                                        itemStyle={{fontFamily: 'Anton'}}
+                                        mode={'dialog'}
+                                        value={values.autopastContMed}
+                                        selectedValue={values.autopastContMed}
+                                        onValueChange={(itemValue) => {
+                                            if (itemValue >= 0) {
+                                                handleChange('autopastContMed')
+                                                setFieldTouched('autopastContMed', true)
+                                                setFieldValue('autopastContMed', itemValue)
+                                            } else {
+                                                showToast("Debes escoger una opción válida...")
+                                            }
+                                        }}
+                                        dataOptionsPicker={[
+                                            {
+                                                name: 'Entera', value: 0
+                                            },
+                                            {
+                                                name: 'Media', value: 1
+                                            }
+                                        ].map((item, index) => {
+                                            return <Picker.Item key={index}
+                                                                label={item.name}
+                                                                value={item.value}/>
+                                        })}
+                                        defaultItemLabel={'Tipo de bobina...'}
+                                    />
                                 </View>
                             </View>
                         </View>

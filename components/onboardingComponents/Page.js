@@ -3,7 +3,6 @@ import { View, Text } from 'react-native';
 import { Feather as Icon } from '@expo/vector-icons';
 import {COLORS} from "../../assets/defaults/settingStyles";
 import PropTypes from "prop-types";
-import BgComponent from "../BackgroundComponent/BgComponent";
 
 const Page = ({ backgroundColor, iconName, title }) => {
     return (

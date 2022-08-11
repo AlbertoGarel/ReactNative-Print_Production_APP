@@ -28,7 +28,7 @@ export const introdata = [
         title: 'barcodes',
         text: [
             "Permite extraer código de 16 cifras de la mayoría de códigos de barras.",
-            "El formato de salida para informes será \"code-128\", muy utilizado para la gestión de almacenes, en la industria del transporte y en el comercio minorista."
+            "El formato de salida para informes será \"ITF\", muy utilizado para la gestión de almacenes, en la industria del transporte y en el comercio minorista."
         ]
     },
     {

@@ -17,6 +17,7 @@ import {
 import {COLORS} from "../../assets/defaults/settingStyles";
 import {
     CalcPrevConsKilosRollsAutopaster,
+    calculateMinimunKg,
     deleteItem,
     getScannedCode,
     handleEmail,
@@ -59,7 +60,7 @@ import DragDropCardsComponent from "../../components/DragDropCardsComponent";
 import FullCardProduction from "../../components/productions/FullCardProduction";
 import ModalEndProduction from "../../components/productions/ModalEndProduction";
 import SpinnerSquares from "../../components/SpinnerSquares";
-import HRtag from "../../components/HRtag";
+import {useIsFocused} from '@react-navigation/native';
 
 const UPDATE_PROMISES_ALL =
     `UPDATE autopasters_prod_data SET
@@ -101,6 +102,10 @@ const FullProduction = ({route}) => {
     } = route.params;
 
     const coefValues = {media: item.media_value, entera: item.full_value}
+    const totalKgStimated = {
+        entera: (item.tirada + item.nulls) * coefValues.entera,
+        media: (item.tirada + item.nulls) * coefValues.media
+    }
     const bottomSheetRef = useRef();
     const bottomSheetRollUsedRef = useRef();
 
@@ -115,7 +120,7 @@ const FullProduction = ({route}) => {
     const [isVisibleDropMenu, setIsVisibleDropMenu] = useState(false);
     const [spin, setSpin] = useState(false);
     //PRODUCTION SELECTED DATA
-    const [scannedCodeforUsedRegisterRoll, getScannedCodeforUsedRegisterRoll] = useState('');
+    const [scannedCodeforUsedRegisterRoll, getScannedCodeforUsedRegisterRoll] = useState({});
     const [individualAutopasterDataForSectionList,
         getIndividualAutopasterDataForSectionList] = useState(groupedDataSectionList);// DATA for sectionList
     //STATE KILOS NEEDED FOR COMPLETE PRODUCTION (BY AUTOPASTERS).
@@ -140,17 +145,35 @@ const FullProduction = ({route}) => {
         kilosConsumidos: 0
     });
     const [itemForSpinner, setItemForSpinner] = useState(0);
+    // CODES STATE FOR NEW ROLLS.
+    const [datepath, getdatepath] = useState([]);
+    // GET FOCUS TO PREVENT MEMORY LEAKS
+    const isFocused = useIsFocused();
+    // minimum kg for calculate procion
+    const [minimumWeight, setMinimumWeight] = useState({entera: null, media: null});
+    const [minimumWeightPass, getMinimumWeightPass] = useState(false);
+
+    useEffect(() => {
+        setMinimumWeight(prevState => {
+            //CONVERT TO NEGATIVE NUMBER TO COMPARE WITH KILOSNEEDED.
+            return {
+                ...prevState,
+                entera: (totalKgStimated.entera - Math.round(item.tirada * coefValues.entera)) * -1,
+                media: (totalKgStimated.media - Math.round(item.tirada * coefValues.media)) * -1
+            }
+        });
+    }, []);
 
     useEffect(() => {
         //Search negative Kilos.
         new Promise((resolve) => {
-            const positiveKilos = [].concat(kilosNeeded.filter(i => i.kilosNeeded <= 0));
-            if (calculationProductionButton && positiveKilos.length === 0) {
+            if (calculationProductionButton && minimumWeightPass) {
                 resolve(true)
             }
-        }).then(resolve => resolve ? principalScroll.current.scrollToEnd() : null)
-            .catch(err => Sentry_Alert('FullProduction.js', 'Promise - calc kilos', err))
-    }, [calculationProductionButton])
+        })
+            .then(resolve => resolve ? principalScroll.current.scrollToEnd() : null)
+            .catch(err => Sentry_Alert('FullProduction.js', 'Promise - calc kilos', err));
+    }, [calculationProductionButton, minimumWeightPass])
 
     function confirmDelete(rollID, autopasterID) {
         Alert.alert('ELIMINAR BOBINA DE AUTOPASTER.',
@@ -158,7 +181,7 @@ const FullProduction = ({route}) => {
             [
                 {
                     text: 'Cancel',
-                    onPress: () => console.log('Cancel Pressed'),
+                    onPress: () => null,
                     style: 'cancel',
                 },
                 {
@@ -185,42 +208,38 @@ const FullProduction = ({route}) => {
                 getKilosNeeded(updateKilos)
             })
             .catch(err => {
-                setItemForSpinner(0);
                 Sentry_Alert('FullProduction.js', 'func - handlerRemoveItem', err)
             })
+            .finally(() => setItemForSpinner(0))//restart state
     };
 
     async function updateCodepathSVG(codePath, bobinaID, autopasterID) {
-        const {toUpdate, others} = await searchItems(autopasterID, individualAutopasterDataForSectionList);
-        const updated = toUpdate.data.map((item) => {
-            if (item.codigo_bobina === bobinaID) {
-                return {...item, codepathSVG: codePath}
-            } else {
-                return item;
-            }
-        })
-        getIndividualAutopasterDataForSectionList([...others, {
-            title: toUpdate.title,
-            data: updated
-        }].sort((a, b) => a.title - b.title))
+        getdatepath(prevState => [...prevState, {code: codePath, id: bobinaID, auto: autopasterID}]);
     }
 
     function updateRoll(radiusState, rollID, autopasterID) {
         try {
             searchItems(autopasterID, individualAutopasterDataForSectionList, item)
-                .then(response => updatedataRollState(rollID, radiusState, response, maxRadius, radiusCoefBBDD, kilosNeeded))
+                .then(response => {
+                    if (isFocused) {//TO PREVENT MEMORY LEAKS
+                        return updatedataRollState(rollID, radiusState, response, maxRadius, radiusCoefBBDD, kilosNeeded)
+                    }
+                })
                 .then(response => {
                     //DELAY UPDATE FOR DON´T TRUNCATE KEYBOARD ANIMATION.
-                    setTimeout(() => {
-                        getIndividualAutopasterDataForSectionList(response.sectionListUpdate)
-                        setCalculationProductionButton(response.initCalc)
-                    }, 500)
+                    if (isFocused) {//TO PREVENT MEMORY LEAKS
+                        setTimeout(() => {
+                            getIndividualAutopasterDataForSectionList(response.sectionListUpdate)
+                            setCalculationProductionButton(response.initCalc);
+                            getMinimumWeightPass(calculateMinimunKg(minimumWeight, kilosNeeded, definedAutopasters))
+                        }, 500)
+                    }
                 })
         } catch (err) {
             Sentry_Alert('FullProduction.js', 'func - updateRoll', err)
         }
     };
-    //CALCULATE THE KILOS CONSUMED FROM THE GROSS LOT OF NEWSPAPERS OF PRODUCTION.
+//CALCULATE THE KILOS CONSUMED FROM THE GROSS LOT OF NEWSPAPERS OF PRODUCTION.
     const calcTirada = (tirBruta) => {
         tirBruta = parseInt(tirBruta);
         let resultData = {tiradaBruta: 0, kilosTirada: 0, kilosConsumidos: 0};
@@ -232,7 +251,7 @@ const FullProduction = ({route}) => {
         return resultData;
     };
 
-    //HANDLER ONBLUR FOR VALIDATE INPUT. 'IS REQUIRED' IS EVALUATED. SET VISIBLE BUTTON FOR CREATE PDF.
+//HANDLER ONBLUR FOR VALIDATE INPUT. 'IS REQUIRED' IS EVALUATED. SET VISIBLE BUTTON FOR CREATE PDF.
     const ValidateTirBruta = () => {
         if (selectedTiradaBruta.length <= 0) {
             setErrors({inputTirBruta: 'El campo es requerido.'});
@@ -242,8 +261,8 @@ const FullProduction = ({route}) => {
         }
     };
 
-    //HANDLER ONCHANGETEXT FOR EVALUATE AND DELETE BAD CHARACTERS.
-    //CLEAN ERRORS ON THE NEXT CHANGE
+//HANDLER ONCHANGETEXT FOR EVALUATE AND DELETE BAD CHARACTERS.
+//CLEAN ERRORS ON THE NEXT CHANGE
     function handlerOnchangeTirBruta(param) {
         setErrors({inputTirBruta: ''});
         let char = param.charAt(param.length - 1);
@@ -287,7 +306,7 @@ const FullProduction = ({route}) => {
         setIsVisibleDropMenu(!isVisibleDropMenu);
     };
 
-    //BUTTON OPEN CAMERA FUNCTION FOR CAPTURE THE CODE OF ROLL
+//BUTTON OPEN CAMERA FUNCTION FOR CAPTURE THE CODE OF ROLL
     function handlerAddBobina(unitID) {
         // SET STATE FOR AUTOPASTER ID.
         setAutopasterID(unitID)
@@ -311,7 +330,7 @@ const FullProduction = ({route}) => {
             })
     };
 
-    // //USER DETERMINES IF THE REEL TO INCLUDE IS NEW OR USED.
+// //USER DETERMINES IF THE REEL TO INCLUDE IS NEW OR USED.
     const createThreeButtonAlert = (param, actionDDBB, text) => {
         let newBobina = `,\nPeso Actual: ${param.actualWeight} Kg,\nRadio: ${param.radius ? param.radius : 'Bobina completa'}`
         Alert.alert(`${text}`,
@@ -323,7 +342,7 @@ const FullProduction = ({route}) => {
                 {
                     text: 'NO',
                     onPress: () => {
-                        getScannedCodeforUsedRegisterRoll(param);
+                        getScannedCodeforUsedRegisterRoll({roll: param, action: actionDDBB});
                         bottomSheetRollUsedRef.current.open();
                     },
                     style: 'red',
@@ -351,8 +370,6 @@ const FullProduction = ({route}) => {
         setSpin(true);
 
         const numAutopster = objectResult.updatedItemsForSection[0].autopaster_fk;
-        // await Promise.all(promisesALLforUpdateItems)
-        objectResult.updatedItemsForPromises.map(i => console.log('item', i))
         new Promise.all(objectResult.updatedItemsForPromises.map(i => genericUpdateFunctionConfirm(UPDATE_PROMISES_ALL, i)))
             .then(() => {
                 const ot = individualAutopasterDataForSectionList.filter(i => i.title !== numAutopster);
@@ -392,7 +409,7 @@ const FullProduction = ({route}) => {
     };
 
 
-    //FOR SEND DATA TO DDBB WHEN PRODUCTION FINISH AND CREATE PDF.
+//FOR SEND DATA TO DDBB WHEN PRODUCTION FINISH AND CREATE PDF.
     async function handlerSaveDataAndSend() {
         const request_update_AllBobinaTable =
             `UPDATE bobina_table SET
@@ -413,22 +430,23 @@ const FullProduction = ({route}) => {
             productionID: item.produccion_id
         };
         const rollsDataProduction = [].concat(...individualAutopasterDataForSectionList.map(i => i.data));
+
         const autopasterNumLine = individualAutopasterDataForSectionList.map(i => i.title).sort((a, b) => a - b);
+        // await removeValue('@UserDataForm')
+
         try {
-            const {email, enterprise, name} = await getDatas('@UserDataForm').then(resp => {
-                if (resp) {
-                    return resp
-                } else {
-                    new Error('noname');
-                }
-            })
+            const userData = await getDatas('@UserDataForm')
+
+            if (userData === null) throw new Error('noname');
+
+            const {email, enterprise, name} = userData;
 
             const promisesUPDATED = await new Promise.all(rollsDataProduction.map(item => {
                 return genericUpdatefunction(request_update_AllBobinaTable, [
                     item.weightEnd, parseInt(item.radiusEnd), item.autopaster_fk, item.codigo_bobina])
             }));
             const rowsAffected = promisesUPDATED.filter(i => i.rowsAffected === 0);
-            if (!rowsAffected) new Error('updateError');
+            if (!rowsAffected) throw new Error('updateError');
 
             const autopastersList = individualAutopasterDataForSectionList.map(i => i.title);
             autopastersList.sort((a, b) => a - b);
@@ -446,7 +464,7 @@ const FullProduction = ({route}) => {
                 autopastersList.toString()
             ]
             const prodStatisticsINSERT = await genericInsertFunction(insertFinalProduction, values);
-            if (!prodStatisticsINSERT.rowsAffected) new Error('insertError');
+            if (!prodStatisticsINSERT.rowsAffected) throw new Error('insertError');
             // SEARCH FOR PRODUCTIONS FROM THE SAME OWNER.
             const papelcomunID = individualAutopasterDataForSectionList[0].data[0].papel_comun_fk;
             const productions = await genericTransaction(
@@ -507,14 +525,22 @@ const FullProduction = ({route}) => {
                     }
                 }
             }
-            ;
+            // ADD CODEPATH FOR PDF FILE
+            const addCodePath = await rollsDataProduction.map(roll => {
+                const filtered = datepath.filter(code => code.id === roll.bobina_fk && code.auto === roll.autopaster_fk);
+                if (filtered.length) {
+                    return {...roll, codepathSVG: filtered[0].code}
+                } else {
+                    return roll
+                }
+            });
 
             // CREATE FILE FOR CONSULTATION WITHIN THE APP
             const dataPdf = {
                 template: htmlDefaultTemplate(dataProd, {
                     name,
                     enterprise
-                }, finalCalc, rollsDataProduction, autopasterNumLine, contentTextArea),
+                }, finalCalc, addCodePath, autopasterNumLine, contentTextArea),
                 mailtosend: email
             };
 
@@ -537,18 +563,18 @@ const FullProduction = ({route}) => {
 
             // DELETE PRODUCTION
             const deleteRollsOnThisProd = await genericDeleteFunction('DELETE from autopasters_prod_data where production_fk = ?', [dataProd.productionID])
-            if (!deleteRollsOnThisProd.rowsAffected) new Error('deleteError');
+            if (!deleteRollsOnThisProd.rowsAffected) throw new Error('deleteError');
             const thisProdDelete = await genericDeleteFunction(`DELETE FROM produccion_table WHERE produccion_id = ?;`, [dataProd.productionID]);
-            if (!thisProdDelete.rowsAffected) new Error('deleteError');
+            if (!thisProdDelete.rowsAffected) throw new Error('deleteError');
 
             // CLOSE MODAL
             setModalEndProduction(true)
-        } catch (err) {
+        } catch (error) {
             let message = '';
-            switch (err) {
+            switch (error.message) {
                 case 'noname':
                     message = 'Complete DATOS DE ENCABEZADO.';
-                    navigation.navigate('Settings')
+                    setTimeout(() => navigation.navigate('Settings'), 1000);
                     break;
                 case 'updateError':
                     message = 'Error al actualizar';
@@ -566,7 +592,7 @@ const FullProduction = ({route}) => {
                     message = 'Error en base de datos';
             }
             alert(message)
-            Sentry_Alert('FullProduction.js', 'func - handlerSaveDataAndSend', err)
+            Sentry_Alert('FullProduction.js', 'func - handlerSaveDataAndSend', error)
 
         }
     };
@@ -598,6 +624,7 @@ const FullProduction = ({route}) => {
 
     const renderSectionHeader = ({section: {data, title}}) => {
         let kiloscalc = Math.round(kilosNeeded.filter(i => i.autopaster_id === title)[0].kilosNeeded);
+
         return (
             <View style={styles.sectionHeader}>
                 <Text style={[styles.headerText, {
@@ -608,7 +635,8 @@ const FullProduction = ({route}) => {
                         style={{fontSize: 20, color: COLORS.buttonEdit}}> {title}</Text></Text>
                 {kiloscalc > 0
                     ? null
-                    : <WarningKilos weightCalc={kiloscalc}/>
+                    : <WarningKilos weightCalc={kiloscalc}
+                                    minimumWeight={data[0].media_defined ? minimumWeight.media : minimumWeight.entera}/>
                 }
                 <View style={{display: 'flex', flexDirection: 'row'}}>
                     {data.length > 1 && <TouchableIcon
@@ -662,7 +690,6 @@ const FullProduction = ({route}) => {
                     <View style={{flex: 1}}>
                         {refresh && <View
                             style={styles.absoluteSpinner}><SpinnerSquares/></View>}
-                        {/*<Text>{JSON.stringify(kilosNeeded)}</Text>*/}
                         <SectionList
                             initialNumToRender={1}
                             getItemLayout={(individualAutopasterDataForSectionList, index) => ({
@@ -742,23 +769,25 @@ const FullProduction = ({route}) => {
             <BottomSheetComponent
                 ref={bottomSheetRef}
                 height={height}
-                // animationType={'slide'}
-                // openDuration={550}
+                modalVisible={bottomSheetRef.current?.state.modalVisible}
+                minClosingHeight={height / 3}
+                dragFromTopOnly={true}
                 openDuration={500}
-                onClose={() => bottomSheetHandler()}
-                onOpen={() => bottomSheetHandler()}
+                closeDuration={0}
+                onClose={bottomSheetHandler}
+                onOpen={bottomSheetHandler}
                 children={<BarcodeScannerComponent props={{
                     isVisible: isVisible,
                     getScannedCode: handlerScannedCode,
                     onChangeTexthandler: null
                 }}/>}
-                isVisible={isVisible}
             />
             {/*/!*CREAR BOTTOMSHEETCOMPONENT PARA FOMULARIO ENTRADA BOBINA USADA*!/*/}
             <BottomSheetComponent
                 ref={bottomSheetRollUsedRef}
                 height={400}
                 openDuration={250}
+                modalVisible={bottomSheetRollUsedRef.current?.state.modalVisible}
                 animationType={'slide'}
                 onClose={() => bottomSheetHandlerRollUsed()}
                 onOpen={() => bottomSheetHandlerRollUsed()}
@@ -985,14 +1014,17 @@ const ShowData = (item) => {
     )
 };
 
-const WarningKilos = ({weightCalc}) => {
+const WarningKilos = ({weightCalc, minimumWeight}) => {
+    let calc = Math.abs(weightCalc)
     return (
         <View style={{
-            backgroundColor: '#FF9999',
+            // backgroundColor: '#FF9999',
+            backgroundColor: minimumWeight >= (calc * -1) ? '#FF9999' : '#FFFF9995',
             paddingVertical: 3,
             paddingHorizontal: 6,
             borderRadius: 5,
         }}>
-            <Text>Faltan: <Text style={{color: COLORS.white}}>{Math.abs(weightCalc)}</Text> Kg</Text></View>
+            <Text>Faltan: <Text
+                style={{color: minimumWeight >= (calc * -1) ? COLORS.white : COLORS.primary}}>{calc}</Text> Kg</Text></View>
     )
 }

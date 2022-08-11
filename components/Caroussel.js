@@ -50,6 +50,7 @@ const Caroussel = ({items, deleteProduction, spinnerSelected, handlerSpinner}) =
         //GET AUTOPASTERS PRODUCTION
         genericTransaction(autopasters_prod_table_by_production, [item.id])
             .then(async response => {
+                // console.log('response', response)
                 try {
                     handlerSpinner(true, item.id)
                     //ORDERED ITEMS FOR POSITION_ROLL.
@@ -91,7 +92,12 @@ const Caroussel = ({items, deleteProduction, spinnerSelected, handlerSpinner}) =
                 >
                     {item.id === spinnerSelected.item && spinnerSelected.spin &&
                     <View style={styles.spinnerCont}><SpinnerSquares/></View>}
-                    <Text style={styles.datetext}>{item['Fecha de creación']}</Text>
+                    <View style={styles.contDate}>
+                        <Text style={styles.datetext}>{item['Fecha de creación']}</Text>
+                        <View style={styles.circleIndex}>
+                            <Text style={styles.dateIndex}>{index + 1}</Text>
+                        </View>
+                    </View>
                     <Text style={styles.prodText}>
                         {item.producto.length > 10 ?
                             item.producto.substr(0, 10) + '...'
@@ -172,17 +178,34 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffffff90',
         zIndex: 999
     },
-    datetext: {
+    contDate: {
         width: '100%',
         borderTopLeftRadius: 5,
         borderTopRightRadius: 5,
         backgroundColor: 'floralwhite',
         position: 'absolute',
         top: 0,
-        left: 0,
-        padding: 3,
+        display: 'flex',
         paddingLeft: 10,
+        paddingRight: 5,
+        flexDirection: 'row',
+        justifyContent: 'space-between'
+    },
+    datetext: {
         color: '#a2a2a2',
+    },
+    dateIndex:{
+      color: COLORS.white
+    },
+    circleIndex: {
+        top: 5,
+        width: 20,
+        height: 20,
+        // backgroundColor: COLORS.primary,
+        backgroundColor: COLORS.primary,
+        borderRadius: 100,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     prodText: {
         marginTop: 5,

@@ -18,7 +18,7 @@ export function genericUpdatefunction(request, valueArr) {
             tx.executeSql(request, valueArr,
                 (_, result) => resolve(result),
                 (_, err) => reject(err));
-        });
+        }, err => err);
     });
 };
 
@@ -28,7 +28,7 @@ export function genericInsertFunction(request, valueArr) {
             tx.executeSql(request, valueArr,
                 (_, result) => resolve(result),
                 (_, err) => reject(err));
-        });
+        }, err => err);
     });
 };
 
@@ -37,7 +37,7 @@ export function genericUpdateFunctionConfirm(request, valueArr) {
         db.transaction((tx) => {
             tx.executeSql(request, valueArr,
                 (_, result) => resolve(result.rowsAffected));
-        }, err => err,);
+        }, err => err);
     });
 };
 
@@ -47,7 +47,7 @@ export function genericDeleteFunction(request, valueArr) {
             tx.executeSql(request, valueArr,
                 (_, result) => resolve(result),
                 (_, err) => reject(err));
-        });
+        }, err => err);
     });
 };
 

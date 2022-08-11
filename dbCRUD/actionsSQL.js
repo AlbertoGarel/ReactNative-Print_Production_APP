@@ -238,16 +238,7 @@ export const pickerKBA =
  *  AUTOPASTER_TABLE ALL
  */
 export const autopaster_table_ALL =
-    // "SELECT linea_produccion_table.linea_id As 'id'," +
-    // "autopaster_table.name_autopaster AS 'Nombre'," +
-    // "linea_produccion_table.linea_name AS 'Nombre de Línea'," +
-    // "Case autopaster_table.media When 0 Then 'Entera' Else 'Media' End AS 'Tipo de Bobina' " +
-    // "FROM autopaster_table " +
-    // "LEFT JOIN linea_produccion_table " +
-    // "ON linea_produccion_table.linea_id = autopaster_table.linea_fk " +
-    // "ORDER BY autopaster_table.linea_fk ASC"
-    `SELECT autopaster_table.autopaster_id As 'id',
-    autopaster_table.name_autopaster AS 'Nombre',
+    `SELECT autopaster_table.autopaster_id As 'Nombre / id',
     linea_produccion_table.linea_name AS 'Nombre de Línea',
     Case autopaster_table.media When 0 Then 'Entera' Else 'Media' End AS 'Tipo de Bobina' 
     FROM autopaster_table 
@@ -263,11 +254,11 @@ export const autopasterByID =
     "SELECT * FROM autopaster_table WHERE autopaster_id = ?;"
 ;
 export const insertaAutopasterByID =
-    "INSERT INTO autopaster_table VALUES (?, ?, ?, ?);"
+    "INSERT INTO autopaster_table VALUES (?, ?, ?);"
 ;
 export const updateAutoasterByID =
     "UPDATE autopaster_table " +
-    "SET name_autopaster = ?," +
+    "SET autopaster_id = ?," +
     "linea_fk = ?," +
     "media = ? " +
     "WHERE autopaster_id = ?;"
@@ -315,14 +306,12 @@ export const produtoByID =
  */
 export const bobina_table_ALL =
     `SELECT bobina_table.codigo_bobina AS 'código bobina',
-autopaster_table.name_autopaster AS 'Autopaster',
 linea_produccion_table.linea_name AS 'línea',
 papel_comun_table.papel_comun_name 'Propietario',
 gramaje_table.gramaje_value AS 'Gramaje',
 bobina_table.peso_ini AS 'Pesoinicial',
 bobina_table.peso_actual AS 'peso Actual',
-bobina_table.radio_actual AS 'Radio',
-bobina_table.codeType AS 'Código name'
+bobina_table.radio_actual AS 'Radio'
 FROM bobina_table 
 LEFT JOIN autopaster_table 
 ON autopaster_table.autopaster_id = bobina_table.autopaster_fk 
@@ -336,7 +325,7 @@ ON gramaje_table.gramaje_id = bobina_table.gramaje_fk;`
 export const search_bobina =
     "SELECT bobina_table.codigo_bobina AS 'código bobina'," +
     "papel_comun_table.papel_comun_name AS 'Propietario'," +
-    "autopaster_table.name_autopaster AS 'Autopaster'," +
+    "autopaster_table.autopaster_id AS 'Autopaster'," +
     "linea_produccion_table.linea_name AS 'línea'," +
     "gramaje_table.gramaje_value AS 'Gramaje'," +
     "bobina_table.peso_ini AS 'Peso inicial'," +
@@ -355,7 +344,7 @@ export const search_bobina =
     "ON gramaje_table.gramaje_id = bobina_table.gramaje_fk " +
     "WHERE " +
     "bobina_table.codigo_bobina LIKE ? OR " +
-    "autopaster_table.name_autopaster LIKE ? OR " +
+    "autopaster_table.autopaster_id LIKE ? OR " +
     "linea_produccion_table.linea_name LIKE ? OR " +
     "papel_comun_table.papel_comun_name LIKE ? OR " +
     "gramaje_table.gramaje_value LIKE ? OR " +
@@ -366,7 +355,7 @@ export const search_bobina =
 export const search_bobina_fullWeight =
     `SELECT bobina_table.codigo_bobina AS 'código bobina',
     papel_comun_table.papel_comun_name AS 'Propietario',
-    autopaster_table.name_autopaster AS 'Autopaster',
+    autopaster_table.autopaster_id AS 'Autopaster',
     linea_produccion_table.linea_name AS 'línea',
     gramaje_table.gramaje_value AS 'Gramaje',
     bobina_table.peso_ini AS 'Peso inicial',

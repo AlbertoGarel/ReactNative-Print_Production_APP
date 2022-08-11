@@ -164,7 +164,7 @@ const DataBaseScreen = ({navigation, setChangeButtonFunc}) => {
 
     };
     const kbaComponentProps = {
-        headerTitle: "Coeficientes KBA para Calculos de Producción",
+        headerTitle: "Coeficientes para Calculos total de Producción",
         headerParagraph: "Consulta los coeficientes de cada producto, crea o modifica según necesites.",
         textButton: "Nuevo registro",
         requestDB: {
@@ -188,9 +188,11 @@ const DataBaseScreen = ({navigation, setChangeButtonFunc}) => {
         disable: false,
         getTypeFormForHeader: getTypeFormForHeader,
         info: [
-            '*Defina de manera obligatoria un autopaster como "media bobina"',
-            "Enumere e introduzca todos los autopasters por cada línea de impresión.",
-            'En el campo "nombre" sólo dígitos serán admitidos.'
+            '*Defina de manera obligatoria un autopaster como "½ bobina" si prevé usarla en algún momento',
+            'Enumere e introduzca todos los autopasters por cada línea de impresión.',
+            'En el campo "nombre" solo dígitos serán admitidos.',
+            'Las numeraciones asignadas serán de manera individual por autopaster. No se podrá repetir en otras líneas de producción. ',
+            'Por ejemplo, si tenemos dos líneas con cuatro unidades cada una, empezaríamos usando la cifra " 1 " y acabaríamos por la cifra " 8 ".'
         ]
     };
     const productosComponentProps = {

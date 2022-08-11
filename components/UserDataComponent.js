@@ -141,9 +141,7 @@ const UserDataComponent = ({props}) => {
                             >
                                 <Text style={{color: COLORS.white, fontFamily: 'Anton', fontSize: 20}}>Guardar</Text>
                             </TouchableOpacity>
-                            <Text style={styles.textStorage}>* Datos
-                                almacenados en
-                                local.</Text>
+                            <Text style={styles.textStorage}>* Datos guardados en dispositivo.</Text>
                         </View>
                     </>
                 )}

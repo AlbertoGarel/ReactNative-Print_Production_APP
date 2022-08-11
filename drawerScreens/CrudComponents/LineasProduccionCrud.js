@@ -12,7 +12,7 @@ import CustomTextInput from "../../components/FormComponents/CustomTextInput";
 import {lineaprodSVG} from "../../assets/svg/svgContents";
 import ResetButtonForm from "../../components/FormComponents/ResetButtonForm";
 import ToastMesages from "../../components/ToastMessages";
-import {Sentry_Alert} from "../../utils";
+import {handlerSqliteErrors, Sentry_Alert} from "../../utils";
 
 const LineasProduccionCrud = ({props}) => {
 
@@ -37,9 +37,9 @@ const LineasProduccionCrud = ({props}) => {
                             const responsetObj = [..._array];
                             setLinProdState(responsetObj[0].linea_name)
                         }
-                    }
+                    }, err => Sentry_Alert('LineasProduccionCrud.js', 'transaction - linProdByID', err)
                 );
-            }, err => Sentry_Alert('LineasProduccionCrud.js', 'transaction - linProdByID', err));
+            });
         }
 
         return () => isActive = false;
@@ -73,12 +73,15 @@ const LineasProduccionCrud = ({props}) => {
                             .then(result => {
                                 if (result.rowsAffected > 0) {
                                     showToast('Actualizado con éxito', false)
-                                } else {
-                                    showToast('Error al actualizar')
                                 }
                             })
                             .catch(err => {
-                                showToast('Error al actualizar')
+                                const handlerCustomError = handlerSqliteErrors(err);
+                                alert(handlerCustomError);
+                                if (!handlerCustomError) {
+                                    Sentry_Alert('AutopastersCrud.js', 'transaction - autopasterByID', err)
+                                    showToast('Error al actualizar')
+                                }
                             })
                     }
                     if (props.typeform === 'CREAR') {
@@ -88,12 +91,15 @@ const LineasProduccionCrud = ({props}) => {
                             .then(result => {
                                 if (result.rowsAffected > 0) {
                                     showToast('Creado con éxito', false)
-                                } else {
-                                    showToast('Error al crear registro')
                                 }
                             })
                             .catch(err => {
-                                showToast('Error al crear registro')
+                                const handlerCustomError = handlerSqliteErrors(err);
+                                alert(handlerCustomError);
+                                if (!handlerCustomError) {
+                                    Sentry_Alert('AutopastersCrud.js', 'transaction - autopasterByID', err)
+                                    showToast('Error al crear registro')
+                                }
                             })
                         linProdForm.current?.resetForm();
                     }

@@ -15,7 +15,7 @@ import ToastMesages from "../../components/ToastMessages";
 import ResetButtonForm from "../../components/FormComponents/ResetButtonForm";
 import {genericUpdatefunction, genericInsertFunction} from '../../dbCRUD/actionsFunctionsCrud';
 import {Picker} from '@react-native-picker/picker';
-import {Sentry_Alert} from "../../utils";
+import {handlerSqliteErrors, Sentry_Alert} from "../../utils";
 
 const MeditionStyleCrud = ({props}) => {
 
@@ -65,9 +65,9 @@ const MeditionStyleCrud = ({props}) => {
                     if (_array.length > 0) {
                         setgramajeDB(_array);
                     }
-                }
+                }, err => Sentry_Alert('MeditionStyleCrud.js', 'transaction - picker_gramaje', err)
             );
-        }, err => Sentry_Alert('MeditionStyleCrud.js', 'transaction - picker_gramaje', err));
+        });
 
         return () => isActive = false;
     }, []);
@@ -106,12 +106,15 @@ const MeditionStyleCrud = ({props}) => {
                             .then(result => {
                                 if (result.rowsAffected > 0) {
                                     showToast('Actualizado con éxito', false);
-                                } else {
-                                    showToast('Error al actualizar');
                                 }
                             })
                             .catch(err => {
-                                showToast('Error al actualizar');
+                                const handlerCustomError = handlerSqliteErrors(err);
+                                alert(handlerCustomError);
+                                if (!handlerCustomError) {
+                                    Sentry_Alert('AutopastersCrud.js', 'transaction - autopasterByID', err)
+                                    showToast('Error al actualizar');
+                                }
                             })
                     }
                     if (props.typeform === 'CREAR') {
@@ -121,12 +124,15 @@ const MeditionStyleCrud = ({props}) => {
                             .then(result => {
                                 if (result.rowsAffected > 0) {
                                     showToast('Creado con éxito', false)
-                                } else {
-                                    showToast('Error al crear registro')
                                 }
                             })
                             .catch(err => {
-                                showToast('Error al crear registro');
+                                const handlerCustomError = handlerSqliteErrors(err);
+                                alert(handlerCustomError);
+                                if (!handlerCustomError) {
+                                    Sentry_Alert('AutopastersCrud.js', 'transaction - autopasterByID', err)
+                                    showToast('Error al crear registro');
+                                }
                             })
                         meditionStyleForm.current?.resetForm()
                     }
