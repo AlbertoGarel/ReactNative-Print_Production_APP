@@ -56,7 +56,7 @@ const SettingsSimpleProductionScreen = () => {
 
     const SchemaElementCalTotalproduction = Yup.object().shape({
         inputProduct: FormYupSchemas.whitespaceandchars,
-        inputPagination: Yup.number().required('Requerido').test('inputPagination', 'Paginción errónea.',
+        inputPagination: Yup.number().min(0, 'Valor mínimo no válido.').required('Requerido').test('inputPagination', 'Paginción errónea.',
             (value) => (value / 16) % 1 === 0 || ((value / 16) - .5) % 1 === 0
         ),
         inputCoef: FormYupSchemas.medVal,
