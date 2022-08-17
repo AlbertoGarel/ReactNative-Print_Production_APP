@@ -11,14 +11,21 @@ import {getDatas, storeData} from "./data/AsyncStorageFunctions";
 import * as Sentry from 'sentry-expo';
 import {SENTRY_DSN} from "./projectKeys";
 import {Sentry_Alert} from "./utils";
+import * as NavigationBar from "expo-navigation-bar";
+import {setStatusBarHidden} from "expo-status-bar";
 
 Sentry.init({
-    dsn: SENTRY_DSN,//enter your sentry dsn.
+    dsn: __DEV__ ? null : SENTRY_DSN,//enter your sentry dsn.
     enableInExpoDevelopment: true,
     debug: __DEV__, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
 });
 
 function App() {
+
+    NavigationBar.setPositionAsync("relative");
+    NavigationBar.setVisibilityAsync("hidden");
+    NavigationBar.setBehaviorAsync("inset-swipe");
+    setStatusBarHidden(true, "none");
 
     const [loadScreen, setLoadScreen] = useState(true);
     const [firstPresentation, setFirstPresentation] = useState(true);

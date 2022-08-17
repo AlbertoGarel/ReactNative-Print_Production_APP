@@ -12,7 +12,6 @@ import {COLORS} from './assets/defaults/settingStyles'
 import SettingsScreen from "./screens/SettingsScreen";
 import {Fontisto as Icon} from "@expo/vector-icons";
 import HomeStack from "./StacksScreens/HomeStack";
-import {AdMobBanner} from "expo-ads-admob";
 import Constants from 'expo-constants';
 import SettingsProductionScreen from "./screens/productionScreens/SettingsProductionScreen";
 import {Platform} from 'react-native';
@@ -25,6 +24,7 @@ import {enableScreens} from 'react-native-screens';
 import SearchScreen from "./screens/SearchScreen";
 import SettingsSimpleProductionScreen from "./screens/productionScreens/SettingsSimpleProductionScren";
 import * as Font from "expo-font";
+import AdMobBanner from "./components/AdmobBanner";
 
 enableScreens();
 
@@ -74,18 +74,8 @@ const Routes = ({navigation}) => {
                 hidden={false}
                 translucent={true}
             />
-            <View style={{
-                width: '100%',
-                backgroundColor: COLORS.supportBackg1,
-            }}>
-                <AdMobBanner
-                    style={styles.bottomBanner}
-                    bannerSize="fullBanner"
-                    adUnitID="ca-app-pub-3940256099942544/6300978111"
-                    // Test ID, Replace with your-admob-unit-id
-                    // testDeviceID="EMULATOR"
-                    didFailToReceiveAdWithError={bannerError}
-                />
+            <View style={styles.bottomBanner}>
+                <AdMobBanner/>
             </View>
             <Tab.Navigator
                 initialRouteName="Feed"
@@ -214,7 +204,8 @@ const Routes = ({navigation}) => {
 }
 const styles = StyleSheet.create({
     bottomBanner: {
-        elevation: 12,
+        width: '100%',
+        backgroundColor: COLORS.supportBackg1,
         alignSelf: 'center'
     },
 })

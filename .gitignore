@@ -7,6 +7,9 @@ projectKeys.js
 # app.json
 app.json
 
+# eas.json
+eas.json
+
 # Miniaturas
 ._ *
 
