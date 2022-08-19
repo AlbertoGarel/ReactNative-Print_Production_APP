@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
         width: '100%',
         borderTopLeftRadius: 5,
         borderTopRightRadius: 5,
-        backgroundColor: 'floralwhite',
+        backgroundColor: '#f0f0f0',
         position: 'absolute',
         top: 0,
         display: 'flex',

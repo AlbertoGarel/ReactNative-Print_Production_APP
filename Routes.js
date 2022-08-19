@@ -147,7 +147,6 @@ const Routes = ({navigation}) => {
                                 elevation: 5,
                                 opacity: fadeAnimation
                             }}
-                                           hitSlop={{top: 80, bottom: 0, left: 40, right: 40}}
                             >
                                 <Icon name={'plus-a'}
                                       size={30}

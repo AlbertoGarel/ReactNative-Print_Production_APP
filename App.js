@@ -15,7 +15,7 @@ import * as NavigationBar from "expo-navigation-bar";
 import {setStatusBarHidden} from "expo-status-bar";
 
 Sentry.init({
-    dsn: __DEV__ ? null : SENTRY_DSN,//enter your sentry dsn.
+    dsn: __DEV__ ? SENTRY_DSN : SENTRY_DSN,//enter your sentry dsn.
     enableInExpoDevelopment: true,
     debug: __DEV__, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
 });

@@ -8,12 +8,13 @@ const adUnitId = __DEV__ ? TestIds.BANNER : ADMOB_KEYS.admod_SDK;
 
 function AdMobBanner() {
 
-    useEffect(async () => {
-        try {
-            await mobileAds();
-        } catch (err) {
-            Sentry_Alert('AdMobBanner.js', 'mobileAds', err)
-        }
+    useEffect(() => {
+        mobileAds()
+            .initialize()
+            .then(adapterStatuses => {
+                if (__DEV__) console.log('ADMOB_BANNER:  Initialization complete!', adapterStatuses)
+            })
+            .catch(err => Sentry_Alert('AdMobBanner.js', 'mobileAds', err))
     }, []);
 
     return (

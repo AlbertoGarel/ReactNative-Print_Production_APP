@@ -202,7 +202,7 @@ class Tables extends Component {
                             <Table borderStyle={{borderColor: 'transparent'}}>
                                 <Row data={state.tableHead} style={styles.head}
                                      widthArr={this.numCell(this.state.tableHead)}
-                                     textStyle={[styles.text, {color: COLORS.white, width: this.cellWidth}]}/>
+                                     textStyle={{...styles.text, color: COLORS.white, width: this.cellWidth}}/>
                                 <ScrollView style={styles.dataWrapper}>
                                     {
                                         state.tableData.map((rowData, index) => (
@@ -212,7 +212,7 @@ class Tables extends Component {
                                                     rowData.map((cellData, cellIndex) => (
                                                         <Cell key={cellIndex}
                                                               data={cellIndex === 0 ? element(rowData, rowData) : cellData}
-                                                              textStyle={[styles.text, {width: this.cellWidth}]}/>
+                                                              textStyle={{...styles.text, width: this.cellWidth}}/>
                                                     ))
                                                 }
                                             </TableWrapper>
@@ -227,7 +227,7 @@ class Tables extends Component {
                 <ActivityIndicator size="large" color="#00ff00"/>
         );
     };
-};
+}
 
 const styles = StyleSheet.create({
     container: {padding: 6, backgroundColor: 'transparent', alignSelf: 'center'},

@@ -228,7 +228,7 @@ const SearchScreen = () => {
                                 <Table borderStyle={{borderColor: 'transparent'}}>
                                     <Row data={tableHead} style={styles.head}
                                          widthArr={numCell(tableHead)}
-                                         textStyle={[styles.text, {color: COLORS.white, width: cellWidth}]}/>
+                                         textStyle={{...styles.text, color: COLORS.white, width: cellWidth}}/>
                                     <ScrollView style={styles.dataWrapper}>
                                         {
                                             tableData.map((rowData, index) => (
@@ -238,10 +238,17 @@ const SearchScreen = () => {
                                                         rowData.map((cellData, cellIndex) => (
                                                             <Cell key={cellIndex}
                                                                   data={cellData}
-                                                                  textStyle={[styles.text, cellIndex === 0 ? {
-                                                                      width: 120,
-                                                                      textAlign: 'left'
-                                                                  } : {width: cellWidth}]}/>
+                                                                  textStyle={cellIndex === 0 ?
+                                                                      {
+                                                                          ...styles.text,
+                                                                          width: 120,
+                                                                          textAlign: 'left'
+                                                                      }
+                                                                      :
+                                                                      {
+                                                                          ...styles.text,
+                                                                          width: cellWidth
+                                                                      }}/>
                                                         ))
                                                     }
                                                 </TableWrapper>
