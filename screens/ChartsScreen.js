@@ -9,7 +9,7 @@ import {
     ScrollView,
     PanResponder,
     ActivityIndicator,
-    Image
+    Image, StatusBar
 } from 'react-native';
 import {COLORS} from "../assets/defaults/settingStyles";
 import {LinearGradient} from "expo-linear-gradient";
@@ -178,6 +178,11 @@ const ChartsScreen = () => {
 
     return (
         <SafeAreaView style={{flex: 1}}>
+            <StatusBar
+                animated={false}
+                backgroundColor={COLORS.primary}
+                barStyle={'dark-content'}
+            />
             <View style={{minHeight: 40}}>
                 <ScrollView nestedScrollEnabled horizontal snapToEnd={false} ref={headerScrollView}
                             automaticallyAdjustContentInsets={false}

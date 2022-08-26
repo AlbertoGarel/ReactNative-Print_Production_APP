@@ -115,10 +115,18 @@ const BarcodeScannerComponent = ({props}) => {
     }
 
     if (hasPermission === null) {
-        return <Text>Requesting for camera permission</Text>;
+        return (
+            <View style={styles.dark}>
+                <Text style={styles.lightText}>Requesting for camera permission</Text>
+            </View>
+        );
     }
     if (hasPermission === false) {
-        return <Text>No access to camera</Text>;
+        return (
+            <View style={styles.dark}>
+                <Text style={styles.lightText}>No access to camera</Text>
+            </View>
+        );
     }
 
     function __handleFlashMode() {
@@ -241,6 +249,15 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 10
+    },
+    dark: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: COLORS.black
+    },
+    lightText: {
+        color: COLORS.white
     }
 });
 

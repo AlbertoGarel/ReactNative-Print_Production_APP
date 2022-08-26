@@ -299,7 +299,7 @@ const FullProduction = ({route}) => {
     };
 
     function bottomSheetHandlerRollUsed() {
-        SetIsVisibleRollUsedForm(!isVisible);
+        SetIsVisibleRollUsedForm(!isVisibleRollUsedForm);
     };
 
     function handlerSetVibleDropMenu() {
@@ -334,7 +334,7 @@ const FullProduction = ({route}) => {
     const createThreeButtonAlert = (param, actionDDBB, text) => {
         let newBobina = `,\nPeso Actual: ${param.actualWeight} Kg,\nRadio: ${param.radius ? param.radius : 'Bobina completa'}`
         Alert.alert(`${text}`,
-            `Código1:  ${param.scanCode}${text.charAt(0) === 'B' ? newBobina : ''}`, [
+            `Código:  ${param.scanCode}${text.charAt(0) === 'B' ? newBobina : ''}`, [
                 {
                     text: 'CANCELAR',
                     onPress: () => null,

@@ -6,7 +6,7 @@ import {
     StyleSheet,
     TouchableOpacity,
     ImageBackground,
-    Keyboard
+    Keyboard, StatusBar
 } from 'react-native';
 import CustomTextInput from "../components/FormComponents/CustomTextInput";
 import {
@@ -700,6 +700,11 @@ const IndividualCalculation = () => {
 
     return (
         <SafeAreaView style={{flex: 1}}>
+            <StatusBar
+                animated={false}
+                backgroundColor={'#ebc977'}
+                barStyle={'dark-content'}
+            />
             <ImageBackground source={require('../assets/images/orangegradient.jpg')} style={styles.backg}>
                 <MultipleSwitchSelector
                     label_values={switchValues}

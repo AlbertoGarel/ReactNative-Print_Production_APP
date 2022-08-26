@@ -8,7 +8,7 @@ import {
     View,
     Alert,
     TouchableOpacity,
-    ImageBackground,
+    ImageBackground, StatusBar,
 } from 'react-native';
 import {
     deleteFile,
@@ -140,6 +140,11 @@ const DocumentsViewerScreen = () => {
     if (dataSection.length === 0) {
         return (
             <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                <StatusBar
+                    animated={false}
+                    backgroundColor={COLORS.primary}
+                    barStyle={'dark-content'}
+                />
                 <SvgComponent svgData={pdfSVG} svgHeight={100} svgWidth={100}/>
                 <Text style={styles.textEmpty}>Ningún archivo guardado</Text>
             </View>
@@ -148,6 +153,11 @@ const DocumentsViewerScreen = () => {
 
     return (
         <SafeAreaView style={styles.container}>
+            <StatusBar
+                animated={false}
+                backgroundColor={COLORS.primary}
+                barStyle={'dark-content'}
+            />
             {Object.keys(totalCapacity).length > 0 && <CapacityInfoDraggable totalCapacity={totalCapacity}/>}
             <SectionList
                 initialNumToRender={20}

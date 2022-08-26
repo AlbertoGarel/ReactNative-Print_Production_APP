@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {ImageBackground, SafeAreaView, StyleSheet, View} from 'react-native';
+import {ImageBackground, SafeAreaView, StatusBar, StyleSheet, View} from 'react-native';
 import {COLORS} from "../assets/defaults/settingStyles";
 import HeaderCommonDrawer from "./commonComponentsDrawer/HeaderCommonDrawer";
 import LargeButtonNew from "./commonComponentsDrawer/LargeButtonNew";
@@ -12,9 +12,24 @@ const TableViewwCommonScreen = ({props}) => {
 
     const navigation = useNavigation();
 
+    const [isFocused, setFocused] = useState(false);
     const [modal, setModal] = useState(false);
     const [typeForm, setTypeForm] = useState('');
     const [openModalInfo, setOpenModalInfo] = useState(false);
+
+    useEffect(() => {
+        const blur_unsubscribe = navigation.addListener('blur', () => {
+            setFocused(false)
+        });
+        const focus_unsubscribe = navigation.addListener('focus', () => {
+            setFocused(true)
+        });
+
+        return () => {
+            blur_unsubscribe();
+            focus_unsubscribe();
+        }
+    }, [navigation]);
 
     useEffect(() => {
         return navigation.addListener('blur', () => {
@@ -38,6 +53,13 @@ const TableViewwCommonScreen = ({props}) => {
 
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: COLORS.white}}>
+            {
+                isFocused && <StatusBar
+                    animated={false}
+                    backgroundColor={'#f5b405'}
+                    barStyle={'dark-content'}
+                />
+            }
             <ImageBackground source={require('../assets/images/orangegradient.jpg')} style={styles.image}>
                 <View style={styles.parent}>
                     <HeaderCommonDrawer

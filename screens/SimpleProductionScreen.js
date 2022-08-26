@@ -6,7 +6,8 @@ import {
     Text,
     TouchableOpacity,
     FlatList,
-    Animated
+    Animated,
+    StatusBar
 } from "react-native";
 import {useFocusEffect} from '@react-navigation/native';
 import {COLORS} from "../assets/defaults/settingStyles";
@@ -207,6 +208,14 @@ const simpleProductionScreen = ({setChangeButtonFunc}) => {
 
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
+            <StatusBar
+                animated={false}
+                backgroundColor={COLORS.white}
+                barStyle={'light-content'}
+                // showHideTransition={'none'}
+                // hidden={false}
+                // translucent={false}
+            />
             <View style={styles.buttonsContainer}>
                 <TouchableOpacity style={styles.button} onPress={() => objsaved.length > 0 && setVisibleMenu(true)}>
                     <Text style={styles.textTouchable}>Listado Productos</Text>

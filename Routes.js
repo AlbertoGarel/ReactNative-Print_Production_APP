@@ -67,12 +67,12 @@ const Routes = ({navigation}) => {
             // paddingTop: Platform.Version < 30 ? paddingTop : 0
         }}>
             <StatusBar
-                animated={true}
-                backgroundColor={'transparent'}
-                barStyle={Platform.Version < 30 ? 'dark-content' : 'light-content'}
-                showHideTransition={'slide'}
-                hidden={false}
-                translucent={true}
+                animated={false}
+                backgroundColor={COLORS.supportBackg1}
+                barStyle={'dark-content'}
+                // showHideTransition={'none'}
+                // hidden={false}
+                // translucent={false}
             />
             <View style={styles.bottomBanner}>
                 <AdMobBanner/>
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
     bottomBanner: {
         width: '100%',
         backgroundColor: COLORS.supportBackg1,
-        alignSelf: 'center'
+        alignSelf: 'center',
     },
 })
 

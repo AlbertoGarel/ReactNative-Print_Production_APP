@@ -24,8 +24,23 @@ function App() {
 
     NavigationBar.setPositionAsync("relative");
     NavigationBar.setVisibilityAsync("hidden");
-    NavigationBar.setBehaviorAsync("inset-swipe");
-    setStatusBarHidden(true, "none");
+    NavigationBar.setBackgroundColorAsync("#FFFFFF")
+    // NavigationBar.setBehaviorAsync("inset-swipe");
+    // setStatusBarHidden(true, "none");
+    //
+    const visibility = NavigationBar.useVisibility();
+    useEffect(() => {
+        if (visibility === "visible") {
+            const interval = setTimeout(() => {
+                NavigationBar.setVisibilityAsync("hidden");
+            }, /* 3 Seconds */ 3000);
+
+            return () => {
+                clearTimeout(interval);
+            };
+        }
+        // alert(visibility)
+    }, [visibility]);
 
     const [loadScreen, setLoadScreen] = useState(true);
     const [firstPresentation, setFirstPresentation] = useState(true);

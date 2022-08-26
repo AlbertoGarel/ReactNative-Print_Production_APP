@@ -8,7 +8,8 @@ import {
     TouchableOpacity,
     Switch,
     Alert,
-    Dimensions
+    Dimensions,
+    ActivityIndicator
 } from 'react-native';
 import {Picker} from '@react-native-picker/picker';
 import PagerView from 'react-native-pager-view';
@@ -35,8 +36,6 @@ import CustomTextInput from "../../components/FormComponents/CustomTextInput";
 import SvgComponent from "../../components/SvgComponent";
 import CustomPicker from "../../components/FormComponents/CustomPicker";
 import {
-    autopasters_prod_table_by_production,
-    dataProductSelectedAllInfo,
     getAutopasterByLineaID,
     picker_medition_style,
     picker_producto,
@@ -55,6 +54,7 @@ import {
 } from "../../utils";
 import {genericInsertFunction, genericTransaction} from "../../dbCRUD/actionsFunctionsCrud";
 import CustomDateTimePicker from "../../components/FormComponents/CustomDateTimePicker";
+
 
 const searchStatementAutoProdData_Table =
     `SELECT * FROM autopasters_prod_data
@@ -87,14 +87,6 @@ const SettingsProductionScreen = () => {
 
     const navigation = useNavigation();
 
-    let toastRef;
-    const showToast = (message, isError = false) => {
-        if (!isError) {
-            toastRef.props.style.backgroundColor = '#00ff00';
-        }
-        toastRef.show(message);
-    };
-
     //BASEDATA STATES
     const [papelComun, getPapelComun] = useState([]);
     const [productoDataDB, getProductoDataDB] = useState([]);
@@ -116,6 +108,7 @@ const SettingsProductionScreen = () => {
     const [selectedMedition, getselectedMedition] = useState(0);
     const [selectedEditions, getselectedEditions] = useState('');
     const [selectedNulls, getselectedNulls] = useState('');
+    const [spinnerPagination, setSpinnerPagination] = useState(false);
 
     //APP states calcAutopasters
     const [autopastersSelectedLineProd, getAutopastersSelectedLineProd] = useState([])
@@ -127,13 +120,30 @@ const SettingsProductionScreen = () => {
     const [nullCopiesByTiradaPercentage, setNullCopiesByTiradaPercentage] = useState(0);
     const [nullCopiesByTirada, setNullCopiesByTirada] = useState(0);
     const [isCheckedAutomaticAutopasters, setCheckedAutomaticAutopasters] = useState(false);
-
+    const [toastColor, setToastColor] = useState('#BBFFBB')
     // const [pagenumber, setPagenumber] = useState(1);
     // REFS
     const pagerRef = useRef(null);
     const inputDateRef = useRef();
     const fullproduction = useRef();
 
+
+    let toastRef;
+    const showToast = (message, isError = false, callback) => {
+        if (!isError) {
+            setToastColor('#BBFFBB');
+        } else {
+            setToastColor('#ff0000');
+        }
+        if (callback) {
+            toastRef.show(message, 1000, () => {
+                navigation.navigate('HomeStack');
+            });
+        } else {
+            toastRef.show(message);
+        }
+
+    };
 
     function handlePageChange(pageNumber) {
         // IMPORTANT
@@ -276,6 +286,9 @@ const SettingsProductionScreen = () => {
                 console.log('no call autopasters')
             }
         }
+
+        setSpinnerPagination(false);
+
     }, [maxPaginationOptionPickerLineSelected, selectedPagination]);
 
     const groupAuto = (obj, prodData) => {
@@ -288,6 +301,9 @@ const SettingsProductionScreen = () => {
         } else {
             getSelectedAutopasterswithrolls = [...getSelectedAutopasterswithrolls, ..._enteras, _media];
         }
+
+        let _gramaje = meditionDataDB.filter(i => i.medition_id === selectedMedition)[0].gramaje_id;
+
         db.transaction(async tx => {
             for await (let item of getSelectedAutopasterswithrolls) {
                 let coefRoll = 0;
@@ -295,7 +311,7 @@ const SettingsProductionScreen = () => {
                 let positionRoll = 1;
                 let calcWeigth = {};
                 let dataRollInsert = [];
-                let queryParams = [item[1], selectedMedition, papelComun.filter(i => i.producto_id === selectedProduct)[0].papel_comun_fk, item[2]]
+                let queryParams = [item[1], _gramaje, papelComun.filter(i => i.producto_id === selectedProduct)[0].papel_comun_fk, item[2]]
 
                 await tx.executeSql(
                     searchStatementAutoProdData_Table,
@@ -345,7 +361,6 @@ const SettingsProductionScreen = () => {
                     }, err => Sentry_Alert('SettingsProductionScreen.js', 'transaction - searchStatementAutoProdData_Table', err)
                 )
             }
-            ;
         })
     };
 
@@ -357,28 +372,17 @@ const SettingsProductionScreen = () => {
             const insertProd = await genericInsertFunction(insert_production, prod_data)
             if (insertProd.rowsAffected === 0) throw new Error('Error al guardar.')
             //LOOP INSERT DATA
-            const group = await groupAuto(toSendAutopastProd, toSendProd);
-            const dataProduction = await genericTransaction(dataProductSelectedAllInfo, [toSendProd.id]);
-            const autopastersForProd = await genericTransaction(
-                `SELECT * FROM bobina_table
-                    INNER JOIN autopasters_prod_data ON autopasters_prod_data.autopaster_fk = bobina_table.autopaster_fk
-                    WHERE bobina_table.papel_comun_fk = ? AND bobina_table.peso_actual > ?
-                    AND bobina_table.autopaster_fk = ? AND bobina_table.gramaje_fk = ?`,
-                [dataProduction[0].papel_comun_id, 0, 5, dataProduction[0].gramaje_id])
-            // const fillAutopasters =
-            //     const getRoll = await genericTransaction(
-            //     `SELECT * FROM bobina_table
-            //             INNER JOIN autopasters_prod_data ON autopasters_prod_data.autopaster_fk = bobina_table.autopaster_fk
-            //             WHERE bobina_table.papel_comun_fk = ? AND bobina_table.peso_actual > ?
-            //             AND bobina_table.autopaster_fk = ? AND bobina_table.gramaje_fk = ?`,
-            //     [dataProduction[0].papel_comun_id, 0, item.autopaster_fk, dataProduction[0].gramaje_id]
-            // )
+            await groupAuto(toSendAutopastProd, toSendProd);
+            showToast(
+                'Producción creada con éxito.',
+                false,
+                true
+            );
 
-            showToast('Guardado con éxito.', false);
-            setTimeout(() => navigation.navigate('HomeStack'), 2000);
+            // setTimeout(() => navigation.navigate('HomeStack'), 2000);
             resetForm();
         } catch (err) {
-            console.log(err)
+            if (__DEV__) console.log(err)
             showToast(err.message, true)
             Sentry_Alert('SettingsProductionScreen.js', 'handlerSendOptionsSelected - insert_production', err)
         }
@@ -686,6 +690,7 @@ const SettingsProductionScreen = () => {
                                                                         setFieldTouched('pickerlinProd', true)
                                                                         setFieldValue('pickerlinProd', itemValue)
                                                                         getselectedLinProd(itemValue)
+                                                                        setSpinnerPagination(true)
                                                                     } else {
                                                                         showToast("Debes escoger una opción válida...", true)
                                                                     }
@@ -719,6 +724,7 @@ const SettingsProductionScreen = () => {
                                                             />
                                                         </View>
                                                         <View style={{flex: 1, paddingLeft: 10}}>
+                                                            {spinnerPagination && <AbsoluteSpinner/>}
                                                             <CustomPicker
                                                                 style={{
                                                                     borderWidth: .5,
@@ -1212,13 +1218,13 @@ const SettingsProductionScreen = () => {
             </Formik>
             <ToastMesages
                 _ref={(toast) => toastRef = toast}
-                _style={{backgroundColor: '#FF0000'}}
+                _style={{backgroundColor: toastColor}}
                 _position='bottom'
                 _positionValue={400}
                 _fadeInDuration={150}
                 _fadeOutDuration={3000}
                 _opacity={0.8}
-                _textStyle={{color: '#FFFFFF', fontFamily: 'Anton'}}
+                _textStyle={{color: '#000000', fontFamily: 'Anton'}}
             />
         </SafeAreaView>
     );
@@ -1263,10 +1269,29 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderWidth: .5,
         borderColor: COLORS.black,
+    },
+    pickerAbsoluteSpinner: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        right: 0,
+        left: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'white',
+        zIndex: 1
     }
 });
 
 export default SettingsProductionScreen;
+
+function AbsoluteSpinner() {
+    return (
+        <View style={styles.pickerAbsoluteSpinner}>
+            <ActivityIndicator size="small" color={COLORS.primary}/>
+        </View>
+    )
+}
 
 const BoxError = () => {
     return (

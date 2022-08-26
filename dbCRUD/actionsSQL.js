@@ -63,14 +63,15 @@ export const medition_style_table_ALL =
     "ORDER BY medition_id ASC"
 ;
 export const picker_medition_style =
-    "SELECT medition_id, " +
-    "medition_type, " +
-    "full_value, " +
-    "media_value, " +
-    "gramaje_value " +
-    "FROM medition_style_table, gramaje_table " +
-    "WHERE gramaje_fk = gramaje_id " +
-    "ORDER BY medition_id ASC"
+    `SELECT medition_style_table.medition_id,
+    medition_style_table.medition_type,
+    medition_style_table.full_value, 
+    medition_style_table.media_value,
+    gramaje_table.gramaje_value,
+    gramaje_table.gramaje_id\t
+    FROM medition_style_table, gramaje_table
+    WHERE gramaje_fk = gramaje_id 
+    ORDER BY medition_id ASC`
 ;
 export const meditionStyleByID =
     "SELECT " + "*" + " FROM medition_style_table WHERE medition_style_table.medition_id = ?;"
@@ -306,6 +307,7 @@ export const produtoByID =
  */
 export const bobina_table_ALL =
     `SELECT bobina_table.codigo_bobina AS 'código bobina',
+bobina_table.autopaster_fk AS 'Autopaster',
 linea_produccion_table.linea_name AS 'línea',
 papel_comun_table.papel_comun_name 'Propietario',
 gramaje_table.gramaje_value AS 'Gramaje',
