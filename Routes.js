@@ -70,8 +70,8 @@ const Routes = ({navigation}) => {
                 animated={false}
                 backgroundColor={COLORS.supportBackg1}
                 barStyle={'dark-content'}
-                // showHideTransition={'none'}
-                // hidden={false}
+                showHideTransition={'slide'}
+                hidden={false}
                 // translucent={false}
             />
             <View style={styles.bottomBanner}>

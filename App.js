@@ -13,6 +13,8 @@ import {SENTRY_DSN} from "./projectKeys";
 import {Sentry_Alert} from "./utils";
 import * as NavigationBar from "expo-navigation-bar";
 import {setStatusBarHidden} from "expo-status-bar";
+import {COLORS} from "./assets/defaults/settingStyles";
+import {SafeAreaView, StatusBar} from "react-native";
 
 Sentry.init({
     dsn: __DEV__ ? SENTRY_DSN : SENTRY_DSN,//enter your sentry dsn.
@@ -23,23 +25,20 @@ Sentry.init({
 function App() {
 
     NavigationBar.setPositionAsync("relative");
-    NavigationBar.setVisibilityAsync("hidden");
-    NavigationBar.setBackgroundColorAsync("#FFFFFF")
-    // NavigationBar.setBehaviorAsync("inset-swipe");
-    // setStatusBarHidden(true, "none");
-    //
+    NavigationBar.setBackgroundColorAsync(COLORS.supportBackg1);
+
     const visibility = NavigationBar.useVisibility();
     useEffect(() => {
         if (visibility === "visible") {
             const interval = setTimeout(() => {
                 NavigationBar.setVisibilityAsync("hidden");
-            }, /* 3 Seconds */ 3000);
+            }, 3000);
 
             return () => {
                 clearTimeout(interval);
             };
         }
-        // alert(visibility)
+
     }, [visibility]);
 
     const [loadScreen, setLoadScreen] = useState(true);
@@ -91,6 +90,9 @@ function App() {
 
     return (
         <NavigationContainer>
+            <StatusBar
+                hidden={true}
+            />
             {
                 loadScreen ?
                     <SplashScreen/>

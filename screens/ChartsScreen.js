@@ -9,7 +9,8 @@ import {
     ScrollView,
     PanResponder,
     ActivityIndicator,
-    Image, StatusBar
+    Image,
+    StatusBar
 } from 'react-native';
 import {COLORS} from "../assets/defaults/settingStyles";
 import {LinearGradient} from "expo-linear-gradient";
@@ -164,6 +165,11 @@ const ChartsScreen = () => {
                 justifyContent: 'center',
                 alignItems: 'center'
             }}>
+                <StatusBar
+                    animated={false}
+                    backgroundColor={COLORS.primary}
+                    barStyle={'dark-content'}
+                />
                 <Image
                     style={{backgroundColor: 'transparent', resizeMode: 'contain'}}
                     source={require('../assets/images/graf.png')}

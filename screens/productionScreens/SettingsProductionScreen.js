@@ -109,6 +109,7 @@ const SettingsProductionScreen = () => {
     const [selectedEditions, getselectedEditions] = useState('');
     const [selectedNulls, getselectedNulls] = useState('');
     const [spinnerPagination, setSpinnerPagination] = useState(false);
+    const [isFocused, setFocused] = useState(false);
 
     //APP states calcAutopasters
     const [autopastersSelectedLineProd, getAutopastersSelectedLineProd] = useState([])
@@ -160,6 +161,20 @@ const SettingsProductionScreen = () => {
     };
 
     const db = SQLite.openDatabase('bobinas.db');
+
+    useEffect(() => {
+        const blur_unsubscribe = navigation.addListener('blur', () => {
+            setFocused(false)
+        });
+        const focus_unsubscribe = navigation.addListener('focus', () => {
+            setFocused(true)
+        });
+
+        return () => {
+            blur_unsubscribe();
+            focus_unsubscribe();
+        }
+    }, [navigation]);
 
     useEffect(() => {
         const unsubscribe = navigation.addListener('focus', () => {
@@ -597,13 +612,13 @@ const SettingsProductionScreen = () => {
                   }) => (
                     <>
                         <View style={{flex: 1}}>
-                            <StatusBar
-                                animated={true}
-                                backgroundColor="#61dafb"
-                                barStyle={'light-content'}
-                                showHideTransition={'slide'}
-                                hidden={true}
-                            />
+                            {
+                                isFocused && <StatusBar
+                                    animated={false}
+                                    backgroundColor={COLORS.background_primary}
+                                    barStyle={'dark-content'}
+                                />
+                            }
                             <PagerView style={{flex: 1}}
                                        initialPage={0}
                                        ref={pagerRef}

@@ -211,7 +211,7 @@ const simpleProductionScreen = ({setChangeButtonFunc}) => {
             <StatusBar
                 animated={false}
                 backgroundColor={COLORS.white}
-                barStyle={'light-content'}
+                barStyle={'dark-content'}
                 // showHideTransition={'none'}
                 // hidden={false}
                 // translucent={false}
