@@ -7,6 +7,7 @@ import {edicionesSVG, tirada2SVG} from "../assets/svg/svgContents";
 import {COLORS} from "../assets/defaults/settingStyles";
 import * as Yup from "yup";
 import {FormYupSchemas} from "./FormComponents/YupSchemas";
+import {Sentry_Alert} from "../utils";
 
 const NullCopiesComponent = ({props}) => {
     const nullCopiesFormRef = useRef();
@@ -22,7 +23,7 @@ const NullCopiesComponent = ({props}) => {
                 setNullCopiesByDefault(response.nullcopiesbydefault);
             })
             .catch(err => {
-                storeData('@NullCopiesData', storeObjResult).then(r => r)
+                Sentry_Alert('NullCopiesComponent.js', '@NullCopiesData', err)
             });
 
         return () => _isActive = false;

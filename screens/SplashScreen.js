@@ -6,6 +6,7 @@ import logoSocial from '../assets/images/splash/socialPymes_Imagotipo_blanco.png
 import mylogo from '../assets/images/splash/Logo_AlbertoGarel.png'
 import {COLORS} from "../assets/defaults/settingStyles";
 import {Sentry_Alert} from "../utils";
+import * as NavigationBar from "expo-navigation-bar";
 
 let screenWidth = Dimensions.get('screen').width;
 let screenHeight = Dimensions.get('screen').height;
@@ -13,6 +14,7 @@ let screenHeight = Dimensions.get('screen').height;
 const SplashScreen = () => {
     const [fadeAnim] = useState(new Animated.Value(0)); // Initial value for opacity: 0
     const [isFontLoad, setIsfontLoad] = useState(false)
+    NavigationBar.setVisibilityAsync("hidden");
 
     useEffect(() => {
         let isMuounted = true;

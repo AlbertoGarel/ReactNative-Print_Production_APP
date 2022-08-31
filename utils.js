@@ -33,7 +33,7 @@ const select_all_rolls_by_production_and_autopaster =
     `SELECT * FROM autopasters_prod_data
      INNER JOIN bobina_table ON bobina_table.codigo_bobina = autopasters_prod_data.bobina_fk
      WHERE autopasters_prod_data.production_fk = ?
-     AND autopasters_prod_data.autopaster_fk = ?
+     AND autopasters_prod_data.autopaster_fk = ?;
      `
 ;
 const insertReplace =
@@ -246,7 +246,7 @@ export const CalcPrevConsKilosRollsAutopaster = (arrObjects, tiradaTotal, gramaj
     //Order from lowest to highest those that remain by position and recalculate kilos planned.
     const orderedItems = arrObjects.sort((a, b) => a.position_roll - b.position_roll);
     //Calculate kilos consumed by each one and assign position.
-    let isMedia = orderedItems[0].ismedia ? gramajeValues.media : gramajeValues.entera;
+    let isMedia = orderedItems[0].media_defined ? gramajeValues.media : gramajeValues.entera;
     let kilosPrev = Math.round(tiradaTotal * isMedia);
     let updatedItems = [];
     let calc_kilosPrev = kilosPrev;
@@ -470,7 +470,7 @@ export async function groupedAutopasters(data, production_id) {
         `;
     try {
         const prodData = await genericTransaction(dataProductSelectedAllInfo, [production_id]);
-        // console.log('data of production', prodData)
+
         const extraData = {
             toSend: false,
             weightEnd: null,
@@ -480,8 +480,13 @@ export async function groupedAutopasters(data, production_id) {
         const groupedForSectionList = data.reduce(async (acc, item) => {
             acc = await acc;
             // check if roll exists in autopaster
-            let rollInDatabase = await genericTransaction(innerBobinaTableAndProductData, [item.bobina_fk ? item.bobina_fk : 0, item.production_fk])
-
+            let _rollInDatabase = await genericTransaction(innerBobinaTableAndProductData, [item.bobina_fk ? item.bobina_fk : 0, item.production_fk])
+            let rollInDatabase = [];
+            if (_rollInDatabase.length > 1) {
+                rollInDatabase = _rollInDatabase.filter(i => i['bobina_fk'])
+            } else {
+                rollInDatabase = [..._rollInDatabase];
+            }
             if (rollInDatabase.length) {
                 // if exist, add rest_andProd value
                 let last = await genericTransaction(selectLastRestoPrev, [item.bobina_fk ? item.bobina_fk : 0, item.production_fk])
@@ -615,7 +620,11 @@ export async function deleteItem(response, rollID, productionData) {
                     return true
                 }
             })
-            .then(() => {
+            .then(async () => {
+                const roll_to_delete = toUpdate.data.filter(roll => roll.codigo_bobina === rollID)[0];
+                if (roll_to_delete.length) {
+                    await reorganizeProduction(productionData, roll_to_delete);
+                }
                 return {
                     updateItemsForSectionList: [...others, updateItemsForSectionList].sort((a, b) => a.title - b.title),
                     updateKilosNeededState: updateKilosNeededState
@@ -903,16 +912,16 @@ export async function registerNewBobina(BobinaParams, actionDDBB, itemsState, pr
                     [productionID, BobinaParams.autopaster]
                 ))
                 .then(response => {
-                    const completeItem = response.map(item => {
-                        return {
-                            ...item,
-                            toSend: false,
-                            weightEnd: null,
-                            radiusEnd: '',
-                            codepathSVG: '',
-                            rest_antProd: null
-                        }
-                    })
+                    const addeRoll = response.filter(roll => roll.codigo_bobina === BobinaParams.scanCode)[0];
+                    const complete_addedRoll = {
+                        ...addeRoll,
+                        toSend: false,
+                        weightEnd: null,
+                        radiusEnd: '',
+                        codepathSVG: '',
+                        rest_antProd: null
+                    }
+                    const completeItem = [...getRollsAutopaster.toUpdate.data, complete_addedRoll];
                     return [...getRollsAutopaster.others, {
                         data: completeItem,
                         title: AutopasterNum
@@ -1166,44 +1175,45 @@ export async function reorganizeProduction(item, dataAddedRoll) {
         `SELECT * FROM autopasters_prod_data WHERE production_fk = ? AND autopaster_fk = ? 
         AND media_defined = ?;`
     ;
+
     try {
         //get all next productions with the same owner.
         const result = await genericTransaction(searchAllNextSameProductions, [item.papel_comun_id, item.produccion_id])
 
-        if (result.length > 0) {
-            let res = [];
-            result.forEach((item) => {
-                res.push(genericTransaction(
-                    getRollsByProduccionID,
-                    [item.produccion_id, dataAddedRoll.autopaster, dataAddedRoll.isMedia]
-                ))
-            }, []);
-            await Promise.all(res).then(response => {
-                let insertOrUpdatePromises = [];
-                response.forEach(item => {
-                    let existRoll = item.filter(i => i.autopaster_fk === dataAddedRoll.autopaster && i['bobina_fk']);
+        if (result.length) {
+            const next_productions = await Promise.all(result.map(item => genericTransaction(getRollsByProduccionID, [item.produccion_id, dataAddedRoll.autopaster, dataAddedRoll.isMedia])))
 
-                    if (existRoll.length > 0) {
+            return Promise.all(next_productions.map(async prod => {
+                    let existRoll = prod.filter(i => i.autopaster_fk === dataAddedRoll.autopaster && i['bobina_fk']);
+                    let equal_roll = existRoll.filter(roll => roll.codigo_bobina === dataAddedRoll.codigo_bobina)[0];
+                    if (existRoll.length > 0 && equal_roll.length === 0) {
                         //insert
                         const lastRoll = existRoll.sort((a, b) => b.position_roll - a.position_roll)[0];
-                        insertOrUpdatePromises.push(genericTransaction(
+
+                        return genericTransaction(
                             autopaster_prod_data_insert,
                             [null, lastRoll.production_fk, lastRoll.autopaster_fk, dataAddedRoll.scanCode, dataAddedRoll.actualWeight - lastRoll.resto_previsto, lastRoll.media_defined, lastRoll.position_roll + 1]
-                        ))
+                        )
                     } else {
-                        //update
-                        //calculate weight
-                        const weightAutopasterTotal = item.tirada + item.nulls;
-                        let weightPrev = dataAddedRoll.originalWeight > weightAutopasterTotal
-                            ? Math.round(dataAddedRoll.originalWeight - weightAutopasterTotal)
+                        //             //update
+                        //             //calculate weight
+                        const data_for_this_production = await genericTransaction(
+                            dataProductSelectedAllInfo,
+                            [prod[0].production_fk]
+                        )
+                        const isMedia = !dataAddedRoll.isMedia ? data_for_this_production[0].full_value : data_for_this_production[0].media_value;
+                        const weightAutopasterTotal = (data_for_this_production.tirada + data_for_this_production.nulls) * isMedia;
+                        let weightPrev = dataAddedRoll.actualWeight > weightAutopasterTotal
+                            ? Math.round(dataAddedRoll.actualWeight - weightAutopasterTotal)
                             : 0;
-                        insertOrUpdatePromises.push(genericTransaction(
-                            `UPDATE autopasters_prod_data SET bobina_fk = ?, resto_previsto = ?, autopaster_fk = ? WHERE autopasters_prod_data_id = ? `,
-                            [dataAddedRoll.scanCode, weightPrev, dataAddedRoll.autopaster, item.autopasters_prod_data_id]
-                        ))
+
+                        return genericTransaction(
+                            `UPDATE autopasters_prod_data SET bobina_fk = ?, resto_previsto = ?, autopaster_fk = ? WHERE production_fk = ? AND autopasters_prod_data_id = ?`,
+                            [dataAddedRoll.scanCode, weightPrev, dataAddedRoll.autopaster, prod[0].production_fk, prod[0].autopasters_prod_data_id]
+                        )
                     }
                 })
-            })
+            );
         }
     } catch (err) {
         Sentry_Alert('utils.js', 'function - reorganizeProduction', err)
@@ -1221,7 +1231,7 @@ export async function reorganizeProduction(item, dataAddedRoll) {
 export function handlerSqliteErrors(error) {
     const handlerError = String(error).split('(')[1].split(' ', 2)[1];
     let message = '';
-    console.log(error)
+    if (__DEV__) console.log(error)
     switch (handlerError) {
         case '1811':
             message = 'No se puede eliminar este valor mientras siga referenciado en otra tabla.';

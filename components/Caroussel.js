@@ -50,7 +50,6 @@ const Caroussel = ({items, deleteProduction, spinnerSelected, handlerSpinner}) =
         //GET AUTOPASTERS PRODUCTION
         genericTransaction(autopasters_prod_table_by_production, [item.id])
             .then(async response => {
-                // console.log('response', response)
                 try {
                     handlerSpinner(true, item.id)
                     //ORDERED ITEMS FOR POSITION_ROLL.
@@ -194,8 +193,8 @@ const styles = StyleSheet.create({
     datetext: {
         color: '#a2a2a2',
     },
-    dateIndex:{
-      color: COLORS.white
+    dateIndex: {
+        color: COLORS.white
     },
     circleIndex: {
         top: 5,

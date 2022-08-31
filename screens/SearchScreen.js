@@ -39,6 +39,7 @@ const SearchScreen = () => {
     const [isVisible, SetIsVisible] = useState(false);
     const [noResult, setNoResult] = useState(!valuesDB);
 
+    const [hasPermission, setHasPermission] = useState(null);
     //BACKGROUND PROP CONST
     const optionsSVG = {
         svgData: semicircle2, svgWidth: '120%', svgHeight: '110%'
@@ -291,7 +292,9 @@ const SearchScreen = () => {
                 children={<BarcodeScannerComponent props={{
                     isVisible: isVisible,
                     getScannedCode: getScannedCode,
-                    onChangeTexthandler: null
+                    onChangeTexthandler: null,
+                    hasPermission: hasPermission,
+                    setHasPermission: setHasPermission
                 }}/>}
             />
         </SafeAreaView>

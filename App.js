@@ -47,6 +47,36 @@ function App() {
     useEffect(() => {
         let isMounted = true;
 
+        getDatas('@UserDataForm')
+            .then(resolve => {
+                if (!resolve) {
+                    return storeData('@UserDataForm', {
+                        "email": "",
+                        "enterprise": "",
+                        "name": "",
+
+                    })
+                }
+            })
+            .then(() => {
+                if (__DEV__) console.log('created or exist @UserDataForm')
+            })
+            .catch(err => Sentry_Alert('App.js', '@UserDataForm', err));
+
+        getDatas('@NullCopiesData')
+            .then(resolve => {
+                if (!resolve) {
+                    return storeData('@NullCopiesData', {
+                        "nullcopiesbydefault": "",
+                        "nullcopiesbyedition": ""
+                    })
+                }
+            })
+            .then(() => {
+                if (__DEV__) console.log('created or exist @NullCopiesData')
+            })
+            .catch(err => Sentry_Alert('App.js', '@NullCopiesData', err))
+
         getDatas('@introduction')
             .then(response => {
                 if (response === false) {
@@ -61,18 +91,25 @@ function App() {
             .then(response => response)
             .catch(err => Sentry_Alert('App.js', 'openDatabase', err));
 
-        checkAndCreateFolder(appFolder)
-            .then(response => response)
-            .catch(err => Sentry_Alert('App.js', 'checkAndCreateFolder(appFolder)', err));
-        checkAndCreateFolder(appHTMLfolderForPdf)
-            .then(response => response)
-            .catch(err => Sentry_Alert('App.js', 'checkAndCreateFolder(appHTMLfolderForPdf)', err));
-
         checkExistFolder(appFolder)
-            .then(response => response)
+            .then(response => {
+                if (!response) {
+                    return checkAndCreateFolder(appFolder)
+                }
+            })
+            .then(() => {
+                if (__DEV__) console.log('appFolder created or exist')
+            })
             .catch(err => Sentry_Alert('App.js', 'checkExistFolder(appFolder)', err))
         checkExistFolder(appHTMLfolderForPdf)
-            .then(response => response)
+            .then(response => {
+                if (!response) {
+                    return checkAndCreateFolder(appHTMLfolderForPdf)
+                }
+            })
+            .then(() => {
+                if (__DEV__) console.log('appHTMLfolderForPdf created or exist')
+            })
             .catch(err => Sentry_Alert('App.js', 'checkExistFolder(appHTMLfolderForPdf)', err))
 
         setTimeout(() => {

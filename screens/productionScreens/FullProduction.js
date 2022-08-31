@@ -153,6 +153,8 @@ const FullProduction = ({route}) => {
     const [minimumWeight, setMinimumWeight] = useState({entera: null, media: null});
     const [minimumWeightPass, getMinimumWeightPass] = useState(false);
 
+    const [hasPermission, setHasPermission] = useState(null);
+
     useEffect(() => {
         setMinimumWeight(prevState => {
             //CONVERT TO NEGATIVE NUMBER TO COMPARE WITH KILOSNEEDED.
@@ -489,7 +491,7 @@ const FullProduction = ({route}) => {
             })
             // GET AND DELETE FINISHED ROLLS WHEN THERE IS MORE THAN ONE AND UPDATE WHEN ONLY ONE EXISTS.
             let Promises = await endedRolls.map(i => {
-                if (i.items > 1) {
+                if (i.items >= 1) {
                     return genericUpdatefunction(
                         `DELETE FROM autopasters_prod_data WHERE bobina_fk = ? AND autopasters_prod_data_id > ?`,
                         [i.id, dataProd.productId]
@@ -515,6 +517,7 @@ const FullProduction = ({route}) => {
                     );
                     const actionsNextProds = response.filter(roll => roll.bobina_fk);
                     const deletedEmptyRolls = response.filter(roll => !roll.bobina_fk);
+
                     if (actionsNextProds.length) {
                         await new Promise.all(deletedEmptyRolls.map(i => genericDeleteFunction(`DELETE FROM autopasters_prod_data WHERE autopasters_prod_data_id = ?`, [i.autopasters_prod_data_id])))
                     } else {
@@ -779,7 +782,9 @@ const FullProduction = ({route}) => {
                 children={<BarcodeScannerComponent props={{
                     isVisible: isVisible,
                     getScannedCode: handlerScannedCode,
-                    onChangeTexthandler: null
+                    onChangeTexthandler: null,
+                    hasPermission: hasPermission,
+                    setHasPermission: setHasPermission
                 }}/>}
             />
             {/*/!*CREAR BOTTOMSHEETCOMPONENT PARA FOMULARIO ENTRADA BOBINA USADA*!/*/}

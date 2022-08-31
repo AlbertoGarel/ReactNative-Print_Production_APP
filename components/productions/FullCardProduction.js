@@ -54,7 +54,7 @@ const FullCardProduction = ({
     const [radiusState, setStateRadius] = useState(new_radius);
     const [codePathSVG, setCodePATHSVG] = useState('');
     const [renderImages, setRenderImages] = useState('')
-    const nullable = restoPrevistoAnteriorProduccion === null;
+    const [nullable, setNullable] = useState(!restoPrevistoAnteriorProduccion);
 
     useEffect(() => {
         setStateRadius(new_radius);
