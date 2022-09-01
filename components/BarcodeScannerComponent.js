@@ -60,7 +60,7 @@ const optionsStyleContSVG = {
 
 const BarcodeScannerComponent = ({props}) => {
 
-        // const [hasPermission, setHasPermission] = useState(null);
+        const [hasPermission, setHasPermission] = useState(props.hasPermission);
         const [scanned, setScanned] = useState(false);
         const [initScanState, setInitScanState] = useState(false);
         const [barcodeTypesSelected, getBarcodeTypesSelected] = useState([]);
@@ -70,12 +70,12 @@ const BarcodeScannerComponent = ({props}) => {
 
         useEffect(() => {
                 let isMounted = true;
-                if (props.hasPermission !== 'granted') {
-                    (async () => {
-                        const {status} = await BarCodeScanner.requestPermissionsAsync();
-                        if (isMounted) props.setHasPermission(status === 'granted');
-                    })();
-                }
+                // if (props.hasPermission !== 'granted') {
+                //     (async () => {
+                //         const {status} = await BarCodeScanner.requestPermissionsAsync();
+                //         if (isMounted) props.setHasPermission(status === 'granted');
+                //     })();
+                // }
                 //GET TO asyncStorage
                 getDatas('@storage_codeTypesSelected').then(r => {
                     if (r) {

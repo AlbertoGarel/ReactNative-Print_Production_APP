@@ -22,6 +22,7 @@ import BottomSheetComponent from "../components/BottomSheetComponent";
 import BarcodeScannerComponent from "../components/BarcodeScannerComponent";
 import {useFocusEffect} from "@react-navigation/native";
 import {Sentry_Alert} from "../utils";
+import {BarCodeScanner} from "expo-barcode-scanner";
 
 const height = Dimensions.get('window').height / 1.5;
 
@@ -54,6 +55,15 @@ const SearchScreen = () => {
             }
         }, [])
     );
+
+    React.useEffect(() => {
+        if (hasPermission !== 'granted') {
+            (async () => {
+                const {status} = await BarCodeScanner.requestPermissionsAsync();
+                setHasPermission(status === 'granted');
+            })();
+        }
+    }, [hasPermission]);
 
     const getDataSearchForTable = (datas) => {
         setTablehead([...Object.keys(datas[0])]);

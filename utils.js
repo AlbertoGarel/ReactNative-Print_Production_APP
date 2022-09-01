@@ -621,10 +621,6 @@ export async function deleteItem(response, rollID, productionData) {
                 }
             })
             .then(async () => {
-                const roll_to_delete = toUpdate.data.filter(roll => roll.codigo_bobina === rollID)[0];
-                if (roll_to_delete.length) {
-                    await reorganizeProduction(productionData, roll_to_delete);
-                }
                 return {
                     updateItemsForSectionList: [...others, updateItemsForSectionList].sort((a, b) => a.title - b.title),
                     updateKilosNeededState: updateKilosNeededState
@@ -816,7 +812,6 @@ export async function getScannedCode(scanned, autopasterID, itemsState, producti
                 codeType: codeType
             }
         }
-        // await reorganizeProduction(productionData, regNewRoll);
         return [regNewRoll, actionBBDD, text];
     } catch (err) {
         Sentry_Alert('utils.js', 'function - getScannedCode', err)
@@ -1166,11 +1161,9 @@ export function handleEmail(options, nameFile) {
  * */
 export async function reorganizeProduction(item, dataAddedRoll) {
     const searchAllNextSameProductions =
-        `SELECT * FROM produccion_table 
-        JOIN producto_table
-        ON producto_table.papel_comun_fk = ? AND produccion_table.produccion_id > ?`
-    ;
-    // produccion_id: get all rolls by production.
+        `SELECT produccion_id FROM produccion_table 
+        JOIN producto_table ON producto_table.producto_id = produccion_table.producto_fk 
+        WHERE produccion_table.produccion_id > ? AND producto_table.papel_comun_fk = ?`;
     const getRollsByProduccionID =
         `SELECT * FROM autopasters_prod_data WHERE production_fk = ? AND autopaster_fk = ? 
         AND media_defined = ?;`
@@ -1178,7 +1171,7 @@ export async function reorganizeProduction(item, dataAddedRoll) {
 
     try {
         //get all next productions with the same owner.
-        const result = await genericTransaction(searchAllNextSameProductions, [item.papel_comun_id, item.produccion_id])
+        const result = await genericTransaction(searchAllNextSameProductions, [item.produccion_id, item.papel_comun_id])
 
         if (result.length) {
             const next_productions = await Promise.all(result.map(item => genericTransaction(getRollsByProduccionID, [item.produccion_id, dataAddedRoll.autopaster, dataAddedRoll.isMedia])))

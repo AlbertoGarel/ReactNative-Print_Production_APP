@@ -61,6 +61,7 @@ import FullCardProduction from "../../components/productions/FullCardProduction"
 import ModalEndProduction from "../../components/productions/ModalEndProduction";
 import SpinnerSquares from "../../components/SpinnerSquares";
 import {useIsFocused} from '@react-navigation/native';
+import {BarCodeScanner} from "expo-barcode-scanner";
 
 const UPDATE_PROMISES_ALL =
     `UPDATE autopasters_prod_data SET
@@ -154,6 +155,15 @@ const FullProduction = ({route}) => {
     const [minimumWeightPass, getMinimumWeightPass] = useState(false);
 
     const [hasPermission, setHasPermission] = useState(null);
+
+    React.useEffect(() => {
+        if (hasPermission !== 'granted') {
+            (async () => {
+                const {status} = await BarCodeScanner.requestPermissionsAsync();
+                setHasPermission(status === 'granted');
+            })();
+        }
+    }, [hasPermission]);
 
     useEffect(() => {
         setMinimumWeight(prevState => {
@@ -769,7 +779,7 @@ const FullProduction = ({route}) => {
                     </View>
                 </ScrollView>
             </ScrollView>
-            <BottomSheetComponent
+            {hasPermission && <BottomSheetComponent
                 ref={bottomSheetRef}
                 height={height}
                 modalVisible={bottomSheetRef.current?.state.modalVisible}
@@ -786,7 +796,7 @@ const FullProduction = ({route}) => {
                     hasPermission: hasPermission,
                     setHasPermission: setHasPermission
                 }}/>}
-            />
+            />}
             {/*/!*CREAR BOTTOMSHEETCOMPONENT PARA FOMULARIO ENTRADA BOBINA USADA*!/*/}
             <BottomSheetComponent
                 ref={bottomSheetRollUsedRef}
