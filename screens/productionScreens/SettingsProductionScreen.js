@@ -398,7 +398,7 @@ const SettingsProductionScreen = () => {
             resetForm();
         } catch (err) {
             if (__DEV__) console.log(err)
-            showToast(err.message, true)
+            showToast(err.message, true, false)
             Sentry_Alert('SettingsProductionScreen.js', 'handlerSendOptionsSelected - insert_production', err)
         }
 

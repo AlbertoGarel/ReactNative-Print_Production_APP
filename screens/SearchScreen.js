@@ -57,13 +57,13 @@ const SearchScreen = () => {
     );
 
     React.useEffect(() => {
-        if (hasPermission !== 'granted') {
+        if (hasPermission !== 'granted' && isVisible) {
             (async () => {
                 const {status} = await BarCodeScanner.requestPermissionsAsync();
                 setHasPermission(status === 'granted');
             })();
         }
-    }, [hasPermission]);
+    }, [hasPermission, isVisible]);
 
     const getDataSearchForTable = (datas) => {
         setTablehead([...Object.keys(datas[0])]);

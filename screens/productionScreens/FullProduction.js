@@ -157,13 +157,13 @@ const FullProduction = ({route}) => {
     const [hasPermission, setHasPermission] = useState(null);
 
     React.useEffect(() => {
-        if (hasPermission !== 'granted') {
+        if (hasPermission !== 'granted' && isVisible) {
             (async () => {
                 const {status} = await BarCodeScanner.requestPermissionsAsync();
                 setHasPermission(status === 'granted');
             })();
         }
-    }, [hasPermission]);
+    }, [hasPermission, isVisible]);
 
     useEffect(() => {
         setMinimumWeight(prevState => {
@@ -779,7 +779,7 @@ const FullProduction = ({route}) => {
                     </View>
                 </ScrollView>
             </ScrollView>
-            {hasPermission && <BottomSheetComponent
+            <BottomSheetComponent
                 ref={bottomSheetRef}
                 height={height}
                 modalVisible={bottomSheetRef.current?.state.modalVisible}
@@ -796,7 +796,7 @@ const FullProduction = ({route}) => {
                     hasPermission: hasPermission,
                     setHasPermission: setHasPermission
                 }}/>}
-            />}
+            />
             {/*/!*CREAR BOTTOMSHEETCOMPONENT PARA FOMULARIO ENTRADA BOBINA USADA*!/*/}
             <BottomSheetComponent
                 ref={bottomSheetRollUsedRef}
