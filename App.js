@@ -26,6 +26,7 @@ function App() {
 
     NavigationBar.setPositionAsync("relative");
     NavigationBar.setBackgroundColorAsync(COLORS.supportBackg1);
+    NavigationBar.setBehaviorAsync("inset-swipe");
 
     const visibility = NavigationBar.useVisibility();
     useEffect(() => {
