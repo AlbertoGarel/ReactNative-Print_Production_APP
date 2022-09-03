@@ -23,7 +23,7 @@ const SettingsProductionHeader = ({
 const styles = StyleSheet.create({
     contPrinc: {
         width: '100%',
-        minHeight: 100,
+        minHeight: 50,
         padding: 10,
         backgroundColor: COLORS.background_primary
     },

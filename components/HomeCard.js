@@ -36,42 +36,12 @@ const HomeCard = ({
 }
 
 const styles = StyleSheet.create({
-    cardContainer: {
-        display: 'flex',
-        justifyContent: "flex-start",
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        padding: 10,
-        borderRadius: 10,
-        borderLeftWidth: 10,
-        backgroundColor: COLORS.white,
-        shadowColor: COLORS.black,
-        shadowOffset: {width: 0, height: 2},
-        shadowOpacity: 0.8,
-        shadowRadius: 10,
-        elevation: 12,
-    },
     contIco: {
         width: '20%',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 10,
-        marginBottom: 10
-    },
-    backgroundIcon: {
-        width: '100%',
-        height: '100%',
-        opacity: 0.95,
-        justifyContent: 'center',
-        position: 'absolute',
-        borderRadius: 10
-    },
-    icon: {
-        display: 'flex',
-        justifyContent: 'center',
-        backgroundColor: 'transparent',
-        padding: 4,
     },
     conTitle: {
         display: 'flex',
@@ -84,20 +54,8 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontFamily: "Anton"
     },
-    content: {
-        width: '100%',
-        textAlign: 'justify',
-        fontStyle: 'italic',
-        fontWeight: 'bold'
-    },
-    hr: {
-        borderBottomWidth: 2,
-        marginTop: 8,
-        marginBottom: 4,
-        width: '100%'
-    },
     touchable: {
-        borderRadius: 20,
+        borderRadius: 10,
         backgroundColor: COLORS.white,
         shadowColor: COLORS.black,
         shadowOffset: {width: 0, height: 2},

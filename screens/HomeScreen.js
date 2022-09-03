@@ -23,10 +23,10 @@ import {genericDeleteFunction, genericTransaction} from "../dbCRUD/actionsFuncti
 import {Sentry_Alert} from "../utils";
 
 const {width, height} = Dimensions.get('window');
-
+const square = height / 3
 const HomeScreen = ({navigation}) => {
     //ICON SIZE
-    const iconSize = 50;
+    const iconSize = height / 20;
     //BACKGROUND PROP CONST
     const optionsSVG = {
         svgData: semicircle2, svgWidth: '120%', svgHeight: '110%'
@@ -92,13 +92,13 @@ const HomeScreen = ({navigation}) => {
     }
 
     return (
-        <SafeAreaView style={{flex: 1}}>
+        <SafeAreaView style={{flex: 1, paddingBottom: height > 500 ? 20 : 0}}>
             <BgComponent
                 svgOptions={optionsSVG}
                 styleOptions={optionsStyleContSVG}
             />
             <HomeHeader
-                textprops={{color: COLORS.white, marginTop: 15}}
+                textprops={{color: COLORS.white}}
                 imageBg={COLORS.white}
                 titleColor={COLORS.white}
                 titleSecction={"#HOME"}
@@ -123,16 +123,12 @@ const HomeScreen = ({navigation}) => {
                 }}>mantener pulsado para eliminar</Text>
                 }
                 <View style={{
-                    maxWidth: width < 400 ? width : 400,
-                    maxHeight: height / 2.2,
+                    maxWidth: square,
+                    maxHeight: square,
                     alignSelf: 'center',
                     flexDirection: 'row',
-                    justifyContent: 'center',
-                    alignItems: 'center',
                     flexWrap: 'wrap',
                     marginTop: 0,
-                    paddingVertical: 40,
-                    paddingHorizontal: 50,
                     backgroundColor: 'transparent',
                 }}>
                     <View style={styles.subcont}>
@@ -166,7 +162,7 @@ const HomeScreen = ({navigation}) => {
                             cardtitle={"Gráficas"}
                             title="Go to Onboard"
                             navigation={navigation}
-                            torender={['charts', {name: 'Elena'}]}
+                            torender={['charts']}
                         />
                     </View>
                     <View style={styles.subcont}>
@@ -177,7 +173,7 @@ const HomeScreen = ({navigation}) => {
                             cardtitle={"Documentos"}
                             title="Go to Onboard"
                             navigation={navigation}
-                            torender={['pdf documents', {name: 'Elena'}]}
+                            torender={['pdf documents']}
                         />
                     </View>
                 </View>

@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         justifyContent: 'flex-start',
         width: '100%',
-        padding: 20,
+        paddingHorizontal: 20,
         marginBottom: 10
     },
     subcont: {

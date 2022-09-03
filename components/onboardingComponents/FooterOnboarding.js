@@ -12,7 +12,7 @@ const Footer = ({
                     buttonChild
                 }) => {
     const windowWidth = useWindowDimensions().width;
-    const HEIGHT = windowWidth * 0.21;
+    const HEIGHT = 60;
     const FOOTER_PADDING = windowWidth * 0.03;
 
     return (
