@@ -58,14 +58,14 @@ const styles = StyleSheet.create({
     },
     title: {
         fontFamily: 'Anton',
-        fontSize: width > 400 ? 50 : 30,
+        fontSize: width > 768 ? 50 : 30,
         textShadowColor: COLORS.black,
         textShadowOffset: {width: 2, height: 2},
         textShadowRadius: 1
     },
     minifText: {
         color: COLORS.whitesmoke,
-        fontSize: width > 400 ? 15 : 12
+        fontSize: width > 768 ? 15 : 12
     },
     image: {
         width: 50,

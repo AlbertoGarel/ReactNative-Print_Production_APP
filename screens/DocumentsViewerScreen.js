@@ -184,6 +184,7 @@ const DocumentsViewerScreen = () => {
                                    touchableStyle={styles.touchableStyle}/>
                 </View>
                 <WebView
+                    textZoom={100}
                     style={styles.webView}
                     originWhitelist={['*']}
                     javaScriptEnabled={true}

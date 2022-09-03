@@ -683,7 +683,7 @@ const FullProduction = ({route}) => {
                         decelerationRate={0}
                         scrollEventThrottle={21}>
                 <KeyboardAvoidingView enabled behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                                      style={{width: windowWidth, height: windowHeight, flex: 1}}>
+                                      style={{width: windowWidth, height: windowHeight}}>
                     <BgRepeatSVG
                         svgOptions={optionsSVG2}
                         styleOptions={optionsStyleContSVG2}
@@ -724,7 +724,6 @@ const FullProduction = ({route}) => {
                         svgOptions={optionsSVG}
                         styleOptions={optionsStyleContSVG}
                     />
-                    <View style={[styles.contData]}>
                         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}
                                                   style={[styles.bottomdrawer, {height: windowHeight}]}>
                             <View style={[styles.contData]}>
@@ -776,7 +775,6 @@ const FullProduction = ({route}) => {
                                 <CustomTextArea toState={getContentTextArea}/>
                             </View>
                         </TouchableWithoutFeedback>
-                    </View>
                 </ScrollView>
             </ScrollView>
             <BottomSheetComponent
