@@ -105,23 +105,25 @@ const HomeScreen = ({navigation}) => {
                 text={'Acceso a las herramientas para producción de la aplicación: producción simple (sin apoyo de base de datos), producción completa, herramientas de cálculo, etc.'}
             />
             <View style={{flex: 1, justifyContent: 'space-evenly'}}>
-                <Caroussel
-                    items={productions}
-                    deleteProduction={deleteProduction}
-                    spinnerSelected={spinnerSelected}
-                    handlerSpinner={handlerSpinner}
-                />
-                {productions.length > 0 && <Text style={{
-                    textAlign: 'center',
-                    fontFamily: 'Anton',
-                    color: COLORS.white,
-                    fontSize: 14,
-                    textTransform: 'uppercase',
-                    textShadowColor: COLORS.black,
-                    textShadowOffset: {width: 2, height: 2},
-                    textShadowRadius: 1
-                }}>mantener pulsado para eliminar</Text>
-                }
+                <View>
+                    <Caroussel
+                        items={productions}
+                        deleteProduction={deleteProduction}
+                        spinnerSelected={spinnerSelected}
+                        handlerSpinner={handlerSpinner}
+                    />
+                    {productions.length > 0 && <Text style={{
+                        textAlign: 'center',
+                        fontFamily: 'Anton',
+                        color: COLORS.white,
+                        fontSize: 14,
+                        textTransform: 'uppercase',
+                        textShadowColor: COLORS.black,
+                        textShadowOffset: {width: 2, height: 2},
+                        textShadowRadius: 1
+                    }}>mantener pulsado para eliminar</Text>
+                    }
+                </View>
                 <View style={{
                     maxWidth: square,
                     maxHeight: square,

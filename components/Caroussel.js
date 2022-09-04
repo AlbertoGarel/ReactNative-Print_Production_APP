@@ -29,16 +29,17 @@ const Caroussel = ({items, deleteProduction, spinnerSelected, handlerSpinner}) =
                     backgroundColor: 'transparent',
                     width: Dimensions.get('window').width - (margin * 2),
                     marginTop: -20,
+                    marginBottom:  -20
                 }}
                 dotStyle={{
                     width: 10,
                     height: 10,
                     borderRadius: 5,
                     marginHorizontal: -3,
-                    backgroundColor: COLORS.sliderBackground
+                    backgroundColor: '#FEBA4F'
                 }}
                 inactiveDotStyle={{
-                    backgroundColor: COLORS.whitesmoke
+                    backgroundColor: COLORS.dimgrey
                 }}
                 inactiveDotOpacity={0.4}
                 inactiveDotScale={0.6}

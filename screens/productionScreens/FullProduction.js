@@ -84,10 +84,10 @@ const optionsSVG2 = {
 };
 
 const optionsStyleContSVG = {
-    backgroundColor: 'white'
+    backgroundColor: 'white', width: windowWidth
 };
 const optionsStyleContSVG2 = {
-    backgroundColor: '#ff850050'
+    backgroundColor: '#ff850050', width: windowWidth
 };
 
 const FullProduction = ({route}) => {
