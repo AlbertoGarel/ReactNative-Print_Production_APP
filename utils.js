@@ -771,9 +771,9 @@ export async function getScannedCode(scanned, autopasterID, itemsState, producti
             [productionData.produccion_id, change_media_type]
         );
         let actionBBDD = 'insert';
-        const _existInProduction = existInProduction.filter(i => i.bobina_fk === (scannedCode))
+        const _existInProduction = existInProduction.filter(i => i.bobina_fk === (scannedCode));
         if (_existInProduction.length > 0) {
-            alert(`Esta bobina ya exite en esta producción en autopaster nº ${existInProduction[0].autopaster_fk}`)
+            alert(`Esta bobina ya exite en esta producción en autopaster nº ${_existInProduction[0].autopaster_fk}`)
             return false;
         }
         const isEmptyRoll = existInProduction.filter(i => (i.autopaster_fk === autopasterID) && (!i.bobina_fk))
