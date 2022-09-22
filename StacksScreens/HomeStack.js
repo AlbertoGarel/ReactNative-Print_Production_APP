@@ -52,7 +52,8 @@ const HomeStack = ({navigation, route, setChangeButtonFunc}) => {
                     headerTitleStyle: {
                         fontWeight: 'bold',
                     },
-                    headerShown: false
+                    headerShown: false,
+                    animationEnabled: false
                 }}
 
             />
@@ -66,7 +67,8 @@ const HomeStack = ({navigation, route, setChangeButtonFunc}) => {
                               headerTitleStyle: {
                                   fontWeight: 'bold',
                               },
-                              headerShown: true
+                              headerShown: true,
+                              animationEnabled: false,
                           }}
             />
             <Stack.Screen name="charts" component={ChartsScreens}
@@ -79,7 +81,8 @@ const HomeStack = ({navigation, route, setChangeButtonFunc}) => {
                               headerTitleStyle: {
                                   fontWeight: 'bold',
                               },
-                              headerShown: true
+                              headerShown: true,
+                              animationEnabled: false,
                           }}
             />
             <Stack.Screen name="Settings" component={SettingsScreen}
@@ -92,16 +95,17 @@ const HomeStack = ({navigation, route, setChangeButtonFunc}) => {
                               headerTitleStyle: {
                                   fontWeight: 'bold',
                               },
-                              headerShown: false
+                              headerShown: false,
+                              animationEnabled: false
                           }}
             />
-            <Stack.Screen name="Boarding" component={Onboarding} options={{headerShown: false}}/>
+            <Stack.Screen name="Boarding" component={Onboarding} options={{headerShown: false, animationEnabled: false}}/>
             <Stack.Screen name="Producción Simplificada"
                 // component={SimpleProductionScreen}
                           children={(props) => <SimpleProductionScreen {...props} setChangeButtonFunc={setChangeButtonFunc}/>}
-                          options={{headerShown: true}}/>
-            <Stack.Screen name="Cálculo Individual" component={IndividualCalculation} options={{headerShown: true}}/>
-            <Stack.Screen name="FullProduction" component={FullProduction} options={{headerShown: false}}/>
+                          options={{headerShown: true, animationEnabled: false}}/>
+            <Stack.Screen name="Cálculo Individual" component={IndividualCalculation} options={{headerShown: true, animationEnabled: false}}/>
+            <Stack.Screen name="FullProduction" component={FullProduction} options={{headerShown: false, animationEnabled: false}}/>
         </Stack.Navigator>
     );
 };

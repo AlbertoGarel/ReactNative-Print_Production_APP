@@ -12,7 +12,7 @@ import {
     Text,
     TouchableWithoutFeedback,
     View,
-    InteractionManager
+    InteractionManager, StatusBar
 } from 'react-native';
 import {COLORS} from "../../assets/defaults/settingStyles";
 import {
@@ -673,6 +673,13 @@ const FullProduction = ({route}) => {
 
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: COLORS.whitesmoke}}>
+            {
+                isFocused && <StatusBar
+                    animated={false}
+                    backgroundColor={COLORS.primary}
+                    barStyle={'dark-content'}
+                />
+            }
             <ScrollView ref={principalScroll}
                         nestedScrollEnabled
                         horizontal

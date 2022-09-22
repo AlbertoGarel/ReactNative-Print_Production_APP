@@ -64,11 +64,13 @@
     "react-native-switch-pro": "^1.0.5",
     "react-native-switch-selector": "^2.2.1",
     "react-native-table-component": "^1.2.2",
+    "react-native-v8": "^1.5.0",
     "react-native-web": "0.17.7",
     "react-native-webview": "11.18.1",
     "react-navigation-stack": "^2.10.4",
     "sentry-expo": "^4.2.0",
     "urix": "^0.1.0",
+    "v8-android-jit": "^10.100.1",
     "yup": "^0.32.9"
   },
   "devDependencies": {
