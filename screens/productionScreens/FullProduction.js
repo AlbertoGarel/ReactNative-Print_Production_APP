@@ -154,17 +154,6 @@ const FullProduction = ({route}) => {
     const [minimumWeight, setMinimumWeight] = useState({entera: null, media: null});
     const [minimumWeightPass, getMinimumWeightPass] = useState(false);
 
-    const [hasPermission, setHasPermission] = useState(null);
-
-    React.useEffect(() => {
-        if (hasPermission !== 'granted' && isVisible) {
-            (async () => {
-                const {status} = await BarCodeScanner.requestPermissionsAsync();
-                setHasPermission(status === 'granted');
-            })();
-        }
-    }, [hasPermission, isVisible]);
-
     useEffect(() => {
         setMinimumWeight(prevState => {
             //CONVERT TO NEGATIVE NUMBER TO COMPARE WITH KILOSNEEDED.
@@ -731,57 +720,57 @@ const FullProduction = ({route}) => {
                         svgOptions={optionsSVG}
                         styleOptions={optionsStyleContSVG}
                     />
-                        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}
-                                                  style={[styles.bottomdrawer, {height: windowHeight}]}>
-                            <View style={[styles.contData]}>
-                                <View style={{marginVertical: 30}}>
-                                    {
-                                        calculationProductionButton && inputirBrutaEnable ?
-                                            <View style={{position: 'absolute', zIndex: 2, top: -30, left: -5}}>
-                                                <SvgComponent svgData={icon180SVG} svgWidth={50} svgHeight={50}/>
-                                            </View>
-                                            :
-                                            null
-                                    }
-                                    <FlipCard enabled={calculationProductionButton && inputirBrutaEnable}
-                                              ContentFront={() => ShowData(item)}
-                                              ContentBack={() => <ResultFullProduction finalCalc={finalCalc}
-                                                                                       item={item}/>}/>
-                                </View>
-                                <View style={{marginBottom: 10}}>
-                                    {
-                                        (calculationProductionButton && inputirBrutaEnable) &&
-                                        <LargeButton
-                                            enabled={calculationProductionButton && inputirBrutaEnable}
-                                            handlerSaveDataAndSend={calculationProductionButton && inputirBrutaEnable ? handlerSaveDataAndSend : null}/>
-                                    }
-                                </View>
-                                <View>
-                                    {(errors.inputTirBruta.length > 0) &&
-                                    <Text
-                                        style={{
-                                            fontSize: 10,
-                                            color: 'red',
-                                            marginLeft: 10
-                                        }}>{errors.inputTirBruta}</Text>
-                                    }
-                                    <CustomTextInput
-                                        svgData={tirada2SVG}
-                                        svgWidth={50}
-                                        svgHeight={50}
-                                        placeholder={'  Ejemplares bruto...'}
-                                        text={'Tirada bruta:'}
-                                        type={'numeric'}
-                                        noEditable={!calculationProductionButton}
-                                        _name={'inputTirBruta'}
-                                        _onChangeText={text => handlerOnchangeTirBruta(text)}
-                                        _onBlur={ValidateTirBruta}
-                                        _value={selectedTiradaBruta}
-                                    />
-                                </View>
-                                <CustomTextArea toState={getContentTextArea}/>
+                    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}
+                                              style={[styles.bottomdrawer, {height: windowHeight}]}>
+                        <View style={[styles.contData]}>
+                            <View style={{marginVertical: 30}}>
+                                {
+                                    calculationProductionButton && inputirBrutaEnable ?
+                                        <View style={{position: 'absolute', zIndex: 2, top: -30, left: -5}}>
+                                            <SvgComponent svgData={icon180SVG} svgWidth={50} svgHeight={50}/>
+                                        </View>
+                                        :
+                                        null
+                                }
+                                <FlipCard enabled={calculationProductionButton && inputirBrutaEnable}
+                                          ContentFront={() => ShowData(item)}
+                                          ContentBack={() => <ResultFullProduction finalCalc={finalCalc}
+                                                                                   item={item}/>}/>
                             </View>
-                        </TouchableWithoutFeedback>
+                            <View style={{marginBottom: 10}}>
+                                {
+                                    (calculationProductionButton && inputirBrutaEnable) &&
+                                    <LargeButton
+                                        enabled={calculationProductionButton && inputirBrutaEnable}
+                                        handlerSaveDataAndSend={calculationProductionButton && inputirBrutaEnable ? handlerSaveDataAndSend : null}/>
+                                }
+                            </View>
+                            <View>
+                                {(errors.inputTirBruta.length > 0) &&
+                                <Text
+                                    style={{
+                                        fontSize: 10,
+                                        color: 'red',
+                                        marginLeft: 10
+                                    }}>{errors.inputTirBruta}</Text>
+                                }
+                                <CustomTextInput
+                                    svgData={tirada2SVG}
+                                    svgWidth={50}
+                                    svgHeight={50}
+                                    placeholder={'  Ejemplares bruto...'}
+                                    text={'Tirada bruta:'}
+                                    type={'numeric'}
+                                    noEditable={!calculationProductionButton}
+                                    _name={'inputTirBruta'}
+                                    _onChangeText={text => handlerOnchangeTirBruta(text)}
+                                    _onBlur={ValidateTirBruta}
+                                    _value={selectedTiradaBruta}
+                                />
+                            </View>
+                            <CustomTextArea toState={getContentTextArea}/>
+                        </View>
+                    </TouchableWithoutFeedback>
                 </ScrollView>
             </ScrollView>
             <BottomSheetComponent
@@ -798,8 +787,6 @@ const FullProduction = ({route}) => {
                     isVisible: isVisible,
                     getScannedCode: handlerScannedCode,
                     onChangeTexthandler: null,
-                    hasPermission: hasPermission,
-                    setHasPermission: setHasPermission
                 }}/>}
             />
             {/*/!*CREAR BOTTOMSHEETCOMPONENT PARA FOMULARIO ENTRADA BOBINA USADA*!/*/}

@@ -6,7 +6,9 @@ import {
     StyleSheet,
     TouchableOpacity,
     ImageBackground,
-    Keyboard, StatusBar
+    Keyboard,
+    StatusBar,
+    ScrollView
 } from 'react-native';
 import CustomTextInput from "../components/FormComponents/CustomTextInput";
 import {
@@ -700,54 +702,63 @@ const IndividualCalculation = () => {
 
     return (
         <SafeAreaView style={{flex: 1}}>
+
             <StatusBar
                 animated={false}
                 backgroundColor={'#ebc977'}
                 barStyle={'dark-content'}
             />
             <ImageBackground source={require('../assets/images/orangegradient.jpg')} style={styles.backg}>
-                <MultipleSwitchSelector
-                    label_values={switchValues}
-                    title={'calculos'}
-                    handler={getMultipleSwitchValue}
-                    textColor={COLORS.primary}
-                    buttonColor={COLORS.primary}
-                />
-                <View style={styles.contPrinc}>
-                    {switchValue === 1 ?
-                        elementPrevProdction()
-                        :
-                        null
-                    }
-                    {
-                        switchValue === 2 ?
-                            elementCalcBobina()
-                            :
-                            null
-                    }
-                    {
-                        switchValue === 3 ?
-                            elementCalTotalproduction()
-                            :
-                            null
-                    }
-                    {!isKeyboardVisible &&
-                    <ResetButtonForm
-                        resetState_elementPrevProdction={resetState_elementPrevProdction}
+                <ScrollView style={{flex: 1}}>
+                    <MultipleSwitchSelector
+                        label_values={switchValues}
+                        title={'calculos'}
+                        handler={getMultipleSwitchValue}
+                        textColor={COLORS.primary}
+                        buttonColor={COLORS.primary}
                     />
-                    }
-                </View>
-                <ToastMesages
-                    _ref={(toast) => toastRef = toast}
-                    _style={{backgroundColor: '#FF0000'}}
-                    _position='bottom'
-                    _positionValue={400}
-                    _fadeInDuration={150}
-                    _fadeOutDuration={3000}
-                    _opacity={0.8}
-                    _textStyle={{color: '#FFFFFF', fontFamily: 'Anton'}}
+                    <View style={styles.contPrinc}>
+                        {switchValue === 1 ?
+                            elementPrevProdction()
+                            :
+                            null
+                        }
+                        {
+                            switchValue === 2 ?
+                                elementCalcBobina()
+                                :
+                                null
+                        }
+                        {
+                            switchValue === 3 ?
+                                elementCalTotalproduction()
+                                :
+                                null
+                        }
+                        {/*{!isKeyboardVisible &&*/}
+                        {/*<ResetButtonForm*/}
+                        {/*    resetState_elementPrevProdction={resetState_elementPrevProdction}*/}
+                        {/*/>*/}
+                        {/*}*/}
+                    </View>
+                    <ToastMesages
+                        _ref={(toast) => toastRef = toast}
+                        _style={{backgroundColor: '#FF0000'}}
+                        _position='bottom'
+                        _positionValue={400}
+                        _fadeInDuration={150}
+                        _fadeOutDuration={3000}
+                        _opacity={0.8}
+                        _textStyle={{color: '#FFFFFF', fontFamily: 'Anton'}}
+                    />
+                </ScrollView>
+                {!isKeyboardVisible &&
+                <ResetButtonForm
+                    resetState_elementPrevProdction={resetState_elementPrevProdction}
                 />
+                }
             </ImageBackground>
+
         </SafeAreaView>
     )
 };
@@ -755,6 +766,7 @@ const IndividualCalculation = () => {
 const styles = StyleSheet.create({
     contPrinc: {
         flex: 1,
+        paddingBottom: 50
     },
     titles: {
         fontSize: 28,

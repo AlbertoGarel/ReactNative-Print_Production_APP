@@ -60,7 +60,7 @@ const optionsStyleContSVG = {
 
 const BarcodeScannerComponent = ({props}) => {
 
-        const [hasPermission, setHasPermission] = useState(props.hasPermission);
+        const [hasPermission, setHasPermission] = useState(null);
         const [scanned, setScanned] = useState(false);
         const [initScanState, setInitScanState] = useState(false);
         const [barcodeTypesSelected, getBarcodeTypesSelected] = useState([]);
@@ -70,12 +70,12 @@ const BarcodeScannerComponent = ({props}) => {
 
         useEffect(() => {
                 let isMounted = true;
-                // if (props.hasPermission !== 'granted') {
-                //     (async () => {
-                //         const {status} = await BarCodeScanner.requestPermissionsAsync();
-                //         if (isMounted) props.setHasPermission(status === 'granted');
-                //     })();
-                // }
+                if (hasPermission !== 'granted') {
+                    (async () => {
+                        const {status} = await BarCodeScanner.requestPermissionsAsync();
+                        if (isMounted) setHasPermission(status === 'granted');
+                    })();
+                }
                 //GET TO asyncStorage
                 getDatas('@storage_codeTypesSelected').then(r => {
                     if (r) {
@@ -98,7 +98,7 @@ const BarcodeScannerComponent = ({props}) => {
                 })
                     .catch(err => Sentry_Alert('BarcodeScannerComponent.js', 'getDatas - @storage_codeTypesSelected', err));
                 if (isMounted) {
-                    if (props.isVisible && props.hasPermission) {
+                    if (props.isVisible && hasPermission) {
                         setInitScanState(true);
                     } else {
                         setInitScanState(false);
@@ -106,7 +106,7 @@ const BarcodeScannerComponent = ({props}) => {
                 }
 
                 return () => isMounted = false;
-            }, [props.hasPermission]
+            }, [hasPermission]
         )
 
         function handleBarCodeScanned(scanningResult) {
@@ -118,14 +118,14 @@ const BarcodeScannerComponent = ({props}) => {
             }
         }
 
-        if (props.hasPermission === null) {
-            return (
-                <View style={styles.dark}>
-                    <Text style={styles.lightText}>Requesting for camera permission</Text>
-                </View>
-            );
-        }
-        if (props.hasPermission === false) {
+        // if (hasPermission === null) {
+        //     return (
+        //         <View style={styles.dark}>
+        //             <Text style={styles.lightText}>Requesting for camera permission</Text>
+        //         </View>
+        //     );
+        // }
+        if (hasPermission === false) {
             return (
                 <View style={styles.dark}>
                     <Text style={styles.lightText}>No access to camera</Text>

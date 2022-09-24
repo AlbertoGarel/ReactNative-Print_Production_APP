@@ -54,7 +54,6 @@ const FullCardProduction = ({
     const [radiusState, setStateRadius] = useState(new_radius);
     const [codePathSVG, setCodePATHSVG] = useState('');
     const [renderImages, setRenderImages] = useState('')
-    const [nullable, setNullable] = useState(!restoPrevistoAnteriorProduccion);
 
     useEffect(() => {
         setStateRadius(new_radius);
@@ -99,7 +98,7 @@ const FullCardProduction = ({
     };
 
     const propsAttrInput = {
-        editable: nullable,
+        editable: !restoPrevistoAnteriorProduccion,
         keyboardType: 'numeric',
         styled: {
             backgroundColor: changeBackground,
@@ -208,9 +207,9 @@ const FullCardProduction = ({
             <View style={styles.parentWeight}>
                 <PaperCoilWeightDataCard
                     stylesPeperCoilWeight={stylesPeperCoilWeight}
-                    restoInicioData={nullable ? peso_actual : restoPrevistoAnteriorProduccion}
+                    restoInicioData={!restoPrevistoAnteriorProduccion ? peso_actual : restoPrevistoAnteriorProduccion}
                     restoFinalData={weight_End}
-                    styleRestPrev={!nullable}
+                    styleRestPrev={!!restoPrevistoAnteriorProduccion}
                 />
                 <TextInputCoilRadius
                     stylesTextInput={stylesTextInput}

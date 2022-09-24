@@ -26,7 +26,7 @@ const ResetButtonForm = ({resetState_elementPrevProdction, _style}) => {
 };
 const styles = StyleSheet.create({
     touchable: {
-        position: 'absolute',
+        // position: 'absolute',
         bottom: 50,
         right: 5,
         borderRadius: 10,
@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignSelf: 'flex-end',
         marginRight: 20,
-        marginTop: 50,
+        marginTop: 70,
         shadowColor: COLORS.black,
         shadowOffset: {width: 0, height: 2},
         shadowOpacity: 0.8,
