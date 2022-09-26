@@ -1,8 +1,9 @@
 import React from 'react';
-import {View, StyleSheet, Text, TouchableOpacity, Vibration} from 'react-native';
+import {View, StyleSheet, Text, TouchableOpacity, Vibration, Dimensions} from 'react-native';
 import {COLORS} from '../assets/defaults/settingStyles';
 import SvgComponent from "./SvgComponent";
 
+const windowHeight = Dimensions.get('window').height;
 
 const HomeCard = ({
                       iconName,
@@ -29,7 +30,7 @@ const HomeCard = ({
                 <SvgComponent svgData={iconName} svgHeight={iconSize} svgWidth={iconSize} color={iconColor}/>
             </View>
             <View style={styles.conTitle}>
-                <Text style={styles.title}>{cardtitle}</Text>
+                <Text style={styles.title} adjustsFontSizeToFit>{cardtitle}</Text>
             </View>
         </TouchableOpacity>
     )
@@ -44,7 +45,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
     },
     conTitle: {
-        display: 'flex',
+        display: windowHeight <= 650 ?  'none' : 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         width: '70%',

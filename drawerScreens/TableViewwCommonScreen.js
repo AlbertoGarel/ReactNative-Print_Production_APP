@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {ImageBackground, SafeAreaView, StatusBar, StyleSheet, View} from 'react-native';
+import {ImageBackground, SafeAreaView, StatusBar, StyleSheet, View, Text} from 'react-native';
 import {COLORS} from "../assets/defaults/settingStyles";
 import HeaderCommonDrawer from "./commonComponentsDrawer/HeaderCommonDrawer";
 import LargeButtonNew from "./commonComponentsDrawer/LargeButtonNew";
@@ -18,6 +18,7 @@ const TableViewwCommonScreen = ({props}) => {
     const [openModalInfo, setOpenModalInfo] = useState(false);
 
     useEffect(() => {
+        console.log('props', props)
         const blur_unsubscribe = navigation.addListener('blur', () => {
             setFocused(false)
         });
@@ -74,6 +75,8 @@ const TableViewwCommonScreen = ({props}) => {
                         disable={props.disable}
                     />
                     <Tables
+                        colorTextRow={props.colorTextRow}
+                        color={props.colorTextRow}
                         request={props.requestDB}
                         _onPress={_onPress}
                         modal={modal}

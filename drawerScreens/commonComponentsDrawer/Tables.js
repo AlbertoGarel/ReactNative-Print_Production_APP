@@ -96,7 +96,6 @@ class Tables extends Component {
             tx.executeSql(param,
                 [elementID],
                 (_, result) => {
-                    console.log(result);
                     this.requestDB(this.props.request.allItems);
                 },
                 (_, error) => {
@@ -212,7 +211,12 @@ class Tables extends Component {
                                                     rowData.map((cellData, cellIndex) => (
                                                         <Cell key={cellIndex}
                                                               data={cellIndex === 0 ? element(rowData, rowData) : cellData}
-                                                              textStyle={{...styles.text, width: this.cellWidth}}/>
+                                                              textStyle={{
+                                                                  ...styles.text,
+                                                                  width: this.cellWidth,
+                                                                  color: rowData["6"] === 0 ? this.props.colorTextRow : "#000",
+                                                                  opacity: rowData["6"] === 0 ? .4 : 1
+                                                              }}/>
                                                     ))
                                                 }
                                             </TableWrapper>
@@ -244,6 +248,6 @@ const styles = StyleSheet.create({
     },
     btnText: {textAlign: 'center', color: COLORS.white},
     dataWrapper: {marginTop: -1},
-});
+})
 
 export default Tables;

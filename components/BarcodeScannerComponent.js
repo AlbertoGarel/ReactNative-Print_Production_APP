@@ -70,12 +70,18 @@ const BarcodeScannerComponent = ({props}) => {
 
         useEffect(() => {
                 let isMounted = true;
-                if (hasPermission !== 'granted') {
-                    (async () => {
-                        const {status} = await BarCodeScanner.requestPermissionsAsync();
-                        if (isMounted) setHasPermission(status === 'granted');
-                    })();
-                }
+                // if (hasPermission !== 'granted') {
+                //     (async () => {
+                //         const {status} = await BarCodeScanner.requestPermissionsAsync();
+                //         if (isMounted) setHasPermission(status === 'granted');
+                //     })();
+                // }
+                const getBarCodeScannerPermissions = async () => {
+                    const {status} = await BarCodeScanner.requestPermissionsAsync();
+                    setHasPermission(status === 'granted');
+                };
+
+                getBarCodeScannerPermissions();
                 //GET TO asyncStorage
                 getDatas('@storage_codeTypesSelected').then(r => {
                     if (r) {
@@ -143,90 +149,105 @@ const BarcodeScannerComponent = ({props}) => {
 
         function changImageIcon() {
             InteractionManager.runAfterInteractions(() => {
-                setInitCapture(!initCapture)
+                setInitCapture(!initCapture);
+                // reinit Capture
+                if (initCapture) {
+                    setScanned(!scanned)
+                    setTimeout(() => {
+                        setScanned(prevState => {
+                            if (!prevState) {
+                                return !prevState
+                            }
+                        })
+                    }, 500)
+                }
             });
         }
 
         return (
             <View style={{flex: 1, margin: 2}}>
                 {
-                    !scanned && props.isVisible && initScanState &&
-                    <Camera
-                        onBarCodeScanned={!initCapture && !scanned ? undefined : handleBarCodeScanned}
-                        barCodeScannerSettings={{
-                            barCodeTypes: [
-                                ...barcodeTypesSelected,
-                            ],
-                        }}
-                        flashMode={flashMode}
-                        style={{flex: 1}}
-                        type={CameraType.back}
-                        autoFocus={true}
-                        zoom={sliderValue}
-                    >
-                        <TouchableOpacity
-                            onPress={__handleFlashMode}
-                            style={[styles.touchTorch, {backgroundColor: flashMode === 'off' ? COLORS.buttonEdit + 20 : '#fff'}]}
+                    !scanned && props.isVisible && initScanState ?
+                        <Camera
+                            onBarCodeScanned={!initCapture && !scanned ? undefined : handleBarCodeScanned}
+                            barCodeScannerSettings={{
+                                barCodeTypes: [
+                                    ...barcodeTypesSelected,
+                                ],
+                            }}
+                            flashMode={flashMode}
+                            style={{flex: 1}}
+                            type={CameraType.back}
+                            autoFocus={true}
+                            zoom={sliderValue}
                         >
-                            <Text style={{fontSize: 20}}> ⚡️ </Text>
-                        </TouchableOpacity>
-                        <BarcodeMask width={width / 1.5} height={height / 3} edgeColor="#ff8500" showAnimatedLine
-                                     useNativeDriver={true}/>
-                        <View style={{
-                            backgroundColor: COLORS.buttonEdit + 20,
-                            position: 'absolute',
-                            width: 30,
-                            top: 0,
-                            bottom: 0,
-                            right: 0,
-                            justifyContent: 'center',
-                            alignItems: 'center'
-                        }}>
-                            <Slider
-                                style={{width: 200, height: 40, transform: [{rotate: "-90deg"}]}}
-                                minimumValue={0}
-                                maximumValue={1}
-                                thumbTintColor="#FF8500"
-                                minimumTrackTintColor="#FF8500"
-                                maximumTrackTintColor="#FFFFFF"
-                                onValueChange={value => setSlidervalue(value)}
-                            />
-                        </View>
-                        <View style={{
-                            position: 'absolute',
-                            bottom: 20,
-                            width: '100%',
-                            height: 70,
-                            backgroundColor: 'transparent',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                        }}>
-                            <TouchableOpacity style={{
+                            <TouchableOpacity
+                                onPress={__handleFlashMode}
+                                style={[styles.touchTorch, {backgroundColor: flashMode === 'off' ? COLORS.buttonEdit + 20 : '#fff'}]}
+                            >
+                                <Text style={{fontSize: 20}}> ⚡️ </Text>
+                            </TouchableOpacity>
+                            <BarcodeMask width={width / 1.5} height={height / 3} edgeColor="#ff8500" showAnimatedLine
+                                         useNativeDriver={true}/>
+                            <View style={{
+                                backgroundColor: COLORS.buttonEdit + 20,
                                 position: 'absolute',
-                                borderWidth: 4,
-                                borderColor: '#ff8500',
+                                width: 30,
+                                top: 0,
                                 bottom: 0,
-                                width: 70,
-                                height: 70,
-                                borderRadius: 50,
-                                backgroundColor: 'whitesmoke',
+                                right: 0,
                                 justifyContent: 'center',
                                 alignItems: 'center'
-                            }} onPress={changImageIcon}>
-                                {!initCapture ?
-                                    <BgComponent
-                                        svgOptions={optionsSVG}
-                                        styleOptions={optionsStyleContSVG}
-                                    />
-                                    :
-                                    <>
-                                        <ActivityIndicator size="small" color="#ff8500"/>
-                                        <Text style={{fontSize: 10}}>READY</Text>
-                                    </>
-                                }
-                            </TouchableOpacity>
+                            }}>
+                                <Slider
+                                    style={{width: 200, height: 40, transform: [{rotate: "-90deg"}]}}
+                                    minimumValue={0}
+                                    maximumValue={1}
+                                    thumbTintColor="#FF8500"
+                                    minimumTrackTintColor="#FF8500"
+                                    maximumTrackTintColor="#FFFFFF"
+                                    onValueChange={value => setSlidervalue(value)}
+                                />
+                            </View>
+                            <View style={{
+                                position: 'absolute',
+                                bottom: 20,
+                                width: '100%',
+                                height: 70,
+                                backgroundColor: 'transparent',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                            }}>
+                                <TouchableOpacity style={{
+                                    position: 'absolute',
+                                    borderWidth: 4,
+                                    borderColor: '#ff8500',
+                                    bottom: 0,
+                                    width: 70,
+                                    height: 70,
+                                    borderRadius: 50,
+                                    backgroundColor: 'whitesmoke',
+                                    justifyContent: 'center',
+                                    alignItems: 'center'
+                                }} onPress={changImageIcon}>
+                                    {!initCapture ?
+                                        <BgComponent
+                                            svgOptions={optionsSVG}
+                                            styleOptions={optionsStyleContSVG}
+                                        />
+                                        :
+                                        <>
+                                            <ActivityIndicator size="small" color="#ff8500"/>
+                                            <Text style={{fontSize: 10}}>READY</Text>
+                                        </>
+                                    }
+                                </TouchableOpacity>
+                            </View>
+                        </Camera>
+                        :
+                        <View style={{...styles.container, backgroundColor: 'black'}}>
+                            <ActivityIndicator size="large" color="#ff8500"/>
                         </View>
-                    </Camera>
                 }
             </View>
         )

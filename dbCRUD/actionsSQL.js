@@ -190,7 +190,7 @@ export const papel_comun_table_ALL =
     "SELECT papel_comun_id AS 'id', " +
     "papel_comun_name AS 'Nombre' " +
     "FROM papel_comun_table " +
-    "ORDER BY papel_comun_id ASC;"
+    "ORDER BY papel_comun_name ASC;"
 ;
 export const papelComunByID =
     "SELECT papel_comun_name FROM papel_comun_table WHERE papel_comun_id = ?;"
@@ -218,7 +218,7 @@ export const kba_table_ALL =
     "FROM kba_table " +
     "LEFT JOIN gramaje_table " +
     "ON gramaje_table.gramaje_id = kba_table.gramaje_fk " +
-    "ORDER BY kba_table.gramaje_fk ASC"
+    "ORDER BY kba_table.kba_name ASC"
 ;
 export const kbaByID =
     "SELECT * FROM kba_table WHERE kba_id = ?;"
@@ -279,7 +279,7 @@ export const producto_table_ALL =
     "papel_comun_table.papel_comun_name AS 'propietario bobina' " +
     "FROM producto_table " +
     "LEFT JOIN kba_table ON kba_table.kba_id = producto_table.cociente_total_fk " +
-    "LEFT JOIN papel_comun_table ON papel_comun_table.papel_comun_id = producto_table.papel_comun_fk;"
+    "LEFT JOIN papel_comun_table ON papel_comun_table.papel_comun_id = producto_table.papel_comun_fk ORDER BY producto_name ASC;"
 ;
 export const picker_producto =
     "SELECT producto_table.producto_id," +
@@ -322,7 +322,8 @@ ON linea_produccion_table.linea_id = autopaster_table.linea_fk
 LEFT JOIN papel_comun_table 
 ON papel_comun_table.papel_comun_id = bobina_table.papel_comun_fk 
 LEFT JOIN gramaje_table 
-ON gramaje_table.gramaje_id = bobina_table.gramaje_fk;`
+ON gramaje_table.gramaje_id = bobina_table.gramaje_fk 
+ORDER BY papel_comun_table.papel_comun_name ASC;`
 ;
 export const search_bobina =
     "SELECT bobina_table.codigo_bobina AS 'código bobina'," +
@@ -405,7 +406,8 @@ export const produccion_table_ALL =
     JOIN paginacion_table
     ON paginacion_table.paginacion_id = produccion_table.pagination_fk
     JOIN producto_table
-    ON producto_table.producto_id = produccion_table.producto_fk`
+    ON producto_table.producto_id = produccion_table.producto_fk 
+    ORDER BY producto_name ASC`
 ;
 export const dataProductSelectedAllInfo =
     `SELECT a.linea_id, a.linea_name,b.medition_id, b.full_value, b.media_value, c.paginacion_value, d.producto_id, d.producto_name,
@@ -452,6 +454,6 @@ export const autopasters_prod_data_TABLEALL_AS =
      resto_previsto AS 'resto previso',
      Case media_defined When 0 Then 'Entera' Else 'Media' End AS 'Tipo de Bobina',
      position_roll AS 'Orden de bobina'
-     FROM autopasters_prod_data;
-     ;`
+     FROM autopasters_prod_data ORDER BY production_fk ASC;
+     `
 ;

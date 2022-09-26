@@ -42,7 +42,7 @@ import ProductosCrud from "../drawerScreens/CrudComponents/ProductosCrud";
 const CustomSidebarMenu = (props) => {
     return (
         <ScrollView>
-            <SafeAreaView style={{flex: 1}}>
+            <SafeAreaView style={{flex: 1, paddingBottom: 30}}>
                 <Image
                     style={[styles.image, {backgroundColor: COLORS.white}]}
                     source={require('../assets/images/splash/Logo_AlbertoGarel.png')}
@@ -215,7 +215,8 @@ const DataBaseScreen = ({navigation, setChangeButtonFunc}) => {
             allItems: bobina_table_ALL,
             deleteItem: ''
         },
-        disable: true
+        disable: true,
+        colorTextRow: '#FF0000'
     };
     const produccionComponentProps = {
         headerTitle: "Producciones abiertas",

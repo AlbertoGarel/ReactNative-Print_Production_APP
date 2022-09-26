@@ -194,6 +194,10 @@ const FullProduction = ({route}) => {
             ]);
     };
 
+    function RecalculateConsumption() {
+        setFinalCalc(calcTirada(selectedTiradaBruta))
+    }
+
     function handlerRemoveItem(rollID, autopasterID) {
         searchItems(autopasterID, individualAutopasterDataForSectionList, item)
             .then(response => deleteItem(response, rollID, item))
@@ -442,6 +446,14 @@ const FullProduction = ({route}) => {
 
             const {email, enterprise, name} = userData;
 
+            if (email === '' && enterprise === '' && name === '') {
+                alert('Completa los datos de encabezado para informe PDF.');
+                setTimeout(() => {
+                    navigation.navigate("Settings")
+                }, 3000);
+                return;
+            }
+
             const promisesUPDATED = await new Promise.all(rollsDataProduction.map(item => {
                 return genericUpdatefunction(request_update_AllBobinaTable, [
                     item.weightEnd, parseInt(item.radiusEnd), item.autopaster_fk, item.codigo_bobina])
@@ -670,6 +682,7 @@ const FullProduction = ({route}) => {
                 />
             }
             <ScrollView ref={principalScroll}
+                        onScrollEndDrag={RecalculateConsumption}
                         nestedScrollEnabled
                         horizontal
                         snapToEnd={false}
