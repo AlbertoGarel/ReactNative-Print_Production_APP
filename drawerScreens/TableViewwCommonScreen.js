@@ -18,7 +18,6 @@ const TableViewwCommonScreen = ({props}) => {
     const [openModalInfo, setOpenModalInfo] = useState(false);
 
     useEffect(() => {
-        console.log('props', props)
         const blur_unsubscribe = navigation.addListener('blur', () => {
             setFocused(false)
         });

@@ -192,7 +192,9 @@ eas build -p android --profile preview --clear-cache
 
 ## Good job. Enjoy...!!
 
-* [Don't forget to check the documentation and use of the application.](https://albertogarel.github.io/printingAPP/)
+> **Note** 
+> * 📖 [Don't forget to check the documentation and use of the application.](https://albertogarel.github.io/printingAPP/)
+
 *******
 
 ## Personal component created
@@ -208,7 +210,7 @@ eas build -p android --profile preview --clear-cache
 **How work it:**
 - Multiple selector for selection of auto pasters, discriminating whether they are whole or 1/2 paper reels in a production based on its configuration. It is able to auto select all if a production uses all the equipment included in a production line configured in the database.
 
-* <code><span><</span>RadioButtonComponent<span>/></span>  <code>FormComponents</code> <code>Components</code>
+* `<RadioButtonComponent/>` `FormComponents` `Components`
 
 ## Credits
 <p id="credits"><p/>
