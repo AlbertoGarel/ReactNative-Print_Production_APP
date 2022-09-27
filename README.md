@@ -66,7 +66,7 @@ You can [download](https://albertogarel.github.io/printingAPP/) the latest insta
 ## How to use this work?
 <p id="how-to-use-this-work"></p>
 
-###Requirements
+### Requirements
 To use Expo CLI, you need to have the following tools installed on your developer machine:
 
 * Node.js LTS release
@@ -153,7 +153,7 @@ export const ADMOB_KEYS = {
 };
 ```
 
-or comment <code><span><</span>AdMobBanner<span>/></span></code> <code>Routes.js</code>
+or comment `<AdMobBanner/>` `Routes.js` 
 *******
 
 ### Creating preview build (Whit EAS)
@@ -218,7 +218,6 @@ This software uses the following packages:
 - [Expo](https://expo.dev)
 - [@kichiyaki/react-native-barcode-generator](https://www.npmjs.com/package/@kichiyaki/react-native-barcode-generator)
 - [@react-native-async-storage/async-storage](https://www.npmjs.com/package/@react-native-async-storage/async-storage)
-- [React Native MaskedView](https://www.npmjs.com/package/@react-native-masked-view/masked-view) alert: change on package.json
 - [@react-native-community/slider](https://www.npmjs.com/package/@react-native-community/slider)
 - [@react-native-picker/picker](https://www.npmjs.com/package/@react-native-picker/picker)
 - [@react-navigation/bottom-tabs](https://www.npmjs.com/package/@react-navigation/bottom-tabs)
@@ -244,7 +243,7 @@ This software uses the following packages:
 - [react-native-switch-selector](https://www.npmjs.com/package/react-native-switch-selector)
 - [react-native-table-component](https://www.npmjs.com/package/react-native-table-component)
 - [React Native with V8 Runtime](https://www.npmjs.com/package/react-native-v8)
-- [React Native for Web](https://www.npmjs.com/package/react-native-web) alert: check run
+- [React Native for Web](https://www.npmjs.com/package/react-native-web) 
 - [React Native WebView](https://www.npmjs.com/package/react-native-webview)
 - [v8-android-jit](https://www.npmjs.com/package/v8-android-jit)
 - [Yup](https://www.npmjs.com/package/yup)
