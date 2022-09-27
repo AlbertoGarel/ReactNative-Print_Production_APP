@@ -188,7 +188,7 @@ eas build -p android --profile preview --clear-cache
 ```
 
 > **Note:**<br>
-> Download the APK file from your [Expo account](https://expo.dev/login) on your Android device.
+> Download the APK file from your [Expo account](https://expo.dev/login) on your Android device or emulator ("Virtual device").
 
 ## Good job. Enjoy...!!
 
