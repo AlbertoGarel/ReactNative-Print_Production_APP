@@ -60,7 +60,7 @@ const optionsStyleContSVG = {
 
 const BarcodeScannerComponent = ({props}) => {
 
-        const [hasPermission, setHasPermission] = useState(null);
+        const [hasPermission, setHasPermission] = useState(null)
         const [scanned, setScanned] = useState(false);
         const [initScanState, setInitScanState] = useState(false);
         const [barcodeTypesSelected, getBarcodeTypesSelected] = useState([]);
@@ -69,19 +69,21 @@ const BarcodeScannerComponent = ({props}) => {
         const [initCapture, setInitCapture] = useState(false);
 
         useEffect(() => {
-                let isMounted = true;
-                // if (hasPermission !== 'granted') {
-                //     (async () => {
-                //         const {status} = await BarCodeScanner.requestPermissionsAsync();
-                //         if (isMounted) setHasPermission(status === 'granted');
-                //     })();
-                // }
-                const getBarCodeScannerPermissions = async () => {
-                    const {status} = await BarCodeScanner.requestPermissionsAsync();
-                    setHasPermission(status === 'granted');
-                };
+            let isMounted = true;
+            if (hasPermission !== 'granted') {
+                Camera.requestCameraPermissionsAsync()
+                    .then(response => {
+                        const {granted} = response;
+                        if (isMounted) {
+                            setHasPermission(granted);
+                        }
+                    })
+            }
+            return () => isMounted = false;
+        }, []);
 
-                getBarCodeScannerPermissions();
+        useEffect(() => {
+                let isMounted = true;
                 //GET TO asyncStorage
                 getDatas('@storage_codeTypesSelected').then(r => {
                     if (r) {
@@ -92,7 +94,7 @@ const BarcodeScannerComponent = ({props}) => {
                                 formatSelectedTypes.push(Object.values(_barCodeTypes.filter(i => codeItem.checkName === Object.keys(i)[0])[0])[0]);
                             }
                         });
-                        getBarcodeTypesSelected(formatSelectedTypes);
+                        if (isMounted) getBarcodeTypesSelected(formatSelectedTypes);
                     } else {
                         if (isMounted) {
                             getBarcodeTypesSelected([{

@@ -926,7 +926,7 @@ export async function registerNewBobina(BobinaParams, actionDDBB, itemsState, pr
         const resto_bobina_exist_prev_prod = await genericTransaction(
             searh_roll_in_prev_production,
             [prodData.produccion_id, BobinaParams.scanCode])
-        const restPrev = resto_bobina_exist_prev_prod[0].resto_previsto >= 0 ? resto_bobina_exist_prev_prod[0].resto_previsto : null
+        const restPrev = resto_bobina_exist_prev_prod.length && resto_bobina_exist_prev_prod[0].resto_previsto >= 0 ? resto_bobina_exist_prev_prod[0].resto_previsto : null
         let restPrevDef = restPrev;
 
         if (restPrev) restPrevDef = Math.round(restPrev - (BobinaParams.originalWeight - restPrev));
@@ -971,7 +971,7 @@ export async function registerNewBobina(BobinaParams, actionDDBB, itemsState, pr
                         productionID,
                         BobinaParams.autopaster,
                         BobinaParams.scanCode,
-                        restPrevDef,
+                        restPrev ? restPrevDef : restoPrevisto,
                         BobinaParams.isMedia,
                         finalPositionRoll,
                     ]))
@@ -987,7 +987,7 @@ export async function registerNewBobina(BobinaParams, actionDDBB, itemsState, pr
                         weightEnd: null,
                         radiusEnd: '',
                         codepathSVG: '',
-                        rest_antProd: restoPrevisto
+                        rest_antProd: restPrev ? restoPrevisto : restPrevDef
                     }
                     const completeItem = [...getRollsAutopaster.toUpdate.data, complete_addedRoll];
                     return [...getRollsAutopaster.others, {
@@ -1002,7 +1002,7 @@ export async function registerNewBobina(BobinaParams, actionDDBB, itemsState, pr
                 .then(() => {
                     genericUpdatefunction(autopasters_prod_data_update, [
                         BobinaParams.scanCode,
-                        restPrevDef,
+                        restPrev ? restPrevDef : restoPrevisto,
                         productionID,
                         AutopasterNum
                     ])
@@ -1019,7 +1019,7 @@ export async function registerNewBobina(BobinaParams, actionDDBB, itemsState, pr
                             weightEnd: null,
                             radiusEnd: '',
                             codepathSVG: '',
-                            rest_antProd: restoPrevisto
+                            rest_antProd: restPrev ? restoPrevisto : restPrevDef
                         }
                     })
                     return [...getRollsAutopaster.others, {
