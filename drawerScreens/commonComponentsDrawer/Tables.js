@@ -214,7 +214,7 @@ class Tables extends Component {
                                                               textStyle={{
                                                                   ...styles.text,
                                                                   width: this.cellWidth,
-                                                                  color: rowData["6"] === 0 ? this.props.colorTextRow : "#000",
+                                                                  color: rowData["7"] === 0 ? this.props.colorTextRow : "#000",
                                                                   opacity: rowData["6"] === 0 ? .4 : 1
                                                               }}/>
                                                     ))
