@@ -19,8 +19,10 @@ import SimpleProductionContainer from "../components/productions/SimpleProductio
 import CreateCardProduction from "./productionScreens/CreateCardProduction";
 import FormTotalCalculationProduction from "../components/productions/FormTotalCalculationProduction";
 import {Sentry_Alert} from "../utils";
+import { useIsFocused } from '@react-navigation/native';
 
 const simpleProductionScreen = ({setChangeButtonFunc}) => {
+    const isFocused = useIsFocused();
 
     const [visiblemenu, setVisibleMenu] = useState(false);
     const [seeData, setSeeData] = useState(false);
@@ -208,14 +210,14 @@ const simpleProductionScreen = ({setChangeButtonFunc}) => {
 
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
-            <StatusBar
+            { isFocused && <StatusBar
                 animated={false}
                 backgroundColor={COLORS.white}
                 barStyle={'dark-content'}
                 // showHideTransition={'none'}
                 // hidden={false}
                 // translucent={false}
-            />
+            />}
             <View style={styles.buttonsContainer}>
                 <TouchableOpacity style={styles.button} onPress={() => objsaved.length > 0 && setVisibleMenu(true)}>
                     <Text style={styles.textTouchable}>Listado Productos</Text>

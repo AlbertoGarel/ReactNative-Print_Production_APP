@@ -20,6 +20,7 @@ import PieChartComponent from "../components/PieChartComponent";
 import StackedBartChartComponent from "../components/StackedBartChartComponent";
 import SpinnerSquares from "../components/SpinnerSquares";
 import {Sentry_Alert} from "../utils";
+import {useIsFocused} from "@react-navigation/native";
 
 const productresult_table =
     `SELECT a.productresult_id,
@@ -34,7 +35,7 @@ let animationActive = true;
 let animationActiveRef;
 
 const ChartsScreen = () => {
-
+    const isFocused = useIsFocused();
     const db = SQLite.openDatabase('bobinas.db');
 
     const headerScrollView = useRef({});
@@ -157,6 +158,18 @@ const ChartsScreen = () => {
         }
     };
 
+    function statusBarStyle() {
+        if (isFocused) {
+            return (
+                <StatusBar
+                    animated={false}
+                    backgroundColor={COLORS.primary}
+                    barStyle={'dark-content'}
+                />
+            )
+        }
+    }
+
 
     if (empty) {
         return (
@@ -165,11 +178,7 @@ const ChartsScreen = () => {
                 justifyContent: 'center',
                 alignItems: 'center'
             }}>
-                <StatusBar
-                    animated={false}
-                    backgroundColor={COLORS.primary}
-                    barStyle={'dark-content'}
-                />
+                {statusBarStyle()}
                 <Image
                     style={{backgroundColor: 'transparent', resizeMode: 'contain'}}
                     source={require('../assets/images/graf.png')}
@@ -184,11 +193,7 @@ const ChartsScreen = () => {
 
     return (
         <SafeAreaView style={{flex: 1}}>
-            <StatusBar
-                animated={false}
-                backgroundColor={COLORS.primary}
-                barStyle={'dark-content'}
-            />
+            {statusBarStyle()}
             <View style={{minHeight: 40}}>
                 <ScrollView nestedScrollEnabled horizontal snapToEnd={false} ref={headerScrollView}
                             automaticallyAdjustContentInsets={false}

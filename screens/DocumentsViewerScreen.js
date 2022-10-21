@@ -32,11 +32,13 @@ import {Sentry_Alert, setValueForInput} from "../utils";
 import seeFile from "../assets/images/seeFile.png";
 import smartphone from "../assets/images/smartphone-sending.png";
 import trash from "../assets/images/trashRed.png";
+import {useIsFocused} from '@react-navigation/native';
 
 const windowHeight = Dimensions.get('window').height;
 const elementListHeight = 34;
 
 const DocumentsViewerScreen = () => {
+    const isFocused = useIsFocused();
 
     const [spinner, setSpinner] = useState(true);
     const [dataSection, getDataSection] = useState([]);
@@ -137,14 +139,22 @@ const DocumentsViewerScreen = () => {
         return <SpinnerSquares/>
     }
 
-    if (dataSection.length === 0) {
-        return (
-            <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+    function statusBarStyle() {
+        if (isFocused) {
+            return (
                 <StatusBar
                     animated={false}
                     backgroundColor={COLORS.primary}
                     barStyle={'dark-content'}
                 />
+            )
+        }
+    }
+
+    if (dataSection.length === 0) {
+        return (
+            <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                {statusBarStyle()}
                 <SvgComponent svgData={pdfSVG} svgHeight={100} svgWidth={100}/>
                 <Text style={styles.textEmpty}>Ningún archivo guardado</Text>
             </View>
@@ -153,11 +163,7 @@ const DocumentsViewerScreen = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar
-                animated={false}
-                backgroundColor={COLORS.primary}
-                barStyle={'dark-content'}
-            />
+            {statusBarStyle()}
             {Object.keys(totalCapacity).length > 0 && <CapacityInfoDraggable totalCapacity={totalCapacity}/>}
             <SectionList
                 initialNumToRender={20}

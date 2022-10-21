@@ -33,10 +33,12 @@ import * as Yup from "yup";
 import CustomPicker from "../components/FormComponents/CustomPicker";
 import {Picker} from '@react-native-picker/picker';
 import {Sentry_Alert} from "../utils";
-
+import { useIsFocused } from '@react-navigation/native';
 
 const IndividualCalculation = () => {
     const db = SQLite.openDatabase('bobinas.db');
+    const isFocused = useIsFocused();
+
     const elementPrevProdctionformikRef = useRef();
     const tiradaRef = useRef();
     const meditionStyleRef = useRef();
@@ -703,11 +705,11 @@ const IndividualCalculation = () => {
     return (
         <SafeAreaView style={{flex: 1}}>
 
-            <StatusBar
+            {isFocused  && <StatusBar
                 animated={false}
                 backgroundColor={'#ebc977'}
                 barStyle={'dark-content'}
-            />
+            />}
             <ImageBackground source={require('../assets/images/orangegradient.jpg')} style={styles.backg}>
                 <ScrollView style={{flex: 1}}>
                     <MultipleSwitchSelector
