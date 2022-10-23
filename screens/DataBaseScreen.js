@@ -256,6 +256,9 @@ const DataBaseScreen = ({navigation, setChangeButtonFunc}) => {
     const option_vis = {
         drawerIcon: () => <Icon name={'eye'} size={15} color={COLORS.primary}/>,
     };
+    const option_mark = {
+        drawerIcon: () => <Icon name={'bookmark'} size={15} color={COLORS.primary}/>,
+    };
 
     return (
         <SafeAreaView style={{flex: 1}}>
@@ -267,7 +270,7 @@ const DataBaseScreen = ({navigation, setChangeButtonFunc}) => {
                                   }}
                                   drawerContent={(props) => <CustomSidebarMenu {...props} />}
                 >
-                    <Drawer.Screen options={option_edit} name="InitialDrawerScreen" component={InitialDrawerScreen}/>
+                    <Drawer.Screen options={option_mark} name="Inicio" component={InitialDrawerScreen}/>
                     <Drawer.Screen options={option_vis} name="Coeficientes"
                                    children={() => <TableViewwCommonScreen props={coeficienteComponentProps}/>}/>
                     <Drawer.Screen options={option_edit} name="Paginaciones"
