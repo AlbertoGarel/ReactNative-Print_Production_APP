@@ -209,7 +209,7 @@ const FullCardProduction = ({
                     stylesPeperCoilWeight={stylesPeperCoilWeight}
                     restoInicioData={!restoPrevistoAnteriorProduccion ? peso_actual : restoPrevistoAnteriorProduccion}
                     restoFinalData={weight_End}
-                    styleRestPrev={!!restoPrevistoAnteriorProduccion}
+                    styleRestPrev={typeof restoPrevistoAnteriorProduccion === 'number' ||restoPrevistoAnteriorProduccion}
                 />
                 <TextInputCoilRadius
                     stylesTextInput={stylesTextInput}

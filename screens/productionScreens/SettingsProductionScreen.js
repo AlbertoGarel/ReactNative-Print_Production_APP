@@ -520,7 +520,7 @@ const SettingsProductionScreen = () => {
                         const dif = response.reduce((acc, item) => {
                             return acc + (item.tiradabruta - item.ejemplares)
                         }, 0);
-                        getselectedNulls(dif / response.length)
+                        getselectedNulls(Math.round(dif / response.length))
                     }
                 })
                 .catch(err => Sentry_Alert('SettingsProductionScreen.js', 'transaction  selectAveragePreviousProductions', err))
@@ -537,7 +537,7 @@ const SettingsProductionScreen = () => {
         if (isNaN(nullsByEd)) nullsByEd = 0;
 
         if (switchTirada) {
-            if (nullCopiesByTiradaPercentage === 0) {
+            if (nullCopiesByTiradaPercentage === 0 || isNaN(nullCopiesByTiradaPercentage)) {
                 setTimeout(() => navigation.navigate('SettingsStack'), 2000)
                 return alert('Complete "descarte de ejemplares" en el apartado "SETTINGS".')
             }
@@ -545,7 +545,7 @@ const SettingsProductionScreen = () => {
             setNullCopiesByTirada(nullsByTir);
         }
         if (switchEditions) {
-            if (nullCopiesByEdition === 0) {
+            if (nullCopiesByEdition === 0 || isNaN(nullCopiesByEdition)) {
                 setTimeout(() => navigation.navigate('SettingsStack'), 2000);
                 return alert('Complete "descarte de ejemplares" en el apartado "SETTINGS".')
             }
@@ -946,12 +946,11 @@ const SettingsProductionScreen = () => {
                                                     <>Nulos por tirada: <Text
                                                         style={{color: COLORS.primary}}>{selectedTirada > 0 ? nullCopiesByTirada : '¿ ?'}</Text> Ejemplares
                                                         ( <Text
-                                                            style={{color: COLORS.primary}}>{nullCopiesByTiradaPercentage}%</Text> )</>
+                                                            style={{color: COLORS.primary}}>{nullCopiesByTiradaPercentage >= 0 ? nullCopiesByTiradaPercentage : 0}%</Text> )</>
                                                     :
                                                     <>Usar valores de descarte de "SETTINGS" para <Text
                                                         style={{color: COLORS.primary}}>tirada</Text></>}
                                                 </Text>
-                                                <Text>alf:{nullCopiesByTirada}</Text>
                                             </View>
                                             <View style={{marginTop: 10}}>
                                                 {(errors.inputEditions && touched.inputEditions) &&
@@ -1004,10 +1003,10 @@ const SettingsProductionScreen = () => {
                                                     }}
                                                 >{switchEditions ?
                                                     <>Nulos por edición: <Text
-                                                        style={{color: COLORS.primary}}>{nullCopiesByEdition}</Text> Ejemplares
+                                                        style={{color: COLORS.primary}}>{nullCopiesByEdition ? nullCopiesByEdition : 0}</Text> Ejemplares
                                                         x <Text
                                                             style={{color: COLORS.primary}}>{selectedEditions > 0 ? selectedEditions : ' ¿ ?'}</Text> = <Text
-                                                            style={{color: COLORS.primary}}>{nullCopiesByEdition * selectedEditions}</Text></>
+                                                            style={{color: COLORS.primary}}>{nullCopiesByEdition ? nullCopiesByEdition * selectedEditions : 0}</Text></>
                                                     :
                                                     <>Usar valores de descarte de "SETTINGS" para <Text
                                                         style={{color: COLORS.primary}}>ediciones.</Text></>}
