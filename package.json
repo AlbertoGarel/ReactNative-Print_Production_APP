@@ -19,7 +19,7 @@
     "@react-navigation/native": "^5.9.3",
     "@react-navigation/stack": "^5.14.2",
     "@sentry/react-native": "^3.1.1",
-    "core-js": "^3.25.5",
+    "core-js": "^3.26.0",
     "expo": "^45.0.0",
     "expo-application": "~4.1.0",
     "expo-asset": "~8.5.0",
@@ -65,7 +65,7 @@
     "yup": "^0.32.9"
   },
   "devDependencies": {
-    "@babel/core": "^7.19.3",
+    "@babel/core": "^7.19.6",
     "@expo/vector-icons": "^13.0.0",
     "@react-navigation/drawer": "^5.12.9",
     "expo-barcode-scanner": "~11.3.0",
