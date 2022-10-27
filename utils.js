@@ -583,21 +583,21 @@ export async function deleteSameRollsNextProductionsInDiferentsAutopasters(rollI
 
         if (nextProds.length) {
             const nextProductions = nextProds.map(item => item.produccion_id);
-            nextProductions.map(async autopaster => {
+            nextProductions.map(async productions => {
                 const all_rolls = await genericTransaction(all_rolls_for_this_autopaster,
-                    [autopaster, autopasterID]);
+                    [productions, autopasterID]);
 
-                if (all_rolls.length > 1) {
+                const rollToDelete = all_rolls.filter(roll => roll.bobina_fk === rollID)
+                if (rollToDelete.length && all_rolls.length > 1) {
                     //delete: exist more than one roll
-                    const rollToDelete = all_rolls.filter(roll => roll.bobina_fk === rollID)
-                    await genericTransaction('DELETE FROM autopasters_prod_data WHERE autopasters_prod_data_id = ?',
-                        [all_rolls[0].autopasters_prod_data_id])
+                    await genericTransaction('DELETE FROM autopasters_prod_data WHERE bobina_fk = ?',
+                        [rollToDelete[0].bobina_fk])
                 }
-                if (all_rolls.length > 0 && all_rolls.length <= 1) {
+                if (rollToDelete.length && all_rolls.length > 0 && all_rolls.length <= 1) {
                     // update: no exist roll.
                     await genericTransaction(`UPDATE autopasters_prod_data SET bobina_fk = ? AND resto_previsto = ?
-                                                    WHERE autopasters_prod_data_id = ?`,
-                        [null, null, all_rolls[0].autopasters_prod_data_id])
+                                                    WHERE bobina_fk = ?`,
+                        [null, null, rollToDelete[0].bobina_fk])
                 }
             })
         }
@@ -942,7 +942,7 @@ export async function registerNewBobina(BobinaParams, actionDDBB, itemsState, pr
         let _restoPrevisto = kilosNeededForAutopaster[0].kilosNeeded >= 0
             ? BobinaParams.actualWeight
             : BobinaParams.actualWeight - Math.abs(kilosNeededForAutopaster[0].kilosNeeded)
-        let restoPrevisto = _restoPrevisto <= 0 ? 0 :  Math.round(_restoPrevisto);
+        let restoPrevisto = _restoPrevisto <= 0 ? 0 : Math.round(_restoPrevisto);
 
         // CALCULATE WEIGHT FOR AUTOPASTER STATUS
         let total_kilos = {
