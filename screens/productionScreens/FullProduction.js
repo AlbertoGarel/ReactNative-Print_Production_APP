@@ -61,7 +61,6 @@ import FullCardProduction from "../../components/productions/FullCardProduction"
 import ModalEndProduction from "../../components/productions/ModalEndProduction";
 import SpinnerSquares from "../../components/SpinnerSquares";
 import {useIsFocused} from '@react-navigation/native';
-import {BarCodeScanner} from "expo-barcode-scanner";
 
 const UPDATE_PROMISES_ALL =
     `UPDATE autopasters_prod_data SET
@@ -72,7 +71,7 @@ const UPDATE_PROMISES_ALL =
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 const titleContHeight = 60;
-let svgSquare = 100
+let svgSquare = (windowWidth / 5);
 const height = windowHeight / 2;
 
 //BACKGROUND PROP CONST
@@ -499,18 +498,30 @@ const FullProduction = ({route}) => {
                         })
                     }
                 })
-            })
+            });
+
             // GET AND DELETE FINISHED ROLLS WHEN THERE IS MORE THAN ONE AND UPDATE WHEN ONLY ONE EXISTS.
+            let item_id = null;
             let Promises = await endedRolls.map(i => {
-                if (i.items >= 1) {
-                    return genericUpdatefunction(
+                let rolls_units_in_autopaster = individualAutopasterDataForSectionList.filter(title => title.title === i.autopaster)[0].data.sort((a, b) => b.position_roll - a.position_roll)[0].position_roll;
+
+                if (i.items === rolls_units_in_autopaster) {
+                    if (i.items >= 2 && item_id === item.autopaster) {
+                        return genericTransaction(
+                            `DELETE FROM autopasters_prod_data WHERE bobina_fk = ? AND autopasters_prod_data_id > ?`,
+                            [i.id, dataProd.productId]
+                        );
+                    } else {
+                        item_id = item.autopaster;
+                        return genericUpdatefunction(
+                            `UPDATE autopasters_prod_data SET bobina_fk = ?, resto_previsto = ? WHERE bobina_fk = ? `,
+                            [null, null, i.id]
+                        );
+                    }
+                } else {
+                    return genericTransaction(
                         `DELETE FROM autopasters_prod_data WHERE bobina_fk = ? AND autopasters_prod_data_id > ?`,
                         [i.id, dataProd.productId]
-                    );
-                } else {
-                    return genericUpdatefunction(
-                        `UPDATE autopasters_prod_data SET bobina_fk = ?, resto_previsto = ? WHERE bobina_fk = ? `,
-                        [null, null, i.id]
                     );
                 }
             })

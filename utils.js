@@ -499,6 +499,9 @@ export async function groupedAutopasters(data, production_id) {
                 // if exist, add rest_andProd value
                 let last = await genericTransaction(selectLastRestoPrev, [item.bobina_fk ? item.bobina_fk : 0, item.production_fk])
                 rollInDatabase[0].rest_antProd = last.length > 0 ? last[0].rest_antProd : null;
+                // Prevent change of autopaster id in production card data with autopaster id from coil record.
+                // It makes it possible to arrange the coil in different auopasters of different productions.
+                rollInDatabase[0].autopaster_fk = rollInDatabase[0].autopaster_fk !== item.autopaster_fk ? item.autopaster_fk : rollInDatabase[0].autopaster_fk
             }
             // if it exists, we add item with extradata. If it doesn't exist just extradata.
             acc[item.autopaster_fk] ?
@@ -586,13 +589,14 @@ export async function deleteSameRollsNextProductionsInDiferentsAutopasters(rollI
             nextProductions.map(async productions => {
                 const all_rolls = await genericTransaction(all_rolls_for_this_autopaster,
                     [productions, autopasterID]);
+                const rollToDelete = all_rolls.filter(roll => roll.bobina_fk === rollID);
 
-                const rollToDelete = all_rolls.filter(roll => roll.bobina_fk === rollID)
                 if (rollToDelete.length && all_rolls.length > 1) {
                     //delete: exist more than one roll
                     await genericTransaction('DELETE FROM autopasters_prod_data WHERE bobina_fk = ?',
                         [rollToDelete[0].bobina_fk])
                 }
+
                 if (rollToDelete.length && all_rolls.length > 0 && all_rolls.length <= 1) {
                     // update: no exist roll.
                     await genericTransaction(`UPDATE autopasters_prod_data SET bobina_fk = ? AND resto_previsto = ?
@@ -660,7 +664,7 @@ export async function deleteItem(response, rollID, productionData) {
                 productionData.produccion_id
             );
             paramsAction = [DELETE_ItemFromAutopasterSQL, [productionData.produccion_id, rollID]];
-            forPromisesAllforUpdate.updatedItemsForPromises.forEach(item => {
+            forPromisesAllforUpdate.updatedItemsForPromises.map(item => {
                 promisesALLforUpdateItems.push(genericUpdateFunctionConfirm(UPDATE_PROMISES_ALL, item));
             });
             // if(id of actual production)
@@ -1241,10 +1245,15 @@ export async function reorganizeProduction(item, dataAddedRoll) {
         `SELECT * FROM autopasters_prod_data WHERE production_fk = ? AND autopaster_fk = ? 
         AND media_defined = ?;`
     ;
-
+    const roll_in_other_autopaster =
+        `SELECT production_fk FROM autopasters_prod_data WHERE bobina_fk = ? `
     try {
         //get all next productions with the same owner.
         const result = await genericTransaction(searchAllNextSameProductions, [item.produccion_id, item.papel_comun_id])
+        // check if there is roll to add in the next productions. If true, don't add in those productions.
+        const rolls_in_others_prods = await genericTransaction(roll_in_other_autopaster, [dataAddedRoll.scanCode])
+        // stop insert int next prods.
+        let stop_insert = [];
 
         if (result.length) {
             const next_productions = await Promise.all(result.map(item => genericTransaction(getRollsByProduccionID, [item.produccion_id, dataAddedRoll.autopaster, dataAddedRoll.isMedia])))
@@ -1252,33 +1261,41 @@ export async function reorganizeProduction(item, dataAddedRoll) {
             next_productions.map(async (prod, index) => {
                 let existRoll = prod.filter(i => i.autopaster_fk === dataAddedRoll.autopaster && i['bobina_fk']);
                 // let equal_roll = existRoll.filter(roll => roll.codigo_bobina === dataAddedRoll.codigo_bobina)[0];
+                stop_insert = await rolls_in_others_prods.filter(existprod => existprod.production_fk !== item.produccion_id)
 
-                if (existRoll.length > 0) {
-                    //insert
-                    const lastRoll = existRoll.sort((a, b) => b.position_roll - a.position_roll)[0];
-                    await genericTransaction(
-                        autopaster_prod_data_insert,
-                        [null, lastRoll.production_fk, lastRoll.autopaster_fk, dataAddedRoll.scanCode, dataAddedRoll.actualWeight - lastRoll.resto_previsto, lastRoll.media_defined, lastRoll.position_roll + 1]
-                    );
-                } else {
-                    //  update.
-                    //  calculate weight.
-                    //  if prod[0] is undefined, next production with same roll property exist but not use same autopaster. No action is contemplated
-                    if (prod[0]) {
-                        const data_for_this_production = await genericTransaction(
-                            dataProductSelectedAllInfo,
-                            [prod[0].production_fk]
-                        )
-                        const isMedia = !dataAddedRoll.isMedia ? data_for_this_production[0].full_value : data_for_this_production[0].media_value;
-                        const weightAutopasterTotal = (data_for_this_production.tirada + data_for_this_production.nulls) * isMedia;
-                        let weightPrev = dataAddedRoll.actualWeight > weightAutopasterTotal
-                            ? Math.round(dataAddedRoll.actualWeight - weightAutopasterTotal)
-                            : 0;
+                if (!stop_insert.length) {
+                    if (existRoll.length > 0) {
+                        //insert
+                        const lastRoll = existRoll.sort((a, b) => b.position_roll - a.position_roll)[0];
+                        let autopaster = lastRoll.autopaster_fk;
 
+                        if (existRoll[0].autopaster_fk !== dataAddedRoll.autopaster) {
+                            autopaster = existRoll[0].autopaster_fk;
+                        }
                         await genericTransaction(
-                            `UPDATE autopasters_prod_data SET bobina_fk = ?, resto_previsto = ?, autopaster_fk = ? WHERE production_fk = ? AND autopasters_prod_data_id = ?`,
-                            [dataAddedRoll.scanCode, weightPrev, dataAddedRoll.autopaster, prod[0].production_fk, prod[0].autopasters_prod_data_id]
-                        )
+                            autopaster_prod_data_insert,
+                            [null, lastRoll.production_fk, autopaster, dataAddedRoll.scanCode, dataAddedRoll.actualWeight - lastRoll.resto_previsto, lastRoll.media_defined, lastRoll.position_roll + 1]
+                        );
+                    } else {
+                        //  update.
+                        //  calculate weight.
+                        //  if prod[0] is undefined, next production with same roll property exist but not use same autopaster. No action is contemplated
+                        if (prod[0]) {
+                            const data_for_this_production = await genericTransaction(
+                                dataProductSelectedAllInfo,
+                                [prod[0].production_fk]
+                            )
+                            const isMedia = !dataAddedRoll.isMedia ? data_for_this_production[0].full_value : data_for_this_production[0].media_value;
+                            const weightAutopasterTotal = (data_for_this_production.tirada + data_for_this_production.nulls) * isMedia;
+                            let weightPrev = dataAddedRoll.actualWeight > weightAutopasterTotal
+                                ? Math.round(dataAddedRoll.actualWeight - weightAutopasterTotal)
+                                : 0;
+
+                            await genericTransaction(
+                                `UPDATE autopasters_prod_data SET bobina_fk = ?, resto_previsto = ?, autopaster_fk = ? WHERE production_fk = ? AND autopasters_prod_data_id = ?`,
+                                [dataAddedRoll.scanCode, weightPrev, dataAddedRoll.autopaster, prod[0].production_fk, prod[0].autopasters_prod_data_id]
+                            )
+                        }
                     }
                 }
             })

@@ -26,6 +26,7 @@ const BgRepeatSVG = ({styleOptions, svgOptions}) => {
             width: numSVGAnchor * 100,
             heigth: numSVGheight * 100,
             position: 'absolute',
+            display: 'flex',
             flexDirection: 'row',
             flexWrap: 'wrap',
             justifyContent: 'flex-start',

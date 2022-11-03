@@ -407,7 +407,7 @@ export const produccion_table_ALL =
     ON paginacion_table.paginacion_id = produccion_table.pagination_fk
     JOIN producto_table
     ON producto_table.producto_id = produccion_table.producto_fk 
-    ORDER BY producto_name ASC`
+    ORDER BY produccion_id ASC`
 ;
 export const dataProductSelectedAllInfo =
     `SELECT a.linea_id, a.linea_name,b.medition_id, b.full_value, b.media_value, c.paginacion_value, d.producto_id, d.producto_name,
