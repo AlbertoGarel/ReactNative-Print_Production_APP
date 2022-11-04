@@ -589,19 +589,20 @@ export async function deleteSameRollsNextProductionsInDiferentsAutopasters(rollI
             nextProductions.map(async productions => {
                 const all_rolls = await genericTransaction(all_rolls_for_this_autopaster,
                     [productions, autopasterID]);
+
                 const rollToDelete = all_rolls.filter(roll => roll.bobina_fk === rollID);
 
                 if (rollToDelete.length && all_rolls.length > 1) {
                     //delete: exist more than one roll
-                    await genericTransaction('DELETE FROM autopasters_prod_data WHERE bobina_fk = ?',
-                        [rollToDelete[0].bobina_fk])
+                    await genericTransaction('DELETE FROM autopasters_prod_data WHERE autopasters_prod_data_id = ?',
+                        [rollToDelete[0].autopasters_prod_data_id])
                 }
 
                 if (rollToDelete.length && all_rolls.length > 0 && all_rolls.length <= 1) {
                     // update: no exist roll.
                     await genericTransaction(`UPDATE autopasters_prod_data SET bobina_fk = ? AND resto_previsto = ?
-                                                    WHERE bobina_fk = ?`,
-                        [null, null, rollToDelete[0].bobina_fk])
+                                                    WHERE autopasters_prod_data_id = ?`,
+                        [null, null, rollToDelete[0].autopasters_prod_data_id])
                 }
             })
         }
@@ -1260,10 +1261,12 @@ export async function reorganizeProduction(item, dataAddedRoll) {
 
             next_productions.map(async (prod, index) => {
                 let existRoll = prod.filter(i => i.autopaster_fk === dataAddedRoll.autopaster && i['bobina_fk']);
-                // let equal_roll = existRoll.filter(roll => roll.codigo_bobina === dataAddedRoll.codigo_bobina)[0];
-                stop_insert = await rolls_in_others_prods.filter(existprod => existprod.production_fk !== item.produccion_id)
+                stop_insert = await genericTransaction(
+                    'SELECT * FROM autopasters_prod_data WHERE bobina_fk = ? AND production_fk = ?;'
+                )
+                const stop_insert_exist = stop_insert.filter(roll => roll.bobina_fk === dataAddedRoll.autopaster);
 
-                if (!stop_insert.length) {
+                if (!stop_insert_exist.length) {
                     if (existRoll.length > 0) {
                         //insert
                         const lastRoll = existRoll.sort((a, b) => b.position_roll - a.position_roll)[0];
