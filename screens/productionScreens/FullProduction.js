@@ -501,18 +501,18 @@ const FullProduction = ({route}) => {
             });
 
             // GET AND DELETE FINISHED ROLLS WHEN THERE IS MORE THAN ONE AND UPDATE WHEN ONLY ONE EXISTS.
-            let item_id = null;
+            let item_id = '';
             let Promises = await endedRolls.map(i => {
-                let rolls_units_in_autopaster = individualAutopasterDataForSectionList.filter(title => title.title === i.autopaster)[0].data.sort((a, b) => b.position_roll - a.position_roll)[0].position_roll;
+                let ended_rolls_units_in_autopaster = endedRolls.filter(title => title.autopaster === i.autopaster)
 
-                if (i.items === rolls_units_in_autopaster) {
-                    if (i.items >= 2 && item_id === item.autopaster) {
+                if (i.items === ended_rolls_units_in_autopaster.length) {
+                    if (item_id === i.autopaster) {
                         return genericTransaction(
                             `DELETE FROM autopasters_prod_data WHERE bobina_fk = ? AND autopasters_prod_data_id > ?`,
                             [i.id, dataProd.productId]
                         );
                     } else {
-                        item_id = item.autopaster;
+                        item_id = i.autopaster;
                         return genericUpdatefunction(
                             `UPDATE autopasters_prod_data SET bobina_fk = ?, resto_previsto = ? WHERE bobina_fk = ? `,
                             [null, null, i.id]
