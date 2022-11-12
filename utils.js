@@ -3,6 +3,7 @@ import {genericTransaction, genericUpdatefunction, genericUpdateFunctionConfirm}
 import {autopaster_prod_data_insert, dataProductSelectedAllInfo} from "./dbCRUD/actionsSQL";
 import * as MailComposer from 'expo-mail-composer';
 import * as Sentry from 'sentry-expo';
+import React from "react";
 
 /**
  *  SENTRY WARNING
@@ -1332,4 +1333,32 @@ export function handlerSqliteErrors(error) {
             message = 'error en la acción';
     }
     return message;
+}
+
+/**
+ *  Comsumpton indicator.
+ *
+ *  @param kilos type: number
+ *
+ *  @returns <string>: Hexadecimal color.
+ **/
+
+export function warningConsumption(kilos) {
+    const value = parseInt(kilos);
+    let color = '';
+    switch (true) {
+        case value <= 60:
+            color = '#FF9999';
+            break;
+        case value > 60 && value <= 100:
+            color = '#FFFF99';
+            break;
+        case value > 100:
+            color = '#BBFFBB'
+            break;
+        default:
+            color = '#FFbe61'
+            break;
+    }
+    return color;
 }

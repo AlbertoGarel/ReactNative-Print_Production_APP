@@ -19,6 +19,7 @@ import SpinnerSquares from "../SpinnerSquares";
 import CustomBarcode from "../CustomBarcode";
 import logo from '../../assets/images/anterior.png';
 import fondo from '../../assets/images/splash/Logo_AlbertoGarel.png';
+import {warningConsumption} from '../../utils'
 
 const paddingContent = 5;
 const border_radius = 3;
@@ -120,26 +121,6 @@ const FullCardProduction = ({
         textTitle: styles.textTitle,
         textWeightUnit: styles.textWeightUnit
     };
-
-    const warningConsumption = React.useMemo(() => (kilos) => {
-        const value = parseInt(kilos);
-        let color = '';
-        switch (true) {
-            case value <= 60:
-                color = '#FF9999';
-                break;
-            case value > 60 && value <= 100:
-                color = '#FFFF99';
-                break;
-            case value > 100:
-                color = '#BBFFBB'
-                break;
-            default:
-                color = '#FFbe61'
-                break;
-        }
-        return color;
-    }, [restoPrevisto]);
 
     if (!peso_ini) {
         return (

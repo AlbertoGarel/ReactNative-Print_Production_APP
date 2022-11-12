@@ -7,6 +7,8 @@ import SvgComponent from "./SvgComponent";
 import {DraxProvider, DraxList, DraxViewDragStatus} from 'react-native-drax';
 import Barcode from "@kichiyaki/react-native-barcode-generator";
 import SpinnerSquares from "./SpinnerSquares";
+import {warningConsumption} from '../utils'
+import PercentageBarCard from "./productions/PercentageBarCard";
 
 const maxViewItems = 3;
 const normalViewsItems = 2
@@ -25,7 +27,7 @@ const DragDropCardsComponent = ({props}) => {
 
     useEffect(() => {
         let isMounted = true;
-
+        console.log('inputRadioForRollRadius', inputRadioForRollRadius)
         if (isMounted) {
             getRolls(inputRadioForRollRadius.sort((a, b) => a.position - b.position));
         }
@@ -113,17 +115,32 @@ const DragDropCardsComponent = ({props}) => {
                                                 }
                                             </View>
                                             <View style={styles.betaItem}>
-                                                <Text style={styles.dataText}>peso origen: {item.weightIni}</Text>
-                                                <Text style={styles.dataText}>peso actual: {item.weightAct}</Text>
+                                                <Text style={styles.dataText}>peso origen: {item.peso_ini}</Text>
+                                                <Text style={styles.dataText}>peso actual: {item.peso_actual}</Text>
                                             </View>
                                             <View style={styles.prevCont}>
-                                                <Text style={{fontSize: 10}}>0%</Text>
-                                                <View style={{
-                                                    borderRadius: 5,
-                                                    height: 10,
-                                                    width: '100%',
-                                                    backgroundColor: 'red'
-                                                }}/>
+                                                {/*<Text style={{fontSize: 10}}>{item.resto_previsto}</Text>*/}
+                                                {/*<View style={{*/}
+                                                {/*    borderRadius: 5,*/}
+                                                {/*    height: 10,*/}
+                                                {/*    width: '100%',*/}
+                                                {/*    backgroundColor: warningConsumption(item.restoPrevisto)*/}
+                                                {/*}}/>*/}
+                                                <PercentageBarCard
+                                                    data={{
+                                                        pesoOriginal: item.peso_actual,
+                                                        restoInicio: item.peso_ini,
+                                                        restoFinal: item.resto_previsto
+                                                    }}
+                                                    styleParent={[styles.percent, styles.subPercent]}
+                                                    styleSubParent={[styles.contBar, {
+                                                        width: '90%',
+                                                        backgroundColor: COLORS.white
+                                                    }]}
+                                                    // radiusState={radiusState}
+                                                    updateGetStorage={null}
+                                                    item={item}
+                                                />
                                             </View>
                                         </View>
                                     )}
@@ -216,12 +233,12 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     prevCont: {
-        justifyContent: 'center',
-        alignItems: 'center'
+        flex: 1
     },
     dataText: {
         fontFamily: 'Anton',
         fontSize: 12,
+        color: COLORS.black
     },
     toMove: {
         transform: [{scale: 1.06}, {rotateZ: '5deg'}],
@@ -229,6 +246,30 @@ const styles = StyleSheet.create({
         borderColor: 'black',
         opacity: 0.2,
         ...shadowPlatform
-    }
+    },
+    percent: {
+        flex: 1,
+        width: '80%',
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        borderBottomLeftRadius: 5,
+        borderBottomRightRadius: 5,
+        paddingHorizontal: 3,
+        backgroundColor: COLORS.buttonEdit
+    },
+    subPercent: {
+        justifyContent: 'flex-start',
+    },
+    contBar: {
+        width: '100%',
+        height: '30%',
+        backgroundColor: COLORS.white,
+        margin: 3,
+        borderRadius: 5,
+        borderWidth: 1,
+        borderColor: COLORS.white
+    },
 });
 export default DragDropCardsComponent;

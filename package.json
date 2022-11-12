@@ -65,7 +65,7 @@
     "yup": "^0.32.9"
   },
   "devDependencies": {
-    "@babel/core": "^7.19.6",
+    "@babel/core": "^7.20.2",
     "@expo/vector-icons": "^13.0.0",
     "@react-navigation/drawer": "^5.12.9",
     "expo-barcode-scanner": "~11.3.0",
