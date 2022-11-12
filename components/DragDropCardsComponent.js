@@ -119,13 +119,6 @@ const DragDropCardsComponent = ({props}) => {
                                                 <Text style={styles.dataText}>peso actual: {item.peso_actual}</Text>
                                             </View>
                                             <View style={styles.prevCont}>
-                                                {/*<Text style={{fontSize: 10}}>{item.resto_previsto}</Text>*/}
-                                                {/*<View style={{*/}
-                                                {/*    borderRadius: 5,*/}
-                                                {/*    height: 10,*/}
-                                                {/*    width: '100%',*/}
-                                                {/*    backgroundColor: warningConsumption(item.restoPrevisto)*/}
-                                                {/*}}/>*/}
                                                 <PercentageBarCard
                                                     data={{
                                                         pesoOriginal: item.peso_actual,
@@ -137,7 +130,6 @@ const DragDropCardsComponent = ({props}) => {
                                                         width: '90%',
                                                         backgroundColor: COLORS.white
                                                     }]}
-                                                    // radiusState={radiusState}
                                                     updateGetStorage={null}
                                                     item={item}
                                                 />
