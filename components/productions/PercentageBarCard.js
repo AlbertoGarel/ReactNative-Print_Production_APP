@@ -33,7 +33,7 @@ const PercentageBarCard = ({
 
     useEffect(() => {
         let percent = Math.round((data.restoInicio / data.pesoOriginal) * 100);
-        if (item.radio === 0) {
+        if (item.radio === 0 || item.resto_previsto === 0) {
             percent = 0;
         }
         if (parseInt(data.restoFinal)) {
