@@ -1,14 +1,65 @@
+# OSX
+.DS_Store
+
+# private project keys
+projectKeys.js
+
+# app.json
+app.json
+
+# eas.json
+eas.json
+
+# Miniaturas
+._ *
+
+# Archivos que pueden aparecer en la raíz de un volumen
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+#expo
+.expo
+.expo-shared
+
+#yarn-error.log
+yarn-error.log
+
+#node_modules
+node_modules
+
+# Xcode
+construir /
+* .pbxuser
+! default.pbxuser
+* .mode1v3
+! default.mode1v3
+* .mode2v3
+! default.mode2v3
+* .perspectivev3
+! default.perspectivev3
+xcuserdata
+* .xccheckout
+* .moved-side
+DerivedData
+* .hmap
+* .ipa
+* .xcuserstate
+project.xcworkspace
+
+# Android / IJ
+.idea
 .gradle
-/build/
+propiedades.locales
 
-# Ignore Gradle GUI config
-gradle-app.setting
+# node.js
+módulos_nodo /
+npm-debug.log
 
-# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
-!gradle-wrapper.jar
-
-# Cache of project
-.gradletasknamecache
-
-# # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
-# gradle/wrapper/gradle-wrapper.properties
+# BUCK
+buck-out /
+\. buckd /
+android / app / libs
+android / keystores / debug.keystore
